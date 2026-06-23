@@ -15,8 +15,6 @@ import {
   LogOut,
   PieChart,
   ReceiptText,
-  Settings,
-  Sparkles,
   Trash2,
   Wallet,
 } from "lucide-react";
@@ -127,7 +125,7 @@ export default function App() {
     const parsed: ParsedTransaction[] = [];
 
     for (const file of images) {
-      updateJob(file.name, { status: "processing", message: "Готовлю OCR", progress: 3 });
+      updateJob(file.name, { status: "processing", message: "Распознаем операции", progress: 3 });
       try {
         const transactionsFromFile = await recognizeTransactions(file, categories, (progress, message) => {
           updateJob(file.name, { progress: Math.max(5, Math.min(98, progress)), message });
@@ -136,7 +134,7 @@ export default function App() {
         updateJob(file.name, {
           status: "done",
           progress: 100,
-          message: `${transactionsFromFile.length} транзакций распознано`,
+          message: `Готово. ${transactionsFromFile.length} учтено`,
         });
       } catch (ocrError) {
         updateJob(file.name, {
@@ -164,7 +162,7 @@ export default function App() {
   async function saveDrafts() {
     const selected = drafts.filter((draft) => draft.selected);
     if (selected.length === 0) {
-      setError("Выберите хотя бы одну транзакцию для сохранения.");
+      setError("Выберите хотя бы одну операцию для сохранения.");
       return;
     }
 
@@ -189,7 +187,7 @@ export default function App() {
       await loadAppData();
       setView("home");
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Не удалось сохранить транзакции");
+      setError(saveError instanceof Error ? saveError.message : "Не удалось сохранить операции");
     } finally {
       setIsSaving(false);
     }
@@ -203,7 +201,7 @@ export default function App() {
     return (
       <main className="app-shell centered">
         <LoaderCircle className="spin" size={34} />
-        <p>Загружаю финансы</p>
+        <p>Загружаю Summa</p>
       </main>
     );
   }
@@ -268,13 +266,17 @@ function LoginScreen({ error, onToken }: { error: string | null; onToken: (token
   return (
     <main className="login-layout">
       <section className="login-panel">
-        <div className="brand-mark">
-          <ReceiptText size={30} />
+        <div className="brand-lockup">
+          <div className="brand-mark">
+            <ReceiptText size={28} />
+          </div>
+          <span>summa</span>
         </div>
-        <h1>Личные финансы из банковских скриншотов</h1>
+        <h1>Все доходы и расходы. За несколько минут.</h1>
         <p>
-          OCR работает в браузере, а проверенные транзакции сохраняются в backend под вашим аккаунтом.
+          Загружайте скриншоты банковских операций. Summa соберет историю без доступа к вашему банковскому кабинету.
         </p>
+        <TrustPills />
         {error && <div className="inline-error">{error}</div>}
         <div className="auth-actions">
           <a className="primary-action" href={authUrls.google}>
@@ -297,6 +299,7 @@ function LoginScreen({ error, onToken }: { error: string | null; onToken: (token
           </div>
         </div>
       </section>
+      <ProductScene />
     </main>
   );
 }
@@ -323,8 +326,9 @@ function HomeScreen({
     <section className="screen">
       <header className="topbar">
         <div>
-          <span className="eyebrow">Добрый день</span>
-          <h2>{user?.name || "Пользователь"}</h2>
+          <span className="eyebrow">summa</span>
+          <h2>Всё на месте</h2>
+          <span className="eyebrow">{user?.name ? `${user.name}, доходы и расходы обновлены` : "Доходы и расходы обновлены"}</span>
         </div>
         <button className="icon-button" aria-label="Уведомления">
           <Bell size={20} />
@@ -334,7 +338,7 @@ function HomeScreen({
       <section className="balance-card">
         <div className="balance-row">
           <div>
-            <span>Общий баланс</span>
+            <span>Картина месяца</span>
             <strong>{formatMoney(statistics?.balance || 0)}</strong>
           </div>
           <button className="glass-button" aria-label="Показать баланс">
@@ -359,8 +363,8 @@ function HomeScreen({
             <Camera size={22} />
           </span>
           <span>
-            <b>Добавить</b>
-            <small>транзакции</small>
+            <b>Загрузить</b>
+            <small>операции</small>
           </span>
         </button>
         <button className="quick-action" onClick={onAnalytics}>
@@ -368,10 +372,15 @@ function HomeScreen({
             <PieChart size={22} />
           </span>
           <span>
-            <b>Аналитика</b>
-            <small>по расходам</small>
+            <b>Сводка</b>
+            <small>по категориям</small>
           </span>
         </button>
+      </div>
+
+      <div className="trust-strip">
+        <span>Без доступа к банковскому кабинету</span>
+        <span>Скриншоты обрабатываются на устройстве</span>
       </div>
 
       <section className="section-block">
@@ -382,7 +391,7 @@ function HomeScreen({
           </button>
         </div>
         {categoryStats.length === 0 ? (
-          <EmptyState text="Сохраните первую распознанную транзакцию, и здесь появятся категории." />
+          <EmptyState text="Загрузите первую историю операций — Summa соберет категории после проверки." />
         ) : (
           <div className="stack">
             {categoryStats.map(({ category, total, count }) => (
@@ -397,7 +406,7 @@ function HomeScreen({
           <h3>Последние операции</h3>
         </div>
         {latest.length === 0 ? (
-          <EmptyState text="Пока нет сохраненных операций." />
+          <EmptyState text="Пока нет сохраненных операций. Загрузите скриншоты, проверьте результат и сохраните историю." />
         ) : (
           <div className="stack">
             {latest.map((transaction) => (
@@ -426,7 +435,7 @@ function UploadScreen({
 
   return (
     <section className="screen">
-      <HeaderWithBack title="Добавить транзакции" subtitle="Скриншоты истории или отдельных операций" onBack={onBack} />
+      <HeaderWithBack title="Загрузить операции" subtitle="Загрузили. Проверили. Готово." onBack={onBack} />
       <div
         className="upload-zone"
         onDragOver={(event) => event.preventDefault()}
@@ -436,8 +445,8 @@ function UploadScreen({
         }}
       >
         <CloudUpload size={34} />
-        <h3>Загрузите скриншоты</h3>
-        <p>PNG и JPG распознаются прямо в браузере через Tesseract.js</p>
+        <h3>Загрузите историю операций</h3>
+        <p>PNG и JPG обрабатываются на этом устройстве. Summa не подключается к банковскому кабинету.</p>
         <button className="primary-action compact" onClick={() => inputRef.current?.click()}>
           Выбрать файлы
         </button>
@@ -453,10 +462,10 @@ function UploadScreen({
       </div>
 
       <div className="notice green">
-        <Sparkles size={20} />
+        <Check size={20} />
         <div>
-          <b>Автоматическое распознавание</b>
-          <span>Сумма, дата, получатель, категория и confidence score</span>
+          <b>Без доступа к банковскому кабинету</b>
+          <span>Мы распознаем сумму, дату и получателя локально. Вы решаете, что сохранить.</span>
         </div>
       </div>
 
@@ -466,7 +475,7 @@ function UploadScreen({
           {hasDoneJobs && <button onClick={onReview}>Проверить</button>}
         </div>
         {jobs.length === 0 ? (
-          <EmptyState text="Перетащите сюда банковские скриншоты или выберите файлы." />
+          <EmptyState text="Перетащите сюда скриншоты истории операций или выберите файлы." />
         ) : (
           <div className="stack">
             {jobs.map((job) => (
@@ -499,13 +508,13 @@ function ReviewScreen({
   return (
     <section className="screen">
       <HeaderWithBack
-        title="Проверьте транзакции"
+        title="Проверьте операции"
         subtitle={`${selectedCount} из ${drafts.length} будут сохранены`}
         onBack={onBack}
       />
 
       {drafts.length === 0 ? (
-        <EmptyState text="Нет распознанных транзакций. Вернитесь к загрузке и добавьте скриншот." />
+        <EmptyState text="Нет распознанных операций. Вернитесь к загрузке и добавьте скриншот." />
       ) : (
         <div className="review-list">
           {drafts.map((draft) => (
@@ -540,7 +549,7 @@ function AnalyticsScreen({
 
   return (
     <section className="screen">
-      <HeaderWithBack title="Статистика" subtitle="По сохраненным транзакциям" onBack={onBack} />
+      <HeaderWithBack title="Сводка" subtitle="Доходы и расходы по сохраненным операциям" onBack={onBack} />
       <div className="metrics-grid">
         <div className="metric blue">
           <span>Всего потрачено</span>
@@ -610,11 +619,11 @@ function BottomNav({ active, onChange, onLogout }: { active: View; onChange: (vi
     <nav className="bottom-nav">
       <button className={active === "home" ? "active" : ""} onClick={() => onChange("home")}>
         <Home size={22} />
-        <span>Главная</span>
+        <span>Summa</span>
       </button>
       <button className={active === "analytics" ? "active" : ""} onClick={() => onChange("analytics")}>
         <BarChart3 size={22} />
-        <span>Статистика</span>
+        <span>Сводка</span>
       </button>
       <button className={active === "upload" || active === "review" ? "active" : ""} onClick={() => onChange("upload")}>
         <Wallet size={22} />
@@ -636,7 +645,7 @@ function CategoryRow({ category, total, count }: { category: Category; total: nu
       </span>
       <div>
         <b>{category.nameRu}</b>
-        <small>{count} транзакций</small>
+        <small>{count} операций</small>
       </div>
       <strong>{formatMoney(-total)}</strong>
     </div>
@@ -752,8 +761,8 @@ function DraftCard({
 
       <div className="confidence-line">
         <span style={{ color: category?.color || "#378add" }}>
-          <Sparkles size={13} />
-          Confidence {draft.confidence}%
+          <Check size={13} />
+          Уверенность распознавания {draft.confidence}%
         </span>
         <small>{draft.sourceFile}</small>
       </div>
@@ -763,6 +772,49 @@ function DraftCard({
 
 function EmptyState({ text }: { text: string }) {
   return <div className="empty-state">{text}</div>;
+}
+
+function TrustPills() {
+  return (
+    <div className="trust-pills">
+      <span>Без доступа к банковскому кабинету</span>
+      <span>Скриншоты обрабатываются на устройстве</span>
+      <span>Вы решаете, что сохранить</span>
+    </div>
+  );
+}
+
+function ProductScene() {
+  return (
+    <section className="product-scene" aria-label="Как Summa собирает операции">
+      <div className="scene-label">Загрузили. Проверили. Готово.</div>
+      <div className="scene-flow">
+        <div className="scene-file">
+          <FileText size={18} />
+          <span>История операций</span>
+          <i />
+          <i />
+          <i className="accent-line" />
+        </div>
+        <div className="scene-arrow">→</div>
+        <div className="scene-result">
+          <span>Готово</span>
+          <strong>24 операции</strong>
+          <small>2 стоит проверить</small>
+        </div>
+      </div>
+      <div className="scene-summary">
+        <div>
+          <span>Доходы</span>
+          <b>+184 000 ₽</b>
+        </div>
+        <div>
+          <span>Расходы</span>
+          <b>−96 400 ₽</b>
+        </div>
+      </div>
+    </section>
+  );
 }
 
 function CategoryIcon({ icon }: { icon: string }) {
