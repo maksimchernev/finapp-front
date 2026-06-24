@@ -1,0 +1,38 @@
+.listRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+
+  > div {
+    min-width: 0;
+  }
+
+  b,
+  small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    white-space: nowrap;
+  }
+
+  small {
+    margin-top: 2px;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+}
+
+.categoryAvatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}

@@ -1,0 +1,33 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    margin: 4px 0 0;
+    font-size: 21px;
+    line-height: 1.2;
+  }
+}
+
+.compactTopbar {
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.iconButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.eyebrow {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+}

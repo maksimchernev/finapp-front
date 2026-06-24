@@ -23,7 +23,7 @@ npm install
 npm run dev
 ```
 
-Frontend откроется на `http://localhost:5173`.
+Frontend откроется на `http://localhost:3002`.
 
 Backend должен быть запущен на `http://localhost:3001`. Если адрес другой, создайте `.env`:
 
@@ -36,7 +36,7 @@ VITE_API_URL=http://localhost:3001
 Перед входом через OAuth настройте `/Users/cmd/Desktop/finapp/bend/.env`:
 
 ```env
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL=http://localhost:3002
 GOOGLE_CALLBACK_URL=http://localhost:3001/api/auth/google/callback
 YANDEX_CALLBACK_URL=http://localhost:3001/api/auth/yandex/callback
 ```

@@ -1,0 +1,78 @@
+.uploadRow {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.uploadRowMain {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 11px;
+  align-items: center;
+  margin-bottom: 9px;
+
+  b,
+  small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
+    margin-top: 2px;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+}
+
+.fileStatus {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: #5f5e5a;
+  background: #f1efe8;
+}
+
+.done {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.error {
+  color: var(--red);
+  background: #fbeaea;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e6edf0;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--coral);
+  }
+}
+
+.thin {
+  height: 4px;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

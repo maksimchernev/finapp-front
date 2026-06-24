@@ -1,0 +1,131 @@
+.screen {
+  display: grid;
+  gap: 18px;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.metric {
+  min-width: 0;
+  padding: 16px;
+  border-radius: 8px;
+
+  span,
+  b {
+    display: block;
+  }
+
+  span {
+    font-size: 13px;
+  }
+
+  b {
+    margin-top: 8px;
+    font-size: 21px;
+  }
+}
+
+.blue {
+  color: var(--accent-a);
+  background: var(--blue-soft);
+}
+
+.green {
+  color: #5f2d20;
+  background: var(--coral-soft);
+}
+
+.chartCard {
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+  }
+}
+
+.barChart {
+  height: 154px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  align-items: end;
+  gap: 9px;
+  padding-top: 16px;
+}
+
+.barColumn {
+  height: 132px;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  align-items: end;
+  gap: 8px;
+  text-align: center;
+
+  span {
+    width: 100%;
+    min-height: 4px;
+    border-radius: 999px 999px 3px 3px;
+    background: linear-gradient(180deg, var(--coral), var(--accent-a));
+  }
+
+  small {
+    color: var(--text-muted);
+    font-size: 11px;
+  }
+}
+
+.categoryProgress {
+  display: grid;
+  gap: 11px;
+}
+
+.progressLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 7px;
+  font-size: 13px;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    gap: 8px;
+  }
+
+  i {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    flex: 0 0 auto;
+  }
+}
+
+.progressTrack {
+  width: 100%;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e6edf0;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--coral);
+  }
+}
+
+@media (max-width: 380px) {
+  .metricsGrid {
+    grid-template-columns: 1fr;
+  }
+}

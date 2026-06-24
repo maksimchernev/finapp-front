@@ -1,0 +1,60 @@
+.screen {
+  display: grid;
+  gap: 18px;
+}
+
+.reviewList {
+  display: grid;
+  gap: 11px;
+}
+
+.actionRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.stickyActions {
+  position: sticky;
+  bottom: 86px;
+}
+
+.primaryAction,
+.secondaryAction {
+  border-radius: 8px;
+  padding: 14px 18px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 48px;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.primaryAction {
+  color: white;
+  background: var(--accent-a);
+  border: 0;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.secondaryAction {
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.compact {
+  min-height: 42px;
+  padding: 11px 14px;
+}
+
+@media (max-width: 380px) {
+  .actionRow {
+    grid-template-columns: 1fr;
+  }
+}

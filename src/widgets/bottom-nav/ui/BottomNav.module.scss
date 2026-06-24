@@ -1,0 +1,35 @@
+.bottomNav {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  width: min(calc(100% - 28px), 452px);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 254, 251, 0.94);
+  box-shadow: 0 14px 38px rgba(38, 48, 55, 0.16);
+  backdrop-filter: blur(14px);
+  z-index: 5;
+
+  button {
+    display: grid;
+    place-items: center;
+    gap: 4px;
+    border: 0;
+    color: var(--text-muted);
+    background: transparent;
+    padding: 7px 2px;
+    border-radius: 7px;
+    font-size: 11px;
+  }
+
+  .active {
+    color: var(--accent-a);
+    background: rgba(36, 76, 56, 0.1);
+    font-weight: 700;
+  }
+}

@@ -1,5 +1,6 @@
 import Tesseract from "tesseract.js";
-import type { Category, ParsedTransaction } from "../types";
+import type { Category } from "../../../entities/category/model/types";
+import type { ParsedTransaction } from "../model/types";
 
 type ProgressHandler = (progress: number, message: string) => void;
 
