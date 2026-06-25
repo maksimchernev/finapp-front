@@ -25,6 +25,12 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+*:focus,
+*:focus-visible,
+*:active {
+  outline: none;
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -67,14 +73,4 @@ a,
 [role="button"] {
   cursor: pointer;
   user-select: none;
-}
-
-button:focus-visible,
-a:focus-visible,
-[role="button"]:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid rgba(36, 76, 56, 0.42);
-  outline-offset: 2px;
 }

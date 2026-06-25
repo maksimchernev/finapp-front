@@ -22,7 +22,11 @@ export function UploadPage({
 
   return (
     <section className={styles.screen}>
-      <HeaderWithBack title="Загрузить операции" subtitle="Загрузили. Проверили. Готово." onBack={onBack} />
+      <HeaderWithBack
+        title="Загрузить операции"
+        subtitle="Загрузили. Проверили. Готово."
+        onBack={onBack}
+      />
       <div
         className={styles.uploadZone}
         onDragOver={(event) => event.preventDefault()}
@@ -33,8 +37,14 @@ export function UploadPage({
       >
         <CloudUpload size={34} />
         <h3>Загрузите историю операций</h3>
-        <p>PNG и JPG обрабатываются на этом устройстве. Summa не подключается к банковскому кабинету.</p>
-        <button className={[styles.primaryAction, styles.compact].join(" ")} onClick={() => inputRef.current?.click()}>
+        <p>
+          Изображения распознаются на этом устройстве, храним только
+          распознанные данные.
+        </p>
+        <button
+          className={[styles.primaryAction, styles.compact].join(" ")}
+          onClick={() => inputRef.current?.click()}
+        >
           Выбрать файлы
         </button>
         <input
@@ -52,7 +62,10 @@ export function UploadPage({
         <Check size={20} />
         <div>
           <b>Без доступа к банковскому кабинету</b>
-          <span>Мы распознаем сумму, дату и получателя локально. Вы решаете, что сохранить.</span>
+          <span>
+            Мы распознаем сумму, дату и получателя локально. Храним только
+            подтвержденные вами операции.
+          </span>
         </div>
       </div>
 

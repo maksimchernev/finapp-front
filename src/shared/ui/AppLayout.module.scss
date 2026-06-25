@@ -1,8 +1,8 @@
 .layout {
   min-height: 100vh;
-  padding: 20px;
+  padding: 20px 20px 0;
   display: grid;
-  place-items: center;
+  justify-items: center;
   background:
     radial-gradient(
       circle at 18% 0%,
@@ -16,7 +16,8 @@
   width: min(100%, var(--app-layout-width));
   padding: 28px;
   border: 1px solid rgba(36, 76, 56, 0.12);
-  border-radius: 8px;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
   background: rgba(255, 255, 255, 0.9);
   box-shadow: var(--shadow);
 }

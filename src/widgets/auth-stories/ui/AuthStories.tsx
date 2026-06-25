@@ -1,6 +1,10 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { Camera, CheckCircle2, ShieldCheck } from "lucide-react";
-import { getStoryTransition, STORY_DURATION_MS, type StoryDirection } from "@/widgets/auth-stories/model/storyNavigation";
+import {
+  getStoryTransition,
+  STORY_DURATION_MS,
+  type StoryDirection,
+} from "@/widgets/auth-stories/model/storyNavigation";
 import styles from "@/widgets/auth-stories/ui/AuthStories.module.scss";
 
 const stories = [
@@ -18,13 +22,13 @@ const stories = [
     title: "Банковский кабинет остается закрытым.",
     text: "Не нужно подключать банк по API. Скриншоты обрабатываются на устройстве, а будущие AI-функции будут включаться только с вашего разрешения.",
     metric: "Без доступа к банку",
-    rows: ["Локальное OCR", "Без отправки скриншотов в нейронку", "Контроль разрешений"],
+    rows: ["Локальное OCR", "Скриншоты не храним", "Контроль разрешений"],
   },
   {
     icon: CheckCircle2,
     eyebrow: "3/3 Проверка перед сохранением",
     title: "Вы решаете, что попадет в учет.",
-    text: "Перед сохранением можно поправить категорию, сумму или получателя. В базе остаются только подтвержденные операции пользователя.",
+    text: "Перед сохранением можно поправить категорию, сумму или получателя. В базу попадают только подтвержденные вами операции.",
     metric: "Проверили. Сохранили. Готово.",
     rows: ["Категории", "Confidence score", "История пользователя"],
   },
@@ -34,7 +38,9 @@ export function AuthStories({ onComplete }: { onComplete: () => void }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const story = stories[activeIndex];
   const Icon = story.icon;
-  const progressStyle = { "--story-duration": `${STORY_DURATION_MS}ms` } as CSSProperties;
+  const progressStyle = {
+    "--story-duration": `${STORY_DURATION_MS}ms`,
+  } as CSSProperties;
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -45,7 +51,11 @@ export function AuthStories({ onComplete }: { onComplete: () => void }) {
   }, [activeIndex]);
 
   function showStory(direction: StoryDirection) {
-    const transition = getStoryTransition(activeIndex, stories.length, direction);
+    const transition = getStoryTransition(
+      activeIndex,
+      stories.length,
+      direction,
+    );
 
     if (transition.type === "complete") {
       onComplete();
@@ -56,8 +66,15 @@ export function AuthStories({ onComplete }: { onComplete: () => void }) {
   }
 
   return (
-    <section className={styles.storiesCard} aria-label="Как Summa работает до входа">
-      <div className={styles.progress} aria-label="Слайды" style={progressStyle}>
+    <section
+      className={styles.storiesCard}
+      aria-label="Как Summa работает до входа"
+    >
+      <div
+        className={styles.progress}
+        aria-label="Слайды"
+        style={progressStyle}
+      >
         {stories.map((item, index) => (
           <span
             key={item.eyebrow}

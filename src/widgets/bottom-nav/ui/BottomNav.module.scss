@@ -106,14 +106,11 @@
     place-items: center;
     gap: 4px;
     border: 0;
-    outline: none;
     color: var(--text-muted);
     background: transparent;
     padding: 9px 2px 8px;
     border-radius: 22px;
     font-size: 11px;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
     transition:
       color 160ms ease,
       background 160ms ease,
@@ -136,11 +133,6 @@
 
     &:active {
       transform: scale(0.98);
-    }
-
-    &:focus-visible {
-      outline: 2px solid rgba(36, 76, 56, 0.42);
-      outline-offset: 2px;
     }
   }
 
