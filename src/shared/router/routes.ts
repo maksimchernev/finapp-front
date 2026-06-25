@@ -5,15 +5,17 @@ export const appRoutes = {
   upload: "/upload",
   review: "/review",
   analytics: "/analytics",
+  settings: "/settings",
 } as const;
 
-export type BottomNavItem = "home" | "analytics" | "upload";
+export type BottomNavItem = "home" | "analytics" | "upload" | "settings";
 
 const privateRoutes = new Set<string>([
   appRoutes.dashboard,
   appRoutes.upload,
   appRoutes.review,
   appRoutes.analytics,
+  appRoutes.settings,
 ]);
 
 export function isPrivateRoute(pathname: string) {
@@ -32,6 +34,10 @@ export function getBottomNavActiveItem(pathname: string): BottomNavItem {
     normalizedPath === appRoutes.review
   ) {
     return "upload";
+  }
+
+  if (normalizedPath === appRoutes.settings) {
+    return "settings";
   }
 
   return "home";

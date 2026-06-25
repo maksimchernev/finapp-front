@@ -139,25 +139,6 @@
   background: var(--coral-soft);
 }
 
-.trustStrip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.74);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px;
-
-  span {
-    border-radius: 999px;
-    background: var(--blue-soft);
-    color: var(--accent-a);
-    padding: 8px 10px;
-    font-size: 12px;
-    font-weight: 700;
-  }
-}
-
 .sectionBlock {
   padding: 15px;
   border: 1px solid var(--line);

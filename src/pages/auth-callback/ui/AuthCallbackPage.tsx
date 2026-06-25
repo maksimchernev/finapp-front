@@ -1,9 +1,14 @@
 import { useEffect } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { appRoutes } from "@/shared/router/routes";
+import { AppLayout } from "@/shared/ui/AppLayout";
 import styles from "@/pages/auth-callback/ui/AuthCallbackPage.module.scss";
 
-export function AuthCallbackPage({ onToken }: { onToken: (token: string) => void }) {
+export function AuthCallbackPage({
+  onToken,
+}: {
+  onToken: (token: string) => void;
+}) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get("token");
@@ -20,11 +25,9 @@ export function AuthCallbackPage({ onToken }: { onToken: (token: string) => void
   }
 
   return (
-    <main className={styles.callbackShell}>
-      <section className={styles.callbackCard}>
-        <h1>Завершаю вход</h1>
-        <p>Сохраняю сессию и открываю Summa.</p>
-      </section>
-    </main>
+    <AppLayout contentClassName={styles.callbackCard} width="callback">
+      <h1>Завершаю вход</h1>
+      <p>Сохраняю сессию и открываю Summa.</p>
+    </AppLayout>
   );
 }

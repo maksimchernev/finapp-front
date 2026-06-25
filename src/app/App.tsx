@@ -8,10 +8,10 @@ import { WorkspacePage } from "@/pages/workspace/ui/WorkspacePage";
 
 export default function App() {
   const session = useSession();
-  console.log({ session });
 
   return (
     <Routes>
+      {/* ловим неавторизованные  */}
       <Route element={<GuestOnly token={session.token} />}>
         <Route
           path={appRoutes.login}
@@ -21,11 +21,13 @@ export default function App() {
         />
       </Route>
 
+      {/* ловим после oauth */}
       <Route
         path={appRoutes.authCallback}
         element={<AuthCallbackPage onToken={session.acceptToken} />}
       />
 
+      {/* Ловим авторизованные */}
       <Route element={<RequireAuth token={session.token} />}>
         <Route
           path="/*"
@@ -39,6 +41,7 @@ export default function App() {
         />
       </Route>
 
+      {/* fallback */}
       <Route
         path="*"
         element={

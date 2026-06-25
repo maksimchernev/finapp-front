@@ -1,7 +1,10 @@
 import { Bell, Camera, ChevronRight, Eye, PieChart } from "lucide-react";
 import type { Category } from "@/entities/category/model/types";
 import { formatMoney } from "@/entities/transaction/lib/format";
-import type { Statistics, Transaction } from "@/entities/transaction/model/types";
+import type {
+  Statistics,
+  Transaction,
+} from "@/entities/transaction/model/types";
 import type { User } from "@/entities/user/model/types";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { CategoryRow } from "@/widgets/category-summary/ui/CategoryRow";
@@ -32,7 +35,11 @@ export function DashboardPage({
         <div>
           <span className={styles.eyebrow}>summa</span>
           <h2>Всё на месте</h2>
-          <span className={styles.eyebrow}>{user?.name ? `${user.name}, доходы и расходы обновлены` : "Доходы и расходы обновлены"}</span>
+          <span className={styles.eyebrow}>
+            {user?.name
+              ? `${user.name}, доходы и расходы обновлены`
+              : "Доходы и расходы обновлены"}
+          </span>
         </div>
         <button className={styles.iconButton} aria-label="Уведомления">
           <Bell size={20} />
@@ -82,11 +89,6 @@ export function DashboardPage({
         </button>
       </div>
 
-      <div className={styles.trustStrip}>
-        <span>Без доступа к банковскому кабинету</span>
-        <span>Скриншоты обрабатываются на устройстве</span>
-      </div>
-
       <section className={styles.sectionBlock}>
         <div className={styles.sectionTitle}>
           <h3>Расходы по категориям</h3>
@@ -99,7 +101,12 @@ export function DashboardPage({
         ) : (
           <div className={styles.stack}>
             {categoryStats.map(({ category, total, count }) => (
-              <CategoryRow key={category.id} category={category} total={total} count={count} />
+              <CategoryRow
+                key={category.id}
+                category={category}
+                total={total}
+                count={count}
+              />
             ))}
           </div>
         )}
@@ -114,7 +121,11 @@ export function DashboardPage({
         ) : (
           <div className={styles.stack}>
             {latest.map((transaction) => (
-              <TransactionRow key={transaction.id} transaction={transaction} categories={categories} />
+              <TransactionRow
+                key={transaction.id}
+                transaction={transaction}
+                categories={categories}
+              />
             ))}
           </div>
         )}

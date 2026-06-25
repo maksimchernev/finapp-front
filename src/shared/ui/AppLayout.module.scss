@@ -1,0 +1,48 @@
+.layout {
+  min-height: 100vh;
+  padding: 20px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(
+      circle at 18% 0%,
+      rgba(240, 113, 85, 0.18),
+      transparent 28%
+    ),
+    linear-gradient(160deg, #f2f5f2 0%, #e4ebe5 100%);
+}
+
+.cloud {
+  width: min(100%, var(--app-layout-width));
+  padding: 28px;
+  border: 1px solid rgba(36, 76, 56, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow);
+}
+
+.authWidth {
+  --app-layout-width: 430px;
+}
+
+.callbackWidth {
+  --app-layout-width: 420px;
+}
+
+.workspaceWidth {
+  --app-layout-width: 480px;
+}
+
+@media (max-width: 440px) {
+  .layout {
+    min-height: 100dvh;
+    padding: 0;
+  }
+
+  .cloud {
+    width: 100%;
+    min-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+  }
+}

@@ -4,10 +4,12 @@ import { useFinanceData } from "@/features/load-finance-data/model/useFinanceDat
 import { useTransactionReview } from "@/features/review-transactions/model/useTransactionReview";
 import { useScreenshotImport } from "@/features/upload-screenshots/model/useScreenshotImport";
 import { appRoutes } from "@/shared/router/routes";
+import { AppLayout } from "@/shared/ui/AppLayout";
 import { BottomNav } from "@/widgets/bottom-nav/ui/BottomNav";
 import { AnalyticsPage } from "@/pages/analytics/ui/AnalyticsPage";
 import { DashboardPage } from "@/pages/dashboard/ui/DashboardPage";
 import { ReviewPage } from "@/pages/review/ui/ReviewPage";
+import { SettingsPage } from "@/pages/settings/ui/SettingsPage";
 import { UploadPage } from "@/pages/upload/ui/UploadPage";
 import styles from "@/pages/workspace/ui/WorkspacePage.module.scss";
 
@@ -59,15 +61,17 @@ export function WorkspacePage({
 
   if (finance.isLoading) {
     return (
-      <main className={[styles.appShell, styles.centered].join(" ")}>
+      <AppLayout
+        contentClassName={[styles.appShell, styles.centered].join(" ")}
+      >
         <LoaderCircle className={styles.spin} size={34} />
         <p>Загружаю Summa</p>
-      </main>
+      </AppLayout>
     );
   }
 
   return (
-    <main className={styles.appShell}>
+    <AppLayout contentClassName={styles.appShell}>
       {visibleError && (
         <div className={styles.toast} role="alert">
           {visibleError}
@@ -124,12 +128,21 @@ export function WorkspacePage({
           }
         />
         <Route
+          path="settings"
+          element={
+            <SettingsPage
+              user={finance.user}
+              onLogout={handleLogout}
+            />
+          }
+        />
+        <Route
           path="*"
           element={<Navigate to={appRoutes.dashboard} replace />}
         />
       </Routes>
 
-      <BottomNav onLogout={handleLogout} />
-    </main>
+      <BottomNav />
+    </AppLayout>
   );
 }

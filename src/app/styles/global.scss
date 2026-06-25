@@ -22,6 +22,7 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -47,10 +48,33 @@ body,
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
-button {
+button,
+a,
+[role="button"],
+input,
+select,
+textarea {
+  outline: none;
+}
+
+button,
+a,
+[role="button"] {
   cursor: pointer;
+  user-select: none;
+}
+
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgba(36, 76, 56, 0.42);
+  outline-offset: 2px;
 }
