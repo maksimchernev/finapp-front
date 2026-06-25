@@ -3,7 +3,7 @@ import { CategoryIcon } from "@/entities/category/ui/CategoryIcon";
 import { formatMoney } from "@/entities/transaction/lib/format";
 import styles from "@/widgets/category-summary/ui/CategoryRow.module.scss";
 
-export function CategoryRow({ category, total, count }: { category: Category; total: number; count: number }) {
+export function CategoryRow({ category, totalMinor, count }: { category: Category; totalMinor: number; count: number }) {
   return (
     <div className={styles.listRow}>
       <span className={styles.categoryAvatar} style={{ background: category.bgColor, color: category.color }}>
@@ -13,7 +13,7 @@ export function CategoryRow({ category, total, count }: { category: Category; to
         <b>{category.nameRu}</b>
         <small>{count} операций</small>
       </div>
-      <strong>{formatMoney(-total)}</strong>
+      <strong>{formatMoney(-totalMinor)}</strong>
     </div>
   );
 }

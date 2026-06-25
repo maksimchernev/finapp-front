@@ -13,12 +13,13 @@ export const transactionApi = {
     ),
   statistics: () => request<Statistics>("/api/transactions/statistics"),
   createTransaction: (transaction: {
-    amount: number;
+    amountMinor: number;
     currency: string;
     date: string;
     merchant: string;
     categoryId?: string;
     confidence?: number;
+    sourceType?: "screenshot" | "manual" | "statement";
     notes?: string;
   }) =>
     request<Transaction>("/api/transactions", {

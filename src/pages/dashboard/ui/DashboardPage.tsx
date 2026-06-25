@@ -50,7 +50,7 @@ export function DashboardPage({
         <div className={styles.balanceRow}>
           <div>
             <span>Картина месяца</span>
-            <strong>{formatMoney(statistics?.balance || 0)}</strong>
+            <strong>{formatMoney(statistics?.balanceMinor || 0)}</strong>
           </div>
           <button className={styles.glassButton} aria-label="Показать баланс">
             <Eye size={18} />
@@ -59,11 +59,11 @@ export function DashboardPage({
         <div className={styles.balanceMeta}>
           <div>
             <span>Доходы</span>
-            <b>{formatMoney(statistics?.totalIncome || 0)}</b>
+            <b>{formatMoney(statistics?.totalIncomeMinor || 0)}</b>
           </div>
           <div>
             <span>Расходы</span>
-            <b>{formatMoney(-(statistics?.totalExpense || 0))}</b>
+            <b>{formatMoney(-(statistics?.totalExpenseMinor || 0))}</b>
           </div>
         </div>
       </section>
@@ -100,11 +100,11 @@ export function DashboardPage({
           <EmptyState text="Загрузите первую историю операций — Summa соберет категории после проверки." />
         ) : (
           <div className={styles.stack}>
-            {categoryStats.map(({ category, total, count }) => (
+            {categoryStats.map(({ category, totalMinor, count }) => (
               <CategoryRow
                 key={category.id}
                 category={category}
-                total={total}
+                totalMinor={totalMinor}
                 count={count}
               />
             ))}

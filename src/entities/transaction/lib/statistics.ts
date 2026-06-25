@@ -13,10 +13,10 @@ export function buildDailyExpenseBars(transactions: Transaction[]) {
   });
 
   for (const transaction of transactions) {
-    if (transaction.amount >= 0) continue;
+    if (transaction.amountMinor >= 0) continue;
     const key = new Date(transaction.date).toISOString().slice(0, 10);
     const bucket = lastSeven.find((item) => item.key === key);
-    if (bucket) bucket.total += Math.abs(transaction.amount);
+    if (bucket) bucket.total += Math.abs(transaction.amountMinor);
   }
 
   const max = Math.max(...lastSeven.map((item) => item.total), 1);

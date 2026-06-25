@@ -1,7 +1,7 @@
 import { BarChart3, Home, Settings, Wallet } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { appRoutes, getBottomNavActiveItem } from "@/shared/router/routes";
-import styles from "./BottomNav.module.scss";
+import styles from "@/widgets/bottom-nav/ui/BottomNav.module.scss";
 
 const navItems = [
   {

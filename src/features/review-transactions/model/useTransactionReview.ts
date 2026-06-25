@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { transactionApi } from "@/entities/transaction/api/transactionApi";
+import { amountToMinor } from "@/entities/transaction/lib/format";
 import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
 
 export function useTransactionReview({ onSaved }: { onSaved: () => Promise<void> | void }) {
@@ -32,13 +33,13 @@ export function useTransactionReview({ onSaved }: { onSaved: () => Promise<void>
       await Promise.all(
         selected.map((draft) =>
           transactionApi.createTransaction({
-            amount: draft.amount,
+            amountMinor: amountToMinor(draft.amount),
             currency: draft.currency,
             date: draft.date,
             merchant: draft.merchant,
             categoryId: draft.categoryId || undefined,
             confidence: draft.confidence,
-            notes: `OCR: ${draft.sourceFile}`,
+            sourceType: "screenshot",
           }),
         ),
       );

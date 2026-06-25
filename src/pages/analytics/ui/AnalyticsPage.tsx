@@ -16,7 +16,7 @@ export function AnalyticsPage({
   onBack: () => void;
 }) {
   const dayBars = useMemo(() => buildDailyExpenseBars(transactions), [transactions]);
-  const maxCategory = Math.max(...(statistics?.byCategory.map((item) => item.total) || [1]));
+  const maxCategory = Math.max(...(statistics?.byCategory.map((item) => item.totalMinor) || [1]));
 
   return (
     <section className={styles.screen}>
@@ -24,11 +24,11 @@ export function AnalyticsPage({
       <div className={styles.metricsGrid}>
         <div className={[styles.metric, styles.blue].join(" ")}>
           <span>Всего потрачено</span>
-          <b>{formatMoney(-(statistics?.totalExpense || 0))}</b>
+          <b>{formatMoney(-(statistics?.totalExpenseMinor || 0))}</b>
         </div>
         <div className={[styles.metric, styles.green].join(" ")}>
           <span>Всего получено</span>
-          <b>{formatMoney(statistics?.totalIncome || 0)}</b>
+          <b>{formatMoney(statistics?.totalIncomeMinor || 0)}</b>
         </div>
       </div>
 
@@ -48,17 +48,17 @@ export function AnalyticsPage({
         <h3>Разбивка по категориям</h3>
         {statistics?.byCategory.length ? (
           <div className={styles.categoryProgress}>
-            {statistics.byCategory.map(({ category, total }) => (
+            {statistics.byCategory.map(({ category, totalMinor }) => (
               <div key={category.id}>
                 <div className={styles.progressLabel}>
                   <span>
                     <i style={{ background: category.color }} />
                     {category.nameRu}
                   </span>
-                  <b>{formatMoney(-total)}</b>
+                  <b>{formatMoney(-totalMinor)}</b>
                 </div>
                 <div className={styles.progressTrack} style={{ background: category.bgColor }}>
-                  <span style={{ width: `${Math.max(6, (total / maxCategory) * 100)}%`, background: category.color }} />
+                  <span style={{ width: `${Math.max(6, (totalMinor / maxCategory) * 100)}%`, background: category.color }} />
                 </div>
               </div>
             ))}

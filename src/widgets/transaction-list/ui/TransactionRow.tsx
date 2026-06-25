@@ -15,7 +15,9 @@ export function TransactionRow({ transaction, categories }: { transaction: Trans
         <b>{transaction.merchant}</b>
         <small>{dateFormatter.format(new Date(transaction.date))}</small>
       </div>
-      <strong className={transaction.amount > 0 ? styles.income : styles.expense}>{formatMoney(transaction.amount)}</strong>
+      <strong className={transaction.amountMinor > 0 ? styles.income : styles.expense}>
+        {formatMoney(transaction.amountMinor, transaction.currency)}
+      </strong>
     </div>
   );
 }
