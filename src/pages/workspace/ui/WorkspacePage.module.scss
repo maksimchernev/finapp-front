@@ -53,3 +53,11 @@
     padding-inline: 10px;
   }
 }
+
+@media (max-width: 440px) {
+  .appShell {
+    width: 100%;
+    min-height: 100dvh;
+    margin: 0;
+  }
+}

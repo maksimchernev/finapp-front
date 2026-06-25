@@ -32,3 +32,17 @@
     line-height: 1.5;
   }
 }
+
+@media (max-width: 440px) {
+  .callbackShell {
+    min-height: 100dvh;
+    padding: 0;
+  }
+
+  .callbackCard {
+    width: 100%;
+    min-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+  }
+}

@@ -3,7 +3,10 @@ import { getToken } from "@/shared/api/tokenStorage";
 
 type RequestOptions = RequestInit & { token?: string | null };
 
-export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+export async function request<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
   const token = options.token ?? getToken();
   const headers = new Headers(options.headers);
 

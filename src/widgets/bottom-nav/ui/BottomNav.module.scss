@@ -33,3 +33,17 @@
     font-weight: 700;
   }
 }
+
+@media (max-width: 440px) {
+  .bottomNav {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: none;
+    width: 100%;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+}

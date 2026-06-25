@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import type { Category } from "@/entities/category/model/types";
-import { categoryApi, transactionApi } from "@/entities/transaction/api/transactionApi";
-import type { Statistics, Transaction } from "@/entities/transaction/model/types";
+import {
+  categoryApi,
+  transactionApi,
+} from "@/entities/transaction/api/transactionApi";
+import type {
+  Statistics,
+  Transaction,
+} from "@/entities/transaction/model/types";
 import { userApi } from "@/entities/user/api/userApi";
 import type { User } from "@/entities/user/model/types";
 
@@ -35,7 +41,12 @@ export function useFinanceData({
     setIsLoading(true);
     setError(null);
     try {
-      const [profile, fetchedCategories, transactionResponse, fetchedStatistics] = await Promise.all([
+      const [
+        profile,
+        fetchedCategories,
+        transactionResponse,
+        fetchedStatistics,
+      ] = await Promise.all([
         userApi.profile(),
         categoryApi.categories(),
         transactionApi.transactions(),
@@ -46,7 +57,10 @@ export function useFinanceData({
       setTransactions(transactionResponse.transactions);
       setStatistics(fetchedStatistics);
     } catch (loadError) {
-      const message = loadError instanceof Error ? loadError.message : "Не удалось загрузить данные";
+      const message =
+        loadError instanceof Error
+          ? loadError.message
+          : "Не удалось загрузить данные";
       resetData();
       setError(message);
       onUnauthorized(message);

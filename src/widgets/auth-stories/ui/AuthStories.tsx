@@ -45,16 +45,14 @@ export function AuthStories({ onComplete }: { onComplete: () => void }) {
   }, [activeIndex]);
 
   function showStory(direction: StoryDirection) {
-    setActiveIndex((current) => {
-      const transition = getStoryTransition(current, stories.length, direction);
+    const transition = getStoryTransition(activeIndex, stories.length, direction);
 
-      if (transition.type === "complete") {
-        onComplete();
-        return current;
-      }
+    if (transition.type === "complete") {
+      onComplete();
+      return;
+    }
 
-      return transition.index;
-    });
+    setActiveIndex(transition.index);
   }
 
   return (

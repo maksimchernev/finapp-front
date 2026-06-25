@@ -8,14 +8,23 @@ import { WorkspacePage } from "@/pages/workspace/ui/WorkspacePage";
 
 export default function App() {
   const session = useSession();
+  console.log({ session });
 
   return (
     <Routes>
       <Route element={<GuestOnly token={session.token} />}>
-        <Route path={appRoutes.login} element={<AuthPage error={session.error} onToken={session.acceptToken} />} />
+        <Route
+          path={appRoutes.login}
+          element={
+            <AuthPage error={session.error} onToken={session.acceptToken} />
+          }
+        />
       </Route>
 
-      <Route path={appRoutes.authCallback} element={<AuthCallbackPage onToken={session.acceptToken} />} />
+      <Route
+        path={appRoutes.authCallback}
+        element={<AuthCallbackPage onToken={session.acceptToken} />}
+      />
 
       <Route element={<RequireAuth token={session.token} />}>
         <Route
@@ -30,7 +39,15 @@ export default function App() {
         />
       </Route>
 
-      <Route path="*" element={<Navigate to={session.token ? appRoutes.dashboard : appRoutes.login} replace />} />
+      <Route
+        path="*"
+        element={
+          <Navigate
+            to={session.token ? appRoutes.dashboard : appRoutes.login}
+            replace
+          />
+        }
+      />
     </Routes>
   );
 }

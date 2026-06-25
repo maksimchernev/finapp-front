@@ -30,6 +30,21 @@ body {
   min-height: 100vh;
 }
 
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+@media (max-width: 440px) {
+  html,
+  body,
+  #root {
+    width: 100%;
+    min-height: 100dvh;
+  }
+}
+
 button,
 input,
 select {

@@ -1,1 +1,3 @@
-export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+const configuredApiUrl = import.meta.env.VITE_DIRECT_API_URL;
+
+export const API_URL = configuredApiUrl ? configuredApiUrl.replace(/\/$/, "") : "";

@@ -1,9 +1,8 @@
 .loginLayout {
   min-height: 100vh;
   padding: 20px;
-  display: flex;
-  justify-content: center;
-  gap: 28px;
+  display: grid;
+  place-items: center;
   background:
     radial-gradient(
       circle at 18% 0%,
@@ -11,6 +10,16 @@
       transparent 28%
     ),
     linear-gradient(160deg, #f2f5f2 0%, #e4ebe5 100%);
+}
+
+.storiesOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(14, 28, 20, 0.64);
 }
 
 .loginPanel {
@@ -144,9 +153,23 @@
   background: #fbeaea;
 }
 
-@media (max-width: 380px) {
+@media (max-width: 440px) {
+  .storiesOverlay {
+    padding: 0;
+    background: transparent;
+  }
+
+  .loginLayout {
+    min-height: 100dvh;
+    padding: 0;
+  }
+
   .loginPanel {
+    width: 100%;
+    min-height: 100dvh;
     padding: 22px;
+    border: 0;
+    border-radius: 0;
 
     h1 {
       font-size: 26px;

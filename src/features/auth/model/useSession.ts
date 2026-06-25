@@ -1,9 +1,5 @@
 import { useState } from "react";
-import {
-  clearToken,
-  getToken,
-  setToken,
-} from "@/shared/api/tokenStorage";
+import { clearToken, getToken, setToken } from "@/shared/api/tokenStorage";
 
 export function useSession() {
   const [token, setSessionToken] = useState<string | null>(() => getToken());

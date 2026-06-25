@@ -1,21 +1,26 @@
 import { useState } from "react";
 import { ReceiptText } from "lucide-react";
 import { authUrls } from "@/features/auth/api/authApi";
+import { hasSeenAuthStories, rememberAuthStoriesSeen } from "@/widgets/auth-stories/model/authStoriesPersistence";
 import { AuthStories } from "@/widgets/auth-stories/ui/AuthStories";
 import styles from "@/pages/auth/ui/AuthPage.module.scss";
 
 export function AuthPage({ error, onToken }: { error: string | null; onToken: (token: string) => void }) {
   const [manualToken, setManualToken] = useState("");
-  const [showStories, setShowStories] = useState(true);
+  const [showStories, setShowStories] = useState(() => !hasSeenAuthStories());
 
   function submitManualToken() {
     if (!manualToken.trim()) return;
     onToken(manualToken.trim());
   }
 
+  function completeStories() {
+    rememberAuthStoriesSeen();
+    setShowStories(false);
+  }
+
   return (
     <main className={styles.loginLayout}>
-      {showStories && <AuthStories onComplete={() => setShowStories(false)} />}
       <section className={styles.loginPanel}>
         <div className={styles.brandLockup}>
           <div className={styles.brandMark}>
@@ -50,6 +55,11 @@ export function AuthPage({ error, onToken }: { error: string | null; onToken: (t
           </div>
         </div>
       </section>
+      {showStories && (
+        <div className={styles.storiesOverlay}>
+          <AuthStories onComplete={completeStories} />
+        </div>
+      )}
     </main>
   );
 }

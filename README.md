@@ -25,11 +25,13 @@ npm run dev
 
 Frontend откроется на `http://localhost:3002`.
 
-Backend должен быть запущен на `http://localhost:3001`. Если адрес другой, создайте `.env`:
+Backend должен быть запущен на `http://localhost:3001`. В dev-режиме frontend ходит в свой origin по `/api`, а Vite проксирует запросы в backend. Если backend запущен на другом адресе, создайте `.env`:
 
 ```env
-VITE_API_URL=http://localhost:3001
+VITE_API_PROXY_TARGET=http://localhost:3001
 ```
+
+`VITE_DIRECT_API_URL` нужен только если вы сознательно хотите отключить same-origin proxy и ходить из браузера напрямую в другой API-origin.
 
 ## Backend
 

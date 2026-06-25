@@ -123,7 +123,10 @@ export function WorkspacePage({
             />
           }
         />
-        <Route path="*" element={<Navigate to={appRoutes.dashboard} replace />} />
+        <Route
+          path="*"
+          element={<Navigate to={appRoutes.dashboard} replace />}
+        />
       </Routes>
 
       <BottomNav onLogout={handleLogout} />
