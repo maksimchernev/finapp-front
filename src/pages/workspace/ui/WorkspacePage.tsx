@@ -1,14 +1,15 @@
-import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
-import { useFinanceData } from "../../../features/load-finance-data/model/useFinanceData";
-import { useTransactionReview } from "../../../features/review-transactions/model/useTransactionReview";
-import { useScreenshotImport } from "../../../features/upload-screenshots/model/useScreenshotImport";
-import { BottomNav, type View } from "../../../widgets/bottom-nav/ui/BottomNav";
-import { AnalyticsPage } from "../../analytics/ui/AnalyticsPage";
-import { DashboardPage } from "../../dashboard/ui/DashboardPage";
-import { ReviewPage } from "../../review/ui/ReviewPage";
-import { UploadPage } from "../../upload/ui/UploadPage";
-import styles from "./WorkspacePage.module.scss";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { useFinanceData } from "@/features/load-finance-data/model/useFinanceData";
+import { useTransactionReview } from "@/features/review-transactions/model/useTransactionReview";
+import { useScreenshotImport } from "@/features/upload-screenshots/model/useScreenshotImport";
+import { appRoutes } from "@/shared/router/routes";
+import { BottomNav } from "@/widgets/bottom-nav/ui/BottomNav";
+import { AnalyticsPage } from "@/pages/analytics/ui/AnalyticsPage";
+import { DashboardPage } from "@/pages/dashboard/ui/DashboardPage";
+import { ReviewPage } from "@/pages/review/ui/ReviewPage";
+import { UploadPage } from "@/pages/upload/ui/UploadPage";
+import styles from "@/pages/workspace/ui/WorkspacePage.module.scss";
 
 export function WorkspacePage({
   token,
@@ -19,25 +20,25 @@ export function WorkspacePage({
   onLogout: () => void;
   onUnauthorized: (message: string) => void;
 }) {
-  const [view, setView] = useState<View>("home");
+  const navigate = useNavigate();
   const finance = useFinanceData({ token, onUnauthorized });
   const review = useTransactionReview({
     onSaved: async () => {
       upload.resetJobs();
       await finance.reload();
-      setView("home");
+      navigate(appRoutes.dashboard);
     },
   });
   const upload = useScreenshotImport({
     categories: finance.categories,
     onUploadStarted: () => {
-      setView("upload");
+      navigate(appRoutes.upload);
       review.clearDrafts();
     },
     onParsed: (drafts) => {
       review.replaceDrafts(drafts);
       if (drafts.length > 0) {
-        setView("review");
+        navigate(appRoutes.review);
       }
     },
   });
@@ -74,46 +75,58 @@ export function WorkspacePage({
         </div>
       )}
 
-      {view === "home" && (
-        <DashboardPage
-          user={finance.user}
-          transactions={finance.transactions}
-          statistics={finance.statistics}
-          categories={finance.categories}
-          onUpload={() => setView("upload")}
-          onAnalytics={() => setView("analytics")}
+      <Routes>
+        <Route
+          index
+          element={
+            <DashboardPage
+              user={finance.user}
+              transactions={finance.transactions}
+              statistics={finance.statistics}
+              categories={finance.categories}
+              onUpload={() => navigate(appRoutes.upload)}
+              onAnalytics={() => navigate(appRoutes.analytics)}
+            />
+          }
         />
-      )}
-
-      {view === "upload" && (
-        <UploadPage
-          jobs={upload.jobs}
-          onBack={() => setView("home")}
-          onFiles={upload.handleFiles}
-          onReview={() => setView("review")}
+        <Route
+          path="upload"
+          element={
+            <UploadPage
+              jobs={upload.jobs}
+              onBack={() => navigate(appRoutes.dashboard)}
+              onFiles={upload.handleFiles}
+              onReview={() => navigate(appRoutes.review)}
+            />
+          }
         />
-      )}
-
-      {view === "review" && (
-        <ReviewPage
-          drafts={review.drafts}
-          categories={finance.categories}
-          isSaving={review.isSaving}
-          onBack={() => setView("upload")}
-          onSave={review.saveDrafts}
-          onUpdate={review.updateDraft}
+        <Route
+          path="review"
+          element={
+            <ReviewPage
+              drafts={review.drafts}
+              categories={finance.categories}
+              isSaving={review.isSaving}
+              onBack={() => navigate(appRoutes.upload)}
+              onSave={review.saveDrafts}
+              onUpdate={review.updateDraft}
+            />
+          }
         />
-      )}
-
-      {view === "analytics" && (
-        <AnalyticsPage
-          statistics={finance.statistics}
-          transactions={finance.transactions}
-          onBack={() => setView("home")}
+        <Route
+          path="analytics"
+          element={
+            <AnalyticsPage
+              statistics={finance.statistics}
+              transactions={finance.transactions}
+              onBack={() => navigate(appRoutes.dashboard)}
+            />
+          }
         />
-      )}
+        <Route path="*" element={<Navigate to={appRoutes.dashboard} replace />} />
+      </Routes>
 
-      <BottomNav active={view} onChange={setView} onLogout={handleLogout} />
+      <BottomNav onLogout={handleLogout} />
     </main>
   );
 }

@@ -1,20 +1,24 @@
 import { BarChart3, Home, LogOut, Wallet } from "lucide-react";
-import styles from "./BottomNav.module.scss";
+import { useLocation, useNavigate } from "react-router-dom";
+import { appRoutes, getBottomNavActiveItem } from "@/shared/router/routes";
+import styles from "@/widgets/bottom-nav/ui/BottomNav.module.scss";
 
-export type View = "home" | "upload" | "review" | "analytics";
+export function BottomNav({ onLogout }: { onLogout: () => void }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const active = getBottomNavActiveItem(location.pathname);
 
-export function BottomNav({ active, onChange, onLogout }: { active: View; onChange: (view: View) => void; onLogout: () => void }) {
   return (
     <nav className={styles.bottomNav}>
-      <button className={active === "home" ? styles.active : undefined} onClick={() => onChange("home")}>
+      <button className={active === "home" ? styles.active : undefined} onClick={() => navigate(appRoutes.dashboard)}>
         <Home size={22} />
         <span>Summa</span>
       </button>
-      <button className={active === "analytics" ? styles.active : undefined} onClick={() => onChange("analytics")}>
+      <button className={active === "analytics" ? styles.active : undefined} onClick={() => navigate(appRoutes.analytics)}>
         <BarChart3 size={22} />
         <span>Сводка</span>
       </button>
-      <button className={active === "upload" || active === "review" ? styles.active : undefined} onClick={() => onChange("upload")}>
+      <button className={active === "upload" ? styles.active : undefined} onClick={() => navigate(appRoutes.upload)}>
         <Wallet size={22} />
         <span>Импорт</span>
       </button>

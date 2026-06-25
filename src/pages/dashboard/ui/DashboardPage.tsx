@@ -1,12 +1,12 @@
 import { Bell, Camera, ChevronRight, Eye, PieChart } from "lucide-react";
-import type { Category } from "../../../entities/category/model/types";
-import { formatMoney } from "../../../entities/transaction/lib/format";
-import type { Statistics, Transaction } from "../../../entities/transaction/model/types";
-import type { User } from "../../../entities/user/model/types";
-import { EmptyState } from "../../../shared/ui/EmptyState";
-import { CategoryRow } from "../../../widgets/category-summary/ui/CategoryRow";
-import { TransactionRow } from "../../../widgets/transaction-list/ui/TransactionRow";
-import styles from "./DashboardPage.module.scss";
+import type { Category } from "@/entities/category/model/types";
+import { formatMoney } from "@/entities/transaction/lib/format";
+import type { Statistics, Transaction } from "@/entities/transaction/model/types";
+import type { User } from "@/entities/user/model/types";
+import { EmptyState } from "@/shared/ui/EmptyState";
+import { CategoryRow } from "@/widgets/category-summary/ui/CategoryRow";
+import { TransactionRow } from "@/widgets/transaction-list/ui/TransactionRow";
+import styles from "@/pages/dashboard/ui/DashboardPage.module.scss";
 
 export function DashboardPage({
   user,

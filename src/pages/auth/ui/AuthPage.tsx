@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { ReceiptText } from "lucide-react";
-import { authUrls } from "../../../features/auth/api/authApi";
-import { ProductScene } from "../../../widgets/product-scene/ui/ProductScene";
-import styles from "./AuthPage.module.scss";
+import { authUrls } from "@/features/auth/api/authApi";
+import { AuthStories } from "@/widgets/auth-stories/ui/AuthStories";
+import styles from "@/pages/auth/ui/AuthPage.module.scss";
 
 export function AuthPage({ error, onToken }: { error: string | null; onToken: (token: string) => void }) {
   const [manualToken, setManualToken] = useState("");
+  const [showStories, setShowStories] = useState(true);
 
   function submitManualToken() {
     if (!manualToken.trim()) return;
@@ -14,6 +15,7 @@ export function AuthPage({ error, onToken }: { error: string | null; onToken: (t
 
   return (
     <main className={styles.loginLayout}>
+      {showStories && <AuthStories onComplete={() => setShowStories(false)} />}
       <section className={styles.loginPanel}>
         <div className={styles.brandLockup}>
           <div className={styles.brandMark}>
@@ -48,7 +50,6 @@ export function AuthPage({ error, onToken }: { error: string | null; onToken: (t
           </div>
         </div>
       </section>
-      <ProductScene />
     </main>
   );
 }

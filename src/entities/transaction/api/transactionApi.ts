@@ -1,6 +1,6 @@
-import { request } from "../../../shared/api/client";
-import type { Category } from "../../category/model/types";
-import type { Statistics, Transaction } from "../model/types";
+import { request } from "@/shared/api/client";
+import type { Category } from "@/entities/category/model/types";
+import type { Statistics, Transaction } from "@/entities/transaction/model/types";
 
 export const categoryApi = {
   categories: () => request<Category[]>("/api/categories"),

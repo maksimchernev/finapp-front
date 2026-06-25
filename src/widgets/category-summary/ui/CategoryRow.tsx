@@ -1,7 +1,7 @@
-import type { Category } from "../../../entities/category/model/types";
-import { CategoryIcon } from "../../../entities/category/ui/CategoryIcon";
-import { formatMoney } from "../../../entities/transaction/lib/format";
-import styles from "./CategoryRow.module.scss";
+import type { Category } from "@/entities/category/model/types";
+import { CategoryIcon } from "@/entities/category/ui/CategoryIcon";
+import { formatMoney } from "@/entities/transaction/lib/format";
+import styles from "@/widgets/category-summary/ui/CategoryRow.module.scss";
 
 export function CategoryRow({ category, total, count }: { category: Category; total: number; count: number }) {
   return (

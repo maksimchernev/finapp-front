@@ -1,4 +1,4 @@
-import type { Transaction } from "../model/types";
+import type { Transaction } from "@/entities/transaction/model/types";
 
 export function buildDailyExpenseBars(transactions: Transaction[]) {
   const lastSeven = [...Array(7)].map((_, index) => {

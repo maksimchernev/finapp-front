@@ -1,5 +1,5 @@
-import { request } from "../../../shared/api/client";
-import { API_URL } from "../../../shared/api/config";
+import { request } from "@/shared/api/client";
+import { API_URL } from "@/shared/api/config";
 
 export const authUrls = {
   google: `${API_URL}/api/auth/google`,

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import type { Category } from "../../../entities/category/model/types";
-import { recognizeTransactions } from "../lib/ocr";
-import type { ParsedTransaction, UploadJob } from "./types";
+import type { Category } from "@/entities/category/model/types";
+import { recognizeTransactions } from "@/features/upload-screenshots/lib/ocr";
+import type { ParsedTransaction, UploadJob } from "@/features/upload-screenshots/model/types";
 
 export function useScreenshotImport({
   categories,

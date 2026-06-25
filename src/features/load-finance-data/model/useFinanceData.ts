@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import type { Category } from "../../../entities/category/model/types";
-import { categoryApi, transactionApi } from "../../../entities/transaction/api/transactionApi";
-import type { Statistics, Transaction } from "../../../entities/transaction/model/types";
-import { userApi } from "../../../entities/user/api/userApi";
-import type { User } from "../../../entities/user/model/types";
+import type { Category } from "@/entities/category/model/types";
+import { categoryApi, transactionApi } from "@/entities/transaction/api/transactionApi";
+import type { Statistics, Transaction } from "@/entities/transaction/model/types";
+import { userApi } from "@/entities/user/api/userApi";
+import type { User } from "@/entities/user/model/types";
 
 export function useFinanceData({
   token,

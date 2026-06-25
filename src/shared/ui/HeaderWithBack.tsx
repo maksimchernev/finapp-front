@@ -1,5 +1,5 @@
 import { ArrowLeft } from "lucide-react";
-import styles from "./HeaderWithBack.module.scss";
+import styles from "@/shared/ui/HeaderWithBack.module.scss";
 
 export function HeaderWithBack({ title, subtitle, onBack }: { title: string; subtitle: string; onBack: () => void }) {
   return (

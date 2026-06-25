@@ -1,8 +1,8 @@
 import { Check, Trash2 } from "lucide-react";
-import type { Category } from "../../../entities/category/model/types";
-import { toDatetimeInput } from "../../../entities/transaction/lib/format";
-import type { ParsedTransaction } from "../../upload-screenshots/model/types";
-import styles from "./DraftCard.module.scss";
+import type { Category } from "@/entities/category/model/types";
+import { toDatetimeInput } from "@/entities/transaction/lib/format";
+import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
+import styles from "@/features/review-transactions/ui/DraftCard.module.scss";
 
 export function DraftCard({
   draft,

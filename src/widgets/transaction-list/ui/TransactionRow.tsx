@@ -1,8 +1,8 @@
-import type { Category } from "../../../entities/category/model/types";
-import { CategoryIcon } from "../../../entities/category/ui/CategoryIcon";
-import { dateFormatter, formatMoney } from "../../../entities/transaction/lib/format";
-import type { Transaction } from "../../../entities/transaction/model/types";
-import styles from "./TransactionRow.module.scss";
+import type { Category } from "@/entities/category/model/types";
+import { CategoryIcon } from "@/entities/category/ui/CategoryIcon";
+import { dateFormatter, formatMoney } from "@/entities/transaction/lib/format";
+import type { Transaction } from "@/entities/transaction/model/types";
+import styles from "@/widgets/transaction-list/ui/TransactionRow.module.scss";
 
 export function TransactionRow({ transaction, categories }: { transaction: Transaction; categories: Category[] }) {
   const category = transaction.category || categories.find((item) => item.id === transaction.categoryId);

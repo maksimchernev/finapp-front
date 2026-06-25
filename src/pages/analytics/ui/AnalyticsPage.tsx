@@ -1,10 +1,10 @@
 import { useMemo } from "react";
-import { formatMoney } from "../../../entities/transaction/lib/format";
-import { buildDailyExpenseBars } from "../../../entities/transaction/lib/statistics";
-import type { Statistics, Transaction } from "../../../entities/transaction/model/types";
-import { EmptyState } from "../../../shared/ui/EmptyState";
-import { HeaderWithBack } from "../../../shared/ui/HeaderWithBack";
-import styles from "./AnalyticsPage.module.scss";
+import { formatMoney } from "@/entities/transaction/lib/format";
+import { buildDailyExpenseBars } from "@/entities/transaction/lib/statistics";
+import type { Statistics, Transaction } from "@/entities/transaction/model/types";
+import { EmptyState } from "@/shared/ui/EmptyState";
+import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
+import styles from "@/pages/analytics/ui/AnalyticsPage.module.scss";
 
 export function AnalyticsPage({
   statistics,

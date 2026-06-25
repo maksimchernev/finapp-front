@@ -1,9 +1,9 @@
-import type { Category } from "../../../entities/category/model/types";
-import { DraftCard } from "../../../features/review-transactions/ui/DraftCard";
-import type { ParsedTransaction } from "../../../features/upload-screenshots/model/types";
-import { EmptyState } from "../../../shared/ui/EmptyState";
-import { HeaderWithBack } from "../../../shared/ui/HeaderWithBack";
-import styles from "./ReviewPage.module.scss";
+import type { Category } from "@/entities/category/model/types";
+import { DraftCard } from "@/features/review-transactions/ui/DraftCard";
+import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
+import { EmptyState } from "@/shared/ui/EmptyState";
+import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
+import styles from "@/pages/review/ui/ReviewPage.module.scss";
 
 export function ReviewPage({
   drafts,

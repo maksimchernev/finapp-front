@@ -1,4 +1,4 @@
-import type { Category } from "../../category/model/types";
+import type { Category } from "@/entities/category/model/types";
 
 export interface Transaction {
   id: string;

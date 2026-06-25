@@ -1,5 +1,5 @@
-import { API_URL } from "./config";
-import { getToken } from "./tokenStorage";
+import { API_URL } from "@/shared/api/config";
+import { getToken } from "@/shared/api/tokenStorage";
 
 type RequestOptions = RequestInit & { token?: string | null };
 

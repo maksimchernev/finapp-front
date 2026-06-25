@@ -1,6 +1,6 @@
 import { FileCheck, FileText, LoaderCircle } from "lucide-react";
-import type { UploadJob } from "../model/types";
-import styles from "./UploadJobRow.module.scss";
+import type { UploadJob } from "@/features/upload-screenshots/model/types";
+import styles from "@/features/upload-screenshots/ui/UploadJobRow.module.scss";
 
 export function UploadJobRow({ job }: { job: UploadJob }) {
   const statusClass = job.status === "done" ? styles.done : job.status === "error" ? styles.error : "";

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { transactionApi } from "../../../entities/transaction/api/transactionApi";
-import type { ParsedTransaction } from "../../upload-screenshots/model/types";
+import { transactionApi } from "@/entities/transaction/api/transactionApi";
+import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
 
 export function useTransactionReview({ onSaved }: { onSaved: () => Promise<void> | void }) {
   const [drafts, setDrafts] = useState<ParsedTransaction[]>([]);

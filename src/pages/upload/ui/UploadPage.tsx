@@ -1,10 +1,10 @@
 import { useRef } from "react";
 import { Check, CloudUpload } from "lucide-react";
-import type { UploadJob } from "../../../features/upload-screenshots/model/types";
-import { UploadJobRow } from "../../../features/upload-screenshots/ui/UploadJobRow";
-import { EmptyState } from "../../../shared/ui/EmptyState";
-import { HeaderWithBack } from "../../../shared/ui/HeaderWithBack";
-import styles from "./UploadPage.module.scss";
+import type { UploadJob } from "@/features/upload-screenshots/model/types";
+import { UploadJobRow } from "@/features/upload-screenshots/ui/UploadJobRow";
+import { EmptyState } from "@/shared/ui/EmptyState";
+import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
+import styles from "@/pages/upload/ui/UploadPage.module.scss";
 
 export function UploadPage({
   jobs,
