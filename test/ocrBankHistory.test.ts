@@ -33,6 +33,16 @@ const categories: Category[] = [
     keywords: ["прочие расходы"],
   },
   {
+    id: "loans",
+    name: "loans",
+    nameRu: "Кредиты",
+    icon: "credit-card",
+    color: "#000",
+    bgColor: "#fff",
+    type: "expense",
+    keywords: ["погашение кредита", "платеж по кредиту"],
+  },
+  {
     id: "cashback",
     name: "cashback",
     nameRu: "Кешбэк",
@@ -140,6 +150,30 @@ const internalTransfersRawText = `Операции
 Вчера
 Перевод между счетами 4 100Р
 Ежедневный доход > Основной счёт`;
+
+const sberCardHistoryRawText = `Поиск с GigaChat
+Платёжный счёт •• 6991 Тип операции Период
+20 июня, сб 5 000 ₽
+у, Анастасия Сергеевна Ч 5 000 Р
+Перевод по CBI
+Платёжный счёт: 1 Р
+$ Людмила Геннадьевна Ч. +5 000 Р
+Входящий перевод
+Платёжный счёт: 5 001 Р
+16 июня, вт
+Максим Денисович Ч. +1 Р
+CHK
+Перевод no CBI
+Платёжный счёт: 1 Р
+15 июня, пн
+§ СберБанк 53 959,55 Р
+Погашение кредита
+Платёжный счёт: 0 P
+14 июня, вс
+Максим Денисович Ч. +53 959,55 Р
+CHK
+Перевод no CBI
+Платёжный счёт: 53 959,55 Р`;
 
 const seedLikeCategories: Category[] = [
   {
@@ -287,6 +321,26 @@ describe("OCR bank history parser", () => {
 
     expect(result.map(({ merchant, amount }) => ({ merchant, amount }))).toEqual([
       { merchant: "Анастасия Сергеевна Ч.", amount: -50000 },
+    ]);
+  });
+
+  it("extracts Sber card-style transfer blocks with date total in header", () => {
+    const result = parseTransactions(sberCardHistoryRawText, 72, "sber.png", categories);
+
+    expect(result.map(({ merchant, amount }) => ({ merchant, amount }))).toEqual([
+      { merchant: "Анастасия Сергеевна Ч", amount: -5000 },
+      { merchant: "Людмила Геннадьевна Ч.", amount: 5000 },
+      { merchant: "Максим Денисович Ч.", amount: 1 },
+      { merchant: "СберБанк", amount: -53959.55 },
+      { merchant: "Максим Денисович Ч.", amount: 53959.55 },
+    ]);
+    expect(result.find((transaction) => transaction.merchant === "СберБанк")?.categoryId).toBe("loans");
+    expect(result.map((transaction) => transaction.date.slice(0, 10))).toEqual([
+      "2026-06-20",
+      "2026-06-20",
+      "2026-06-16",
+      "2026-06-15",
+      "2026-06-14",
     ]);
   });
 });

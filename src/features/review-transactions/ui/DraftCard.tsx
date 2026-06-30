@@ -46,7 +46,7 @@ export function DraftCard({
 
       <div className={styles.editGrid}>
         <label>
-          Получатель
+          Имя транзакции
           <input value={draft.merchant} onChange={(event) => onUpdate(draft.localId, { merchant: event.target.value })} />
         </label>
         <label>

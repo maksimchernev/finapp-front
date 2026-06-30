@@ -22,10 +22,18 @@ export function deriveMerchant(text: string, fileName: string) {
 
 // Чистит левую часть строки истории и превращает ее в имя получателя.
 export function deriveHistoryMerchant(value: string) {
-  return cleanMerchant(value)
+  const parts = cleanMerchant(value)
     .replace(/\b\d+\b/g, " ")
     .split(" ")
-    .filter((part) => part.length > 1)
+    .filter((part, index, source) => {
+      if (part.length > 1) return true;
+
+      const isLastInitial = index === source.length - 1 && /^[A-ZА-ЯЁ]\.?$/.test(part);
+      const hasNameBefore = source.slice(0, index).some((item) => item.length > 1);
+      return isLastInitial && hasNameBefore;
+    });
+
+  return parts
     .join(" ")
     .replace(/^-+\s*/, "")
     .replace(/\s+/g, " ")

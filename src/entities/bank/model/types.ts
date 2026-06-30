@@ -3,6 +3,7 @@ export interface Bank {
   userId: string;
   name: string;
   normalizedName: string;
+  keywords: string[];
   createdAt: string;
   updatedAt: string;
 }

@@ -1,12 +1,13 @@
-import { Bell, Camera, ChevronRight, Eye, PieChart } from "lucide-react";
+import { useState } from "react";
+import { Bell, Camera, ChevronRight, Eye, EyeOff, PieChart } from "lucide-react";
 import clsx from "clsx";
 import type { Category } from "@/entities/category/model/types";
-import { formatMoney } from "@/entities/transaction/lib/format";
 import type {
   Statistics,
   Transaction,
 } from "@/entities/transaction/model/types";
 import type { User } from "@/entities/user/model/types";
+import { formatDashboardMoney } from "@/pages/dashboard/lib/moneyVisibility";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { CategoryRow } from "@/widgets/category-summary/ui/CategoryRow";
 import { TransactionRow } from "@/widgets/transaction-list/ui/TransactionRow";
@@ -27,8 +28,10 @@ export function DashboardPage({
   onUpload: () => void;
   onAnalytics: () => void;
 }) {
+  const [isMoneyVisible, setIsMoneyVisible] = useState(true);
   const categoryStats = statistics?.byCategory.slice(0, 4) ?? [];
   const latest = transactions.slice(0, 4);
+  const VisibilityIcon = isMoneyVisible ? Eye : EyeOff;
 
   return (
     <section className={styles.screen}>
@@ -51,20 +54,26 @@ export function DashboardPage({
         <div className={styles.balanceRow}>
           <div>
             <span>Картина месяца</span>
-            <strong>{formatMoney(statistics?.balanceMinor || 0)}</strong>
+            <strong>{formatDashboardMoney(statistics?.balanceMinor || 0, isMoneyVisible)}</strong>
           </div>
-          <button className={styles.glassButton} aria-label="Показать баланс">
-            <Eye size={18} />
+          <button
+            className={styles.glassButton}
+            aria-label={isMoneyVisible ? "Скрыть суммы" : "Показать суммы"}
+            aria-pressed={!isMoneyVisible}
+            type="button"
+            onClick={() => setIsMoneyVisible((current) => !current)}
+          >
+            <VisibilityIcon size={18} />
           </button>
         </div>
         <div className={styles.balanceMeta}>
           <div>
             <span>Доходы</span>
-            <b>{formatMoney(statistics?.totalIncomeMinor || 0)}</b>
+            <b>{formatDashboardMoney(statistics?.totalIncomeMinor || 0, isMoneyVisible)}</b>
           </div>
           <div>
             <span>Расходы</span>
-            <b>{formatMoney(-(statistics?.totalExpenseMinor || 0))}</b>
+            <b>{formatDashboardMoney(-(statistics?.totalExpenseMinor || 0), isMoneyVisible)}</b>
           </div>
         </div>
       </section>

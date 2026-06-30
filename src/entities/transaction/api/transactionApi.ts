@@ -2,6 +2,18 @@ import { request } from "@/shared/api/client";
 import type { Category } from "@/entities/category/model/types";
 import type { Statistics, Transaction } from "@/entities/transaction/model/types";
 
+export type CreateTransactionRequest = {
+  amountMinor: number;
+  bankId?: string;
+  categoryId?: string;
+  confidence?: number;
+  currency: string;
+  date: string;
+  merchant: string;
+  notes?: string;
+  sourceType?: "screenshot" | "manual" | "statement";
+};
+
 export const categoryApi = {
   categories: () => request<Category[]>("/api/categories"),
 };
@@ -12,17 +24,7 @@ export const transactionApi = {
       "/api/transactions?limit=200",
     ),
   statistics: () => request<Statistics>("/api/transactions/statistics"),
-  createTransaction: (transaction: {
-    amountMinor: number;
-    currency: string;
-    date: string;
-    merchant: string;
-    categoryId?: string;
-    bankId?: string;
-    confidence?: number;
-    sourceType?: "screenshot" | "manual" | "statement";
-    notes?: string;
-  }) =>
+  createTransaction: (transaction: CreateTransactionRequest) =>
     request<Transaction>("/api/transactions", {
       method: "POST",
       body: JSON.stringify(transaction),

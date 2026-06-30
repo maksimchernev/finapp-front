@@ -83,8 +83,8 @@ export function useFinanceData({
     setStatistics(null);
   }
 
-  async function createBank(name: string) {
-    const bank = await bankApi.createBank(name);
+  async function createBank(name: string, keywords: string[] = []) {
+    const bank = await bankApi.createBank(name, keywords);
     setBanks((current) => {
       const existingIndex = current.findIndex((item) => item.id === bank.id);
       if (existingIndex < 0) {
@@ -94,6 +94,22 @@ export function useFinanceData({
       return current.map((item) => (item.id === bank.id ? bank : item));
     });
     return bank;
+  }
+
+  async function updateBank(id: string, name: string, keywords: string[] = []) {
+    const bank = await bankApi.updateBank(id, name, keywords);
+    setBanks((current) =>
+      current
+        .map((item) => (item.id === bank.id ? bank : item))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    );
+    return bank;
+  }
+
+  async function updateUserName(name: string) {
+    const updatedUser = await userApi.updateProfile({ name });
+    setUser(updatedUser);
+    return updatedUser;
   }
 
   function clearError() {
@@ -111,5 +127,7 @@ export function useFinanceData({
     clearError,
     createBank,
     reload,
+    updateBank,
+    updateUserName,
   };
 }

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { detectBankFromOcr } from "@/entities/bank/lib/bankDetection";
+import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
 import { recognizeTransactions } from "@/features/upload-screenshots/lib/ocr";
 import type {
@@ -7,11 +9,15 @@ import type {
 } from "@/features/upload-screenshots/model/types";
 
 export function useScreenshotImport({
+  banks,
   categories,
+  onCreateBank,
   onUploadStarted,
   onParsed,
 }: {
+  banks: Bank[];
   categories: Category[];
+  onCreateBank: (name: string, keywords?: string[]) => Promise<Bank>;
   onUploadStarted: () => void;
   onParsed: (drafts: ParsedTransaction[]) => void;
 }) {
@@ -66,6 +72,7 @@ export function useScreenshotImport({
     ]);
 
     const parsed: ParsedTransaction[] = [];
+    const knownBanks = [...banks];
 
     for (const file of images) {
       updateJob(file.name, {
@@ -84,7 +91,20 @@ export function useScreenshotImport({
             });
           },
         );
-        parsed.push(...transactionsFromFile);
+        const bankId = await resolveBankIdForFile(
+          knownBanks,
+          file.name,
+          transactionsFromFile,
+          onCreateBank,
+        );
+        const transactionsWithBank = bankId
+          ? transactionsFromFile.map((transaction) => ({
+              ...transaction,
+              bankId: transaction.bankId || bankId,
+            }))
+          : transactionsFromFile;
+
+        parsed.push(...transactionsWithBank);
         updateJob(file.name, {
           status: "done",
           progress: 100,
@@ -136,4 +156,33 @@ function formatDuplicateFileError(fileNames: string[]) {
 
 function normalizeFileName(fileName: string) {
   return fileName.trim().toLowerCase();
+}
+
+async function resolveBankIdForFile(
+  banks: Bank[],
+  fileName: string,
+  transactions: ParsedTransaction[],
+  onCreateBank: (name: string, keywords?: string[]) => Promise<Bank>,
+) {
+  const rawText = transactions[0]?.rawText || "";
+  const detectedBank = detectBankFromOcr(banks, rawText, fileName);
+
+  if (detectedBank.bank) {
+    return detectedBank.bank.id;
+  }
+
+  if (!detectedBank.knownBank) {
+    return undefined;
+  }
+
+  try {
+    const bank = await onCreateBank(
+      detectedBank.knownBank.name,
+      detectedBank.knownBank.keywords,
+    );
+    banks.push(bank);
+    return bank.id;
+  } catch {
+    return undefined;
+  }
 }

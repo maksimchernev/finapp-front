@@ -115,6 +115,10 @@ function isHistoryChromeLine(line: string) {
 // Определяет строки детализации операции: категория, карта, счет, кэшбек.
 function isHistoryDetailLine(line: string) {
   const lower = line.toLowerCase();
+  if (/плат[её]жный\s+сч[её]т\s*:/i.test(lower)) {
+    return true;
+  }
+
   return (
     lower.includes("*") &&
     /(карта|сч[её]т|кредитная|основной|ежедневный доход)/i.test(lower)

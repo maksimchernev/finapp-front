@@ -31,6 +31,7 @@
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
+  text-align: left;
 
   h3,
   b,
@@ -43,6 +44,23 @@
     color: var(--text-muted);
     font-size: 13px;
     line-height: 1.45;
+  }
+}
+
+.bankCard {
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+
+  &:hover {
+    border-color: rgba(36, 76, 56, 0.3);
+    box-shadow: 0 12px 26px rgba(36, 76, 56, 0.1);
+    transform: translateY(-1px);
   }
 }
 
@@ -63,21 +81,38 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
 
-  input,
   button {
     min-height: 46px;
     border-radius: 8px;
     font: inherit;
   }
 
+  button {
+    align-self: start;
+  }
+}
+
+.bankFields {
+  display: grid;
+  gap: 10px;
+
   input {
+    min-height: 46px;
     min-width: 0;
     border: 1px solid var(--line);
+    border-radius: 8px;
     padding: 10px 12px;
     color: var(--ink);
     background: white;
+    font: inherit;
   }
 
+  input + input {
+    font-size: 13px;
+  }
+}
+
+.bankForm {
   button {
     border: 0;
     padding: 10px 13px;
@@ -102,6 +137,16 @@
   min-width: 0;
 }
 
+.keywordHint {
+  margin: -6px 0 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  background: var(--green-soft);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .errorText,
 .emptyText {
   margin: 0;
@@ -115,6 +160,122 @@
 
 .emptyText {
   color: var(--text-muted);
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 26, 19, 0.34);
+  backdrop-filter: blur(10px);
+}
+
+.dialog {
+  width: min(100%, 430px);
+  max-height: min(720px, calc(100dvh - 40px));
+  overflow: auto;
+  padding: 18px;
+  border: 1px solid rgba(36, 76, 56, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow);
+}
+
+.dialogHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  span {
+    display: block;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  h3 {
+    margin: 4px 0 0;
+    font-size: 20px;
+    line-height: 1.2;
+  }
+}
+
+.closeButton {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  background: var(--surface-muted);
+}
+
+.editForm {
+  display: grid;
+  gap: 12px;
+
+  label {
+    display: grid;
+    gap: 7px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  input {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--ink);
+    background: white;
+    font: inherit;
+  }
+
+  button {
+    min-height: 48px;
+    border: 0;
+    border-radius: 8px;
+    padding: 14px 18px;
+    color: white;
+    background: var(--accent-a);
+    font-weight: 800;
+
+    &:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.modalHint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+@media (max-width: 440px) {
+  .backdrop {
+    padding: 0;
+  }
+
+  .dialog {
+    width: 100%;
+    min-height: 100dvh;
+    max-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+  }
 }
 
 @media (max-width: 380px) {

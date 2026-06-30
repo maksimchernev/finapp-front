@@ -1,6 +1,8 @@
 import { LoaderCircle } from "lucide-react";
 import clsx from "clsx";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { transactionApi } from "@/entities/transaction/api/transactionApi";
+import type { CreateTransactionRequest } from "@/entities/transaction/api/transactionApi";
 import { useFinanceData } from "@/features/load-finance-data/model/useFinanceData";
 import { useTransactionReview } from "@/features/review-transactions/model/useTransactionReview";
 import { useScreenshotImport } from "@/features/upload-screenshots/model/useScreenshotImport";
@@ -34,7 +36,9 @@ export function WorkspacePage({
     },
   });
   const upload = useScreenshotImport({
+    banks: finance.banks,
     categories: finance.categories,
+    onCreateBank: finance.createBank,
     onUploadStarted: () => {
       navigate(appRoutes.upload);
     },
@@ -58,6 +62,11 @@ export function WorkspacePage({
     review.clearDrafts();
     upload.resetJobs();
     onLogout();
+  }
+
+  async function handleCreateManualTransaction(transaction: CreateTransactionRequest) {
+    await transactionApi.createTransaction(transaction);
+    await finance.reload();
   }
 
   if (finance.isLoading) {
@@ -96,8 +105,11 @@ export function WorkspacePage({
           path="upload"
           element={
             <UploadPage
+              banks={finance.banks}
+              categories={finance.categories}
               jobs={upload.jobs}
               onBack={() => navigate(appRoutes.dashboard)}
+              onCreateManualTransaction={handleCreateManualTransaction}
               onFiles={upload.handleFiles}
               onReview={() => navigate(appRoutes.review)}
             />
@@ -129,11 +141,23 @@ export function WorkspacePage({
         />
         <Route
           path="banks"
-          element={<BanksPage banks={finance.banks} onCreateBank={finance.createBank} />}
+          element={
+            <BanksPage
+              banks={finance.banks}
+              onCreateBank={finance.createBank}
+              onUpdateBank={finance.updateBank}
+            />
+          }
         />
         <Route
           path="settings"
-          element={<SettingsPage user={finance.user} onLogout={handleLogout} />}
+          element={
+            <SettingsPage
+              user={finance.user}
+              onLogout={handleLogout}
+              onUpdateUserName={finance.updateUserName}
+            />
+          }
         />
         <Route
           path="*"

@@ -1,24 +1,35 @@
-import { useRef } from "react";
-import { Check, CloudUpload } from "lucide-react";
+import { useRef, useState } from "react";
+import { Check, CloudUpload, Plus } from "lucide-react";
 import clsx from "clsx";
+import type { Bank } from "@/entities/bank/model/types";
+import type { Category } from "@/entities/category/model/types";
+import type { CreateTransactionRequest } from "@/entities/transaction/api/transactionApi";
 import type { UploadJob } from "@/features/upload-screenshots/model/types";
 import { UploadJobRow } from "@/features/upload-screenshots/ui/UploadJobRow";
+import { ManualTransactionDialog } from "@/pages/upload/ui/ManualTransactionDialog";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
 import styles from "@/pages/upload/ui/UploadPage.module.scss";
 
 export function UploadPage({
+  banks,
+  categories,
   jobs,
   onBack,
+  onCreateManualTransaction,
   onFiles,
   onReview,
 }: {
+  banks: Bank[];
+  categories: Category[];
   jobs: UploadJob[];
   onBack: () => void;
+  onCreateManualTransaction: (transaction: CreateTransactionRequest) => Promise<void>;
   onFiles: (files: FileList | File[]) => void;
   onReview: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [isManualDialogOpen, setIsManualDialogOpen] = useState(false);
   const hasDoneJobs = jobs.some((job) => job.status === "done");
 
   return (
@@ -64,11 +75,28 @@ export function UploadPage({
         <div>
           <b>Без доступа к банковскому кабинету</b>
           <span>
-            Мы распознаем сумму, дату и получателя локально. Храним только
+            Мы распознаем сумму, дату и имя транзакции локально. Храним только
             подтвержденные вами операции.
           </span>
         </div>
       </div>
+
+      <section className={styles.sectionBlock}>
+        <div className={styles.sectionTitle}>
+          <h3>Добавить вручную</h3>
+        </div>
+        <div className={styles.manualCta}>
+          <p>Для наличных, переводов и операций, которых нет на скриншоте.</p>
+          <button
+            className={styles.primaryAction}
+            type="button"
+            onClick={() => setIsManualDialogOpen(true)}
+          >
+            <Plus size={18} />
+            Добавить операцию
+          </button>
+        </div>
+      </section>
 
       <section className={styles.sectionBlock}>
         <div className={styles.sectionTitle}>
@@ -85,6 +113,14 @@ export function UploadPage({
           </div>
         )}
       </section>
+
+      <ManualTransactionDialog
+        banks={banks}
+        categories={categories}
+        isOpen={isManualDialogOpen}
+        onClose={() => setIsManualDialogOpen(false)}
+        onCreateManualTransaction={onCreateManualTransaction}
+      />
     </section>
   );
 }
