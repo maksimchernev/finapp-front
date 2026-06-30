@@ -8,6 +8,7 @@ import { appRoutes } from "@/shared/router/routes";
 import { AppLayout } from "@/shared/ui/AppLayout";
 import { BottomNav } from "@/widgets/bottom-nav/ui/BottomNav";
 import { AnalyticsPage } from "@/pages/analytics/ui/AnalyticsPage";
+import { BanksPage } from "@/pages/banks/ui/BanksPage";
 import { DashboardPage } from "@/pages/dashboard/ui/DashboardPage";
 import { ReviewPage } from "@/pages/review/ui/ReviewPage";
 import { SettingsPage } from "@/pages/settings/ui/SettingsPage";
@@ -107,6 +108,7 @@ export function WorkspacePage({
           element={
             <ReviewPage
               drafts={review.drafts}
+              banks={finance.banks}
               categories={finance.categories}
               isSaving={review.isSaving}
               onBack={() => navigate(appRoutes.upload)}
@@ -124,6 +126,10 @@ export function WorkspacePage({
               onBack={() => navigate(appRoutes.dashboard)}
             />
           }
+        />
+        <Route
+          path="banks"
+          element={<BanksPage banks={finance.banks} onCreateBank={finance.createBank} />}
         />
         <Route
           path="settings"

@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
 import { DraftCard } from "@/features/review-transactions/ui/DraftCard";
 import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
@@ -8,6 +9,7 @@ import styles from "@/pages/review/ui/ReviewPage.module.scss";
 
 export function ReviewPage({
   drafts,
+  banks,
   categories,
   isSaving,
   onBack,
@@ -15,6 +17,7 @@ export function ReviewPage({
   onUpdate,
 }: {
   drafts: ParsedTransaction[];
+  banks: Bank[];
   categories: Category[];
   isSaving: boolean;
   onBack: () => void;
@@ -36,7 +39,7 @@ export function ReviewPage({
       ) : (
         <div className={styles.reviewList}>
           {drafts.map((draft) => (
-            <DraftCard key={draft.localId} draft={draft} categories={categories} onUpdate={onUpdate} />
+            <DraftCard key={draft.localId} draft={draft} banks={banks} categories={categories} onUpdate={onUpdate} />
           ))}
         </div>
       )}

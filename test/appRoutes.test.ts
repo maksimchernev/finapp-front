@@ -12,6 +12,7 @@ describe("app routes", () => {
     expect(appRoutes.upload).toBe("/upload");
     expect(appRoutes.review).toBe("/review");
     expect(appRoutes.analytics).toBe("/analytics");
+    expect(appRoutes.banks).toBe("/banks");
     expect(appRoutes.settings).toBe("/settings");
   });
 
@@ -20,6 +21,7 @@ describe("app routes", () => {
     expect(isPrivateRoute("/upload")).toBe(true);
     expect(isPrivateRoute("/review")).toBe(true);
     expect(isPrivateRoute("/analytics")).toBe(true);
+    expect(isPrivateRoute("/banks")).toBe(true);
     expect(isPrivateRoute("/settings")).toBe(true);
     expect(isPrivateRoute("/login")).toBe(false);
     expect(isPrivateRoute("/auth/callback")).toBe(false);
@@ -30,6 +32,7 @@ describe("app routes", () => {
     expect(getBottomNavActiveItem("/analytics")).toBe("analytics");
     expect(getBottomNavActiveItem("/upload")).toBe("upload");
     expect(getBottomNavActiveItem("/review")).toBe("upload");
+    expect(getBottomNavActiveItem("/banks")).toBe("banks");
     expect(getBottomNavActiveItem("/settings")).toBe("settings");
   });
 });

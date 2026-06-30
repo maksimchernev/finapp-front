@@ -42,6 +42,7 @@ export function useTransactionReview({ onSaved }: { onSaved: () => Promise<void>
             date: draft.date,
             merchant: draft.merchant,
             categoryId: draft.categoryId || undefined,
+            bankId: draft.bankId || undefined,
             confidence: draft.confidence,
             sourceType: "screenshot",
           }),

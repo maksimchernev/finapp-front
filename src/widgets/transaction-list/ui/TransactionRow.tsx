@@ -6,6 +6,11 @@ import styles from "@/widgets/transaction-list/ui/TransactionRow.module.scss";
 
 export function TransactionRow({ transaction, categories }: { transaction: Transaction; categories: Category[] }) {
   const category = transaction.category || categories.find((item) => item.id === transaction.categoryId);
+  const details = [
+    dateFormatter.format(new Date(transaction.date)),
+    transaction.bank?.name,
+  ].filter(Boolean).join(" • ");
+
   return (
     <div className={styles.listRow}>
       <span className={styles.categoryAvatar} style={{ background: category?.bgColor || "#f1efe8", color: category?.color || "#5f5e5a" }}>
@@ -13,7 +18,7 @@ export function TransactionRow({ transaction, categories }: { transaction: Trans
       </span>
       <div>
         <b>{transaction.merchant}</b>
-        <small>{dateFormatter.format(new Date(transaction.date))}</small>
+        <small>{details}</small>
       </div>
       <strong className={transaction.amountMinor > 0 ? styles.income : styles.expense}>
         {formatMoney(transaction.amountMinor, transaction.currency)}

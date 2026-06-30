@@ -1,4 +1,5 @@
 import type { Category } from "@/entities/category/model/types";
+import type { Bank } from "@/entities/bank/model/types";
 
 export interface Transaction {
   id: string;
@@ -8,6 +9,8 @@ export interface Transaction {
   merchant: string;
   categoryId?: string | null;
   category?: Category | null;
+  bankId?: string | null;
+  bank?: Bank | null;
   confidence?: number | null;
   sourceType: "screenshot" | "manual" | "statement";
   notes?: string | null;

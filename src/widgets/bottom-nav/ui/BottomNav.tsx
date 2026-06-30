@@ -1,4 +1,4 @@
-import { BarChart3, Home, Settings, Wallet } from "lucide-react";
+import { BarChart3, Building2, Home, Settings, Wallet } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { appRoutes, getBottomNavActiveItem } from "@/shared/router/routes";
 import styles from "@/widgets/bottom-nav/ui/BottomNav.module.scss";
@@ -23,9 +23,15 @@ const navItems = [
     route: appRoutes.upload,
   },
   {
+    id: "banks",
+    icon: Building2,
+    label: "Банки",
+    route: appRoutes.banks,
+  },
+  {
     id: "settings",
     icon: Settings,
-    label: "Настройки",
+    label: "Еще",
     route: appRoutes.settings,
   },
 ] as const;

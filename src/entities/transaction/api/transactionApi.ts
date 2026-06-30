@@ -18,6 +18,7 @@ export const transactionApi = {
     date: string;
     merchant: string;
     categoryId?: string;
+    bankId?: string;
     confidence?: number;
     sourceType?: "screenshot" | "manual" | "statement";
     notes?: string;

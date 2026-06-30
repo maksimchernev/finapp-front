@@ -5,6 +5,7 @@ export interface ParsedTransaction {
   date: string;
   merchant: string;
   categoryId?: string;
+  bankId?: string;
   confidence: number;
   sourceFile: string;
   rawText: string;
