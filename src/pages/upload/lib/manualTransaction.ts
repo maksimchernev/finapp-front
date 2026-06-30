@@ -1,4 +1,4 @@
-import { amountToMinor } from "@/entities/transaction/lib/format";
+import { amountToMinor, dateOnlyToIso } from "@/entities/transaction/lib/format";
 import type { CreateTransactionRequest } from "@/entities/transaction/api/transactionApi";
 
 export type ManualTransactionKind = "expense" | "income";
@@ -19,7 +19,7 @@ export function toManualTransactionPayload(
 ): CreateTransactionRequest {
   const merchant = form.merchant.trim();
   const amount = Number(form.amount.replace(",", "."));
-  const date = new Date(form.date);
+  const date = new Date(dateOnlyToIso(form.date));
 
   if (!merchant) {
     throw new Error("Введите имя транзакции.");

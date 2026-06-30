@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
 import type { CreateTransactionRequest } from "@/entities/transaction/api/transactionApi";
-import { toDatetimeInput } from "@/entities/transaction/lib/format";
+import { toDateInput } from "@/entities/transaction/lib/format";
 import {
   toManualTransactionPayload,
   type ManualTransactionForm,
@@ -127,7 +127,7 @@ export function ManualTransactionDialog({
             <label>
               Дата
               <input
-                type="datetime-local"
+                type="date"
                 value={manualForm.date}
                 onChange={(event) => updateManualForm({ date: event.target.value })}
               />
@@ -182,7 +182,7 @@ function createInitialForm(): ManualTransactionForm {
     bankId: "",
     categoryId: "",
     currency: "RUB",
-    date: toDatetimeInput(new Date().toISOString()),
+    date: toDateInput(new Date().toISOString()),
     kind: "expense",
     merchant: "",
   };

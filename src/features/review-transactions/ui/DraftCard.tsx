@@ -2,7 +2,7 @@ import { Check, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
-import { toDatetimeInput } from "@/entities/transaction/lib/format";
+import { dateOnlyToIso, toDateInput } from "@/entities/transaction/lib/format";
 import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
 import styles from "@/features/review-transactions/ui/DraftCard.module.scss";
 
@@ -61,9 +61,9 @@ export function DraftCard({
         <label>
           Дата
           <input
-            type="datetime-local"
-            value={toDatetimeInput(draft.date)}
-            onChange={(event) => onUpdate(draft.localId, { date: new Date(event.target.value).toISOString() })}
+            type="date"
+            value={toDateInput(draft.date)}
+            onChange={(event) => onUpdate(draft.localId, { date: dateOnlyToIso(event.target.value) })}
           />
         </label>
         <label>

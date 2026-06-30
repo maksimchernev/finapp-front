@@ -16,8 +16,6 @@ function getCurrencyFormatter(currency: string) {
 export const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
   day: "numeric",
   month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
 });
 
 export function amountToMinor(value: number) {
@@ -32,4 +30,14 @@ export function toDatetimeInput(value: string) {
   const date = new Date(value);
   const offset = date.getTimezoneOffset();
   return new Date(date.getTime() - offset * 60_000).toISOString().slice(0, 16);
+}
+
+export function toDateInput(value: string) {
+  const date = new Date(value);
+  const offset = date.getTimezoneOffset();
+  return new Date(date.getTime() - offset * 60_000).toISOString().slice(0, 10);
+}
+
+export function dateOnlyToIso(value: string) {
+  return new Date(`${value}T00:00:00.000Z`).toISOString();
 }
