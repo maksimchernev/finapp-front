@@ -1,7 +1,10 @@
 import { useState } from "react";
 import type { Category } from "@/entities/category/model/types";
 import { recognizeTransactions } from "@/features/upload-screenshots/lib/ocr";
-import type { ParsedTransaction, UploadJob } from "@/features/upload-screenshots/model/types";
+import type {
+  ParsedTransaction,
+  UploadJob,
+} from "@/features/upload-screenshots/model/types";
 
 export function useScreenshotImport({
   categories,
@@ -16,23 +19,51 @@ export function useScreenshotImport({
   const [error, setError] = useState<string | null>(null);
 
   async function handleFiles(files: FileList | File[]) {
-    const images = Array.from(files).filter((file) => file.type.startsWith("image/"));
+    const currentFileNames = new Set(jobs.map((job) => normalizeFileName(job.fileName)));
+    const duplicateNames = new Set<string>();
+    const images = Array.from(files).filter((file) => {
+      if (!file.type.startsWith("image/")) {
+        return false;
+      }
+
+      const fileName = normalizeFileName(file.name);
+      if (currentFileNames.has(fileName)) {
+        duplicateNames.add(file.name);
+        return false;
+      }
+
+      currentFileNames.add(fileName);
+      return true;
+    });
+
     if (images.length === 0) {
-      setError("Загрузите PNG или JPG. PDF пока лучше конвертировать в изображение.");
+      setError(
+        duplicateNames.size > 0
+          ? formatDuplicateFileError([...duplicateNames])
+          : "Загрузите PNG или JPG. PDF пока лучше конвертировать в изображение.",
+      );
       return;
     }
 
     onUploadStarted();
-    setError(null);
-    setJobs(
-      images.map((file) => ({
-        id: crypto.randomUUID(),
-        fileName: file.name,
-        progress: 0,
-        status: "queued",
-        message: "В очереди",
-      })),
+    setError(
+      duplicateNames.size > 0
+        ? formatDuplicateFileError([...duplicateNames])
+        : null,
     );
+
+    const queuedJobs: UploadJob[] = images.map((file) => ({
+      id: crypto.randomUUID(),
+      fileName: file.name,
+      progress: 0,
+      status: "queued",
+      message: "В очереди",
+    }));
+
+    setJobs((current) => [
+      ...current,
+      ...queuedJobs,
+    ]);
 
     const parsed: ParsedTransaction[] = [];
 
@@ -43,12 +74,16 @@ export function useScreenshotImport({
         progress: 3,
       });
       try {
-        const transactionsFromFile = await recognizeTransactions(file, categories, (progress, message) => {
-          updateJob(file.name, {
-            progress: Math.max(5, Math.min(98, progress)),
-            message,
-          });
-        });
+        const transactionsFromFile = await recognizeTransactions(
+          file,
+          categories,
+          (progress, message) => {
+            updateJob(file.name, {
+              progress: Math.max(5, Math.min(98, progress)),
+              message,
+            });
+          },
+        );
         parsed.push(...transactionsFromFile);
         updateJob(file.name, {
           status: "done",
@@ -68,7 +103,11 @@ export function useScreenshotImport({
   }
 
   function updateJob(fileName: string, patch: Partial<UploadJob>) {
-    setJobs((current) => current.map((job) => (job.fileName === fileName ? { ...job, ...patch } : job)));
+    setJobs((current) =>
+      current.map((job) =>
+        job.fileName === fileName ? { ...job, ...patch } : job,
+      ),
+    );
   }
 
   function resetJobs() {
@@ -86,4 +125,15 @@ export function useScreenshotImport({
     handleFiles,
     resetJobs,
   };
+}
+
+function formatDuplicateFileError(fileNames: string[]) {
+  const names = fileNames.slice(0, 3).join(", ");
+  const restCount = fileNames.length - 3;
+  const restText = restCount > 0 ? ` и еще ${restCount}` : "";
+  return `Файл уже добавлен: ${names}${restText}. Повторные файлы не загрузились.`;
+}
+
+function normalizeFileName(fileName: string) {
+  return fileName.trim().toLowerCase();
 }

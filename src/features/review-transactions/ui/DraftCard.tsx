@@ -14,7 +14,12 @@ export function DraftCard({
   categories: Category[];
   onUpdate: (localId: string, patch: Partial<ParsedTransaction>) => void;
 }) {
-  const category = categories.find((item) => item.id === draft.categoryId);
+  const confidenceTone =
+    draft.confidence >= 80
+      ? styles.confidenceHigh
+      : draft.confidence >= 55
+        ? styles.confidenceMedium
+        : styles.confidenceLow;
 
   return (
     <article className={clsx(styles.draftCard, !draft.selected && styles.muted)}>
@@ -81,7 +86,7 @@ export function DraftCard({
       </label>
 
       <div className={styles.confidenceLine}>
-        <span style={{ color: category?.color || "#378add" }}>
+        <span className={confidenceTone}>
           <Check size={13} />
           Уверенность распознавания {draft.confidence}%
         </span>

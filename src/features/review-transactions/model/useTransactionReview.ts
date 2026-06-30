@@ -12,6 +12,10 @@ export function useTransactionReview({ onSaved }: { onSaved: () => Promise<void>
     setDrafts(nextDrafts);
   }
 
+  function appendDrafts(nextDrafts: ParsedTransaction[]) {
+    setDrafts((current) => [...current, ...nextDrafts]);
+  }
+
   function clearDrafts() {
     setDrafts([]);
   }
@@ -62,6 +66,7 @@ export function useTransactionReview({ onSaved }: { onSaved: () => Promise<void>
     error,
     clearError,
     replaceDrafts,
+    appendDrafts,
     clearDrafts,
     updateDraft,
     saveDrafts,

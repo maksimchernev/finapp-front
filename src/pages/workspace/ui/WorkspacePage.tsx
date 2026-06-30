@@ -36,16 +36,14 @@ export function WorkspacePage({
     categories: finance.categories,
     onUploadStarted: () => {
       navigate(appRoutes.upload);
-      review.clearDrafts();
     },
     onParsed: (drafts) => {
-      review.replaceDrafts(drafts);
+      review.appendDrafts(drafts);
       if (drafts.length > 0) {
         navigate(appRoutes.review);
       }
     },
   });
-  console.log({ review, upload });
 
   const visibleError = finance.error || upload.error || review.error;
 

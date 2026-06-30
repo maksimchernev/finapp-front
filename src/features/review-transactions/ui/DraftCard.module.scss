@@ -1,6 +1,8 @@
 .draftCard {
   display: grid;
   gap: 13px;
+  min-width: 0;
+  max-width: 100%;
   padding: 15px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -16,16 +18,19 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  min-width: 0;
 }
 
 .checkline {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 1 1 auto;
   min-width: 0;
   font-weight: 700;
 
   input {
+    flex: 0 0 auto;
     width: 18px;
     height: 18px;
     accent-color: var(--accent-a);
@@ -39,6 +44,7 @@
 }
 
 .iconButton {
+  flex: 0 0 auto;
   width: 40px;
   height: 40px;
   border-radius: 999px;
@@ -57,10 +63,12 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 11px;
+  min-width: 0;
 
   label {
     display: grid;
     gap: 7px;
+    min-width: 0;
     color: var(--text-muted);
     font-size: 12px;
     font-weight: 700;
@@ -81,6 +89,7 @@
 .categorySelect {
   display: grid;
   gap: 7px;
+  min-width: 0;
   color: var(--text-muted);
   font-size: 12px;
   font-weight: 700;
@@ -100,6 +109,7 @@
   display: flex;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
   color: var(--text-muted);
   font-size: 12px;
 
@@ -107,12 +117,42 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
+    min-width: 0;
     font-weight: 700;
   }
+
+  small {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.confidenceHigh {
+  color: var(--green);
+}
+
+.confidenceMedium {
+  color: var(--coral);
+}
+
+.confidenceLow {
+  color: var(--red);
 }
 
 @media (max-width: 380px) {
   .editGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .editGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .confidenceLine {
+    display: grid;
   }
 }
