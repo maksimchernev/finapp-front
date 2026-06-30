@@ -1,4 +1,5 @@
 import { LoaderCircle } from "lucide-react";
+import clsx from "clsx";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { useFinanceData } from "@/features/load-finance-data/model/useFinanceData";
 import { useTransactionReview } from "@/features/review-transactions/model/useTransactionReview";
@@ -44,6 +45,7 @@ export function WorkspacePage({
       }
     },
   });
+  console.log({ review, upload });
 
   const visibleError = finance.error || upload.error || review.error;
 
@@ -61,9 +63,7 @@ export function WorkspacePage({
 
   if (finance.isLoading) {
     return (
-      <AppLayout
-        contentClassName={[styles.appShell, styles.centered].join(" ")}
-      >
+      <AppLayout contentClassName={clsx(styles.appShell, styles.centered)}>
         <LoaderCircle className={styles.spin} size={34} />
         <p>Загружаю Summa</p>
       </AppLayout>
@@ -129,12 +129,7 @@ export function WorkspacePage({
         />
         <Route
           path="settings"
-          element={
-            <SettingsPage
-              user={finance.user}
-              onLogout={handleLogout}
-            />
-          }
+          element={<SettingsPage user={finance.user} onLogout={handleLogout} />}
         />
         <Route
           path="*"

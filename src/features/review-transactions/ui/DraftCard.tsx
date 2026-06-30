@@ -1,4 +1,5 @@
 import { Check, Trash2 } from "lucide-react";
+import clsx from "clsx";
 import type { Category } from "@/entities/category/model/types";
 import { toDatetimeInput } from "@/entities/transaction/lib/format";
 import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
@@ -16,7 +17,7 @@ export function DraftCard({
   const category = categories.find((item) => item.id === draft.categoryId);
 
   return (
-    <article className={[styles.draftCard, draft.selected ? "" : styles.muted].filter(Boolean).join(" ")}>
+    <article className={clsx(styles.draftCard, !draft.selected && styles.muted)}>
       <div className={styles.draftHead}>
         <label className={styles.checkline}>
           <input
@@ -27,7 +28,7 @@ export function DraftCard({
           <span>{draft.merchant}</span>
         </label>
         <button
-          className={[styles.iconButton, styles.danger].join(" ")}
+          className={clsx(styles.iconButton, styles.danger)}
           onClick={() => onUpdate(draft.localId, { selected: false })}
           aria-label="Исключить"
         >

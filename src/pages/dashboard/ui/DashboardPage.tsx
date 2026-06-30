@@ -1,4 +1,5 @@
 import { Bell, Camera, ChevronRight, Eye, PieChart } from "lucide-react";
+import clsx from "clsx";
 import type { Category } from "@/entities/category/model/types";
 import { formatMoney } from "@/entities/transaction/lib/format";
 import type {
@@ -70,7 +71,7 @@ export function DashboardPage({
 
       <div className={styles.quickGrid}>
         <button className={styles.quickAction} onClick={onUpload}>
-          <span className={[styles.softIcon, styles.blue].join(" ")}>
+          <span className={clsx(styles.softIcon, styles.blue)}>
             <Camera size={22} />
           </span>
           <span>
@@ -79,7 +80,7 @@ export function DashboardPage({
           </span>
         </button>
         <button className={styles.quickAction} onClick={onAnalytics}>
-          <span className={[styles.softIcon, styles.green].join(" ")}>
+          <span className={clsx(styles.softIcon, styles.green)}>
             <PieChart size={22} />
           </span>
           <span>

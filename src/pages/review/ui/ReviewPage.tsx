@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import type { Category } from "@/entities/category/model/types";
 import { DraftCard } from "@/features/review-transactions/ui/DraftCard";
 import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
@@ -40,11 +41,11 @@ export function ReviewPage({
         </div>
       )}
 
-      <div className={[styles.actionRow, styles.stickyActions].join(" ")}>
-        <button className={[styles.secondaryAction, styles.compact].join(" ")} onClick={onBack}>
+      <div className={clsx(styles.actionRow, styles.stickyActions)}>
+        <button className={clsx(styles.secondaryAction, styles.compact)} onClick={onBack}>
           Назад
         </button>
-        <button className={[styles.primaryAction, styles.compact].join(" ")} onClick={onSave} disabled={isSaving || selectedCount === 0}>
+        <button className={clsx(styles.primaryAction, styles.compact)} onClick={onSave} disabled={isSaving || selectedCount === 0}>
           {isSaving ? "Сохраняю..." : "Сохранить всё"}
         </button>
       </div>

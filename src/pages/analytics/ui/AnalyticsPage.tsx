@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import clsx from "clsx";
 import { formatMoney } from "@/entities/transaction/lib/format";
 import { buildDailyExpenseBars } from "@/entities/transaction/lib/statistics";
 import type { Statistics, Transaction } from "@/entities/transaction/model/types";
@@ -22,11 +23,11 @@ export function AnalyticsPage({
     <section className={styles.screen}>
       <HeaderWithBack title="Сводка" subtitle="Доходы и расходы по сохраненным операциям" onBack={onBack} />
       <div className={styles.metricsGrid}>
-        <div className={[styles.metric, styles.blue].join(" ")}>
+        <div className={clsx(styles.metric, styles.blue)}>
           <span>Всего потрачено</span>
           <b>{formatMoney(-(statistics?.totalExpenseMinor || 0))}</b>
         </div>
-        <div className={[styles.metric, styles.green].join(" ")}>
+        <div className={clsx(styles.metric, styles.green)}>
           <span>Всего получено</span>
           <b>{formatMoney(statistics?.totalIncomeMinor || 0)}</b>
         </div>

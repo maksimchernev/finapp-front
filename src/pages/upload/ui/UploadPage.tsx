@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { Check, CloudUpload } from "lucide-react";
+import clsx from "clsx";
 import type { UploadJob } from "@/features/upload-screenshots/model/types";
 import { UploadJobRow } from "@/features/upload-screenshots/ui/UploadJobRow";
 import { EmptyState } from "@/shared/ui/EmptyState";
@@ -42,7 +43,7 @@ export function UploadPage({
           распознанные данные.
         </p>
         <button
-          className={[styles.primaryAction, styles.compact].join(" ")}
+          className={clsx(styles.primaryAction, styles.compact)}
           onClick={() => inputRef.current?.click()}
         >
           Выбрать файлы
@@ -58,7 +59,7 @@ export function UploadPage({
         />
       </div>
 
-      <div className={[styles.notice, styles.green].join(" ")}>
+      <div className={clsx(styles.notice, styles.green)}>
         <Check size={20} />
         <div>
           <b>Без доступа к банковскому кабинету</b>

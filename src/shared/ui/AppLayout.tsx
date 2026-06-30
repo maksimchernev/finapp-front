@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import clsx from "clsx";
 import styles from "@/shared/ui/AppLayout.module.scss";
 
 type LayoutWidth = "auth" | "callback" | "workspace";
@@ -23,13 +24,11 @@ export function AppLayout({
   return (
     <main className={styles.layout}>
       <section
-        className={[
+        className={clsx(
           styles.cloud,
           widthClassName[width],
           contentClassName,
-        ]
-          .filter(Boolean)
-          .join(" ")}
+        )}
       >
         {children}
       </section>

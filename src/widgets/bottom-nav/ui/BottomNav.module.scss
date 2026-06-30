@@ -2,16 +2,18 @@
   --nav-gap: 6px;
   --nav-padding: 8px;
 
-  position: fixed;
-  left: 50%;
-  bottom: max(14px, env(safe-area-inset-bottom));
-  transform: translateX(-50%);
-  width: min(calc(100% - 28px), 452px);
+  width: 100%;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: var(--nav-gap);
   padding: var(--nav-padding);
   border: 1px solid rgba(255, 255, 255, 0.54);
+  margin-top: 12px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: max(10px, env(safe-area-inset-bottom));
+  width: min(calc(100% - 20px), 420px);
   border-radius: 28px;
   background:
     radial-gradient(
@@ -148,8 +150,7 @@
     }
 
     svg {
-      filter:
-        drop-shadow(0 1px 0 rgba(255, 255, 255, 0.56))
+      filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.56))
         drop-shadow(0 7px 12px rgba(36, 76, 56, 0.14));
     }
   }
@@ -157,8 +158,7 @@
 
 @media (max-width: 440px) {
   .bottomNav {
-    bottom: max(10px, env(safe-area-inset-bottom));
-    width: min(calc(100% - 20px), 420px);
+    position: fixed;
     border-radius: 30px;
   }
 }

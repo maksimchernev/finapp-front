@@ -2,7 +2,7 @@
   min-height: 100vh;
   padding: 20px 20px 0;
   display: grid;
-  justify-items: center;
+  place-items: center;
   background:
     radial-gradient(
       circle at 18% 0%,
@@ -14,24 +14,27 @@
 
 .cloud {
   width: min(100%, var(--app-layout-width));
+  min-height: var(--app-layout-height);
   padding: 28px;
   border: 1px solid rgba(36, 76, 56, 0.12);
-  border-bottom: none;
-  border-radius: 8px 8px 0 0;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.9);
   box-shadow: var(--shadow);
 }
 
 .authWidth {
   --app-layout-width: 430px;
+  --app-layout-height: 932px;
 }
 
 .callbackWidth {
   --app-layout-width: 420px;
+  --app-layout-height: 932px;
 }
 
 .workspaceWidth {
   --app-layout-width: 480px;
+  --app-layout-height: 932px;
 }
 
 @media (max-width: 440px) {
@@ -43,7 +46,7 @@
   .cloud {
     width: 100%;
     min-height: 100dvh;
-    border: 0;
-    border-radius: 0;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
   }
 }

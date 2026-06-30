@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { Camera, CheckCircle2, ShieldCheck } from "lucide-react";
+import clsx from "clsx";
 import {
   getStoryTransition,
   STORY_DURATION_MS,
@@ -78,13 +79,11 @@ export function AuthStories({ onComplete }: { onComplete: () => void }) {
         {stories.map((item, index) => (
           <span
             key={item.eyebrow}
-            className={[
+            className={clsx(
               styles.progressSegment,
-              index < activeIndex ? styles.doneProgress : "",
-              index === activeIndex ? styles.activeProgress : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
+              index < activeIndex && styles.doneProgress,
+              index === activeIndex && styles.activeProgress,
+            )}
             aria-label={`Сториз ${index + 1}`}
             aria-current={index === activeIndex ? "step" : undefined}
           >
@@ -114,13 +113,13 @@ export function AuthStories({ onComplete }: { onComplete: () => void }) {
       </div>
 
       <button
-        className={[styles.tapZone, styles.previousTapZone].join(" ")}
+        className={clsx(styles.tapZone, styles.previousTapZone)}
         onClick={() => showStory("previous")}
         aria-label="Предыдущая сториз"
         type="button"
       />
       <button
-        className={[styles.tapZone, styles.nextTapZone].join(" ")}
+        className={clsx(styles.tapZone, styles.nextTapZone)}
         onClick={() => showStory("next")}
         aria-label="Следующая сториз"
         type="button"
