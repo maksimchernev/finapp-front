@@ -1,10 +1,17 @@
 import { LoaderCircle } from "lucide-react";
 import clsx from "clsx";
+import { useState } from "react";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { transactionApi } from "@/entities/transaction/api/transactionApi";
 import type { CreateTransactionRequest } from "@/entities/transaction/api/transactionApi";
 import { useFinanceData } from "@/features/load-finance-data/model/useFinanceData";
 import { useTransactionReview } from "@/features/review-transactions/model/useTransactionReview";
+import {
+  getDoneUploadJobs,
+  getNextDoneUploadJob,
+  getPreviousDoneUploadJob,
+  isLastDoneUploadJob,
+} from "@/features/upload-screenshots/model/uploadJobDrafts";
 import { useScreenshotImport } from "@/features/upload-screenshots/model/useScreenshotImport";
 import { appRoutes } from "@/shared/router/routes";
 import { AppLayout } from "@/shared/ui/AppLayout";
@@ -15,6 +22,7 @@ import { CategoriesPage } from "@/pages/categories/ui/CategoriesPage";
 import { DashboardPage } from "@/pages/dashboard/ui/DashboardPage";
 import { ReviewPage } from "@/pages/review/ui/ReviewPage";
 import { SettingsPage } from "@/pages/settings/ui/SettingsPage";
+import { TransactionsPage } from "@/pages/transactions/ui/TransactionsPage";
 import { UploadPage } from "@/pages/upload/ui/UploadPage";
 import { resetUploadSession } from "@/pages/workspace/lib/uploadSession";
 import styles from "@/pages/workspace/ui/WorkspacePage.module.scss";
@@ -29,12 +37,14 @@ export function WorkspacePage({
   onUnauthorized: (message: string) => void;
 }) {
   const navigate = useNavigate();
+  const [activeReviewJobId, setActiveReviewJobId] = useState<string | null>(null);
   const finance = useFinanceData({ token, onUnauthorized });
   const review = useTransactionReview({
     onSaved: async () => {
       upload.resetJobs();
+      setActiveReviewJobId(null);
       await finance.reload();
-      navigate(appRoutes.dashboard);
+      navigate(appRoutes.upload);
     },
   });
   const upload = useScreenshotImport({
@@ -44,11 +54,20 @@ export function WorkspacePage({
     onUploadStarted: () => {
       navigate(appRoutes.upload);
     },
-    onParsed: (drafts) => {
-      review.appendDrafts(drafts);
-    },
   });
 
+  const activeReviewJob = upload.jobs.find((job) => job.id === activeReviewJobId);
+  const doneReviewJobs = getDoneUploadJobs(upload.jobs);
+  const activeReviewIndex = doneReviewJobs.findIndex((job) => job.id === activeReviewJobId);
+  const isFinalReviewJob = activeReviewJobId
+    ? isLastDoneUploadJob(upload.jobs, activeReviewJobId)
+    : false;
+  const reviewProgress = activeReviewJob
+    ? {
+        current: activeReviewIndex + 1,
+        total: doneReviewJobs.length,
+      }
+    : undefined;
   const visibleError = finance.error || upload.error || review.error;
 
   function clearVisibleError() {
@@ -64,6 +83,12 @@ export function WorkspacePage({
       clearUploadError: upload.clearError,
       resetUploadJobs: upload.resetJobs,
     });
+    setActiveReviewJobId(null);
+  }
+
+  function handleOpenReview(jobId: string) {
+    setActiveReviewJobId(jobId);
+    navigate(appRoutes.review);
   }
 
   function handleLogout() {
@@ -76,6 +101,33 @@ export function WorkspacePage({
   ) {
     await transactionApi.createTransaction(transaction);
     await finance.reload();
+  }
+
+  function handlePreviousReview() {
+    if (!activeReviewJobId) {
+      navigate(appRoutes.upload);
+      return;
+    }
+
+    const previousReviewJob = getPreviousDoneUploadJob(upload.jobs, activeReviewJobId);
+    if (!previousReviewJob) {
+      navigate(appRoutes.upload);
+      return;
+    }
+
+    setActiveReviewJobId(previousReviewJob.id);
+  }
+
+  function handleContinueReview() {
+    if (!activeReviewJobId) return;
+
+    const nextReviewJob = getNextDoneUploadJob(upload.jobs, activeReviewJobId);
+    if (nextReviewJob) {
+      setActiveReviewJobId(nextReviewJob.id);
+      return;
+    }
+
+    void review.saveDrafts(doneReviewJobs.flatMap((job) => job.drafts));
   }
 
   if (finance.isLoading) {
@@ -107,6 +159,7 @@ export function WorkspacePage({
               categories={finance.categories}
               onUpload={() => navigate(appRoutes.upload)}
               onAnalytics={() => navigate(appRoutes.analytics)}
+              onTransactions={() => navigate(appRoutes.transactions)}
             />
           }
         />
@@ -121,7 +174,7 @@ export function WorkspacePage({
               onCreateManualTransaction={handleCreateManualTransaction}
               onFiles={upload.handleFiles}
               onResetRecent={handleResetUploadSession}
-              onReview={() => navigate(appRoutes.review)}
+              onReview={handleOpenReview}
             />
           }
         />
@@ -129,13 +182,19 @@ export function WorkspacePage({
           path="review"
           element={
             <ReviewPage
-              drafts={review.drafts}
+              drafts={activeReviewJob?.drafts ?? []}
               banks={finance.banks}
               categories={finance.categories}
               isSaving={review.isSaving}
-              onBack={() => navigate(appRoutes.upload)}
-              onSave={review.saveDrafts}
-              onUpdate={review.updateDraft}
+              reviewProgress={reviewProgress}
+              saveLabel={isFinalReviewJob ? "Сохранить все" : "Сохранить"}
+              onBack={handlePreviousReview}
+              onSave={handleContinueReview}
+              onUpdate={(localId, patch) => {
+                if (activeReviewJobId) {
+                  upload.updateDraft(activeReviewJobId, localId, patch);
+                }
+              }}
             />
           }
         />
@@ -146,6 +205,19 @@ export function WorkspacePage({
               statistics={finance.statistics}
               transactions={finance.transactions}
               onBack={() => navigate(appRoutes.dashboard)}
+            />
+          }
+        />
+        <Route
+          path="transactions"
+          element={
+            <TransactionsPage
+              banks={finance.banks}
+              categories={finance.categories}
+              transactions={finance.transactions}
+              onBack={() => navigate(appRoutes.dashboard)}
+              onDeleteTransaction={finance.deleteTransaction}
+              onUpdateTransaction={finance.updateTransaction}
             />
           }
         />

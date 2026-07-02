@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Bell, Camera, ChevronRight, Eye, EyeOff, PieChart } from "lucide-react";
+import {
+  Bell,
+  Camera,
+  ChevronRight,
+  Eye,
+  EyeOff,
+  PieChart,
+} from "lucide-react";
 import clsx from "clsx";
 import type { Category } from "@/entities/category/model/types";
 import type {
@@ -20,6 +27,7 @@ export function DashboardPage({
   categories,
   onUpload,
   onAnalytics,
+  onTransactions,
 }: {
   user: User | null;
   transactions: Transaction[];
@@ -27,9 +35,12 @@ export function DashboardPage({
   categories: Category[];
   onUpload: () => void;
   onAnalytics: () => void;
+  onTransactions: () => void;
 }) {
   const [isMoneyVisible, setIsMoneyVisible] = useState(true);
-  const categoryStats = statistics?.byCategory.slice(0, 4) ?? [];
+  const categoryStats =
+    statistics?.byCategory.filter((item) => item.totalMinor < 0).slice(0, 4) ??
+    [];
   const latest = transactions.slice(0, 4);
   const VisibilityIcon = isMoneyVisible ? Eye : EyeOff;
 
@@ -54,7 +65,12 @@ export function DashboardPage({
         <div className={styles.balanceRow}>
           <div>
             <span>Картина месяца</span>
-            <strong>{formatDashboardMoney(statistics?.balanceMinor || 0, isMoneyVisible)}</strong>
+            <strong>
+              {formatDashboardMoney(
+                statistics?.balanceMinor || 0,
+                isMoneyVisible,
+              )}
+            </strong>
           </div>
           <button
             className={styles.glassButton}
@@ -69,11 +85,21 @@ export function DashboardPage({
         <div className={styles.balanceMeta}>
           <div>
             <span>Доходы</span>
-            <b>{formatDashboardMoney(statistics?.totalIncomeMinor || 0, isMoneyVisible)}</b>
+            <b>
+              {formatDashboardMoney(
+                statistics?.totalIncomeMinor || 0,
+                isMoneyVisible,
+              )}
+            </b>
           </div>
           <div>
             <span>Расходы</span>
-            <b>{formatDashboardMoney(-(statistics?.totalExpenseMinor || 0), isMoneyVisible)}</b>
+            <b>
+              {formatDashboardMoney(
+                -(statistics?.totalExpenseMinor || 0),
+                isMoneyVisible,
+              )}
+            </b>
           </div>
         </div>
       </section>
@@ -99,12 +125,23 @@ export function DashboardPage({
         </button>
       </div>
 
-      <section className={styles.sectionBlock}>
+      <section
+        className={clsx(styles.sectionBlock, styles.clickableSection)}
+        role="link"
+        tabIndex={0}
+        onClick={onAnalytics}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onTransactions();
+          }
+        }}
+      >
         <div className={styles.sectionTitle}>
           <h3>Расходы по категориям</h3>
-          <button onClick={onAnalytics}>
+          <span>
             Все <ChevronRight size={14} />
-          </button>
+          </span>
         </div>
         {categoryStats.length === 0 ? (
           <EmptyState text="Загрузите первую историю операций — Summa соберет категории после проверки." />
@@ -122,9 +159,23 @@ export function DashboardPage({
         )}
       </section>
 
-      <section className={styles.sectionBlock}>
+      <section
+        className={clsx(styles.sectionBlock, styles.clickableSection)}
+        role="link"
+        tabIndex={0}
+        onClick={onTransactions}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onTransactions();
+          }
+        }}
+      >
         <div className={styles.sectionTitle}>
           <h3>Последние операции</h3>
+          <span>
+            Все <ChevronRight size={14} />
+          </span>
         </div>
         {latest.length === 0 ? (
           <EmptyState text="Пока нет сохраненных операций. Загрузите скриншоты, проверьте результат и сохраните историю." />

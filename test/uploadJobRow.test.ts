@@ -16,18 +16,26 @@ const job: UploadJob = {
   message: "Готово. 3 учтено",
   progress: 100,
   status: "done",
+  drafts: [],
 };
 
 describe("UploadJobRow", () => {
   it("renders a button when review action is available", () => {
+    const reviewedJobIds: string[] = [];
     const element = UploadJobRow({
       job,
-      onClick: () => undefined,
+      onReview: (jobId) => {
+        reviewedJobIds.push(jobId);
+      },
     });
 
     expect(element.type).toBe("button");
     expect(element.props.type).toBe("button");
     expect(element.props["aria-label"]).toBe("Проверить загрузку tbank.png");
+
+    element.props.onClick();
+
+    expect(reviewedJobIds).toEqual(["job-1"]);
   });
 
   it("renders a static container when review action is not available", () => {

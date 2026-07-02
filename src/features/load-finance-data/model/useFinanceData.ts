@@ -6,7 +6,10 @@ import {
   categoryApi,
   transactionApi,
 } from "@/entities/transaction/api/transactionApi";
-import type { CategoryPayload } from "@/entities/transaction/api/transactionApi";
+import type {
+  CategoryPayload,
+  UpdateTransactionRequest,
+} from "@/entities/transaction/api/transactionApi";
 import type {
   Statistics,
   Transaction,
@@ -130,6 +133,31 @@ export function useFinanceData({
     setCategories((current) => current.filter((item) => item.id !== id));
   }
 
+  async function updateTransaction(
+    id: string,
+    transaction: UpdateTransactionRequest,
+  ) {
+    const updatedTransaction = await transactionApi.updateTransaction(
+      id,
+      transaction,
+    );
+    setTransactions((current) =>
+      current
+        .map((item) =>
+          item.id === updatedTransaction.id ? updatedTransaction : item,
+        )
+        .sort(compareTransactions),
+    );
+    setStatistics(await transactionApi.statistics());
+    return updatedTransaction;
+  }
+
+  async function deleteTransaction(id: string) {
+    await transactionApi.deleteTransaction(id);
+    setTransactions((current) => current.filter((item) => item.id !== id));
+    setStatistics(await transactionApi.statistics());
+  }
+
   async function updateUserName(name: string) {
     const updatedUser = await userApi.updateProfile({ name });
     setUser(updatedUser);
@@ -152,9 +180,11 @@ export function useFinanceData({
     createBank,
     createCategory,
     deleteCategory,
+    deleteTransaction,
     reload,
     updateBank,
     updateCategory,
+    updateTransaction,
     updateUserName,
   };
 }
@@ -163,4 +193,8 @@ function compareCategories(a: Category, b: Category) {
   return a.type === b.type
     ? a.nameRu.localeCompare(b.nameRu)
     : a.type.localeCompare(b.type);
+}
+
+function compareTransactions(a: Transaction, b: Transaction) {
+  return new Date(b.date).getTime() - new Date(a.date).getTime();
 }

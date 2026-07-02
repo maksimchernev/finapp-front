@@ -5,10 +5,10 @@ import styles from "@/features/upload-screenshots/ui/UploadJobRow.module.scss";
 
 export function UploadJobRow({
   job,
-  onClick,
+  onReview,
 }: {
   job: UploadJob;
-  onClick?: () => void;
+  onReview?: (jobId: string) => void;
 }) {
   const statusClass = job.status === "done" ? styles.done : job.status === "error" ? styles.error : "";
   const content = (
@@ -29,12 +29,12 @@ export function UploadJobRow({
     </>
   );
 
-  if (onClick) {
+  if (onReview) {
     return (
       <button
         type="button"
         className={clsx(styles.uploadRow, styles.interactive)}
-        onClick={onClick}
+        onClick={() => onReview(job.id)}
         aria-label={`Проверить загрузку ${job.fileName}`}
       >
         {content}

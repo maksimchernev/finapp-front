@@ -24,29 +24,28 @@ export function useTransactionReview({ onSaved }: { onSaved: () => Promise<void>
     setDrafts((current) => current.map((draft) => (draft.localId === localId ? { ...draft, ...patch } : draft)));
   }
 
-  async function saveDrafts() {
-    const selected = drafts.filter((draft) => draft.selected);
+  async function saveDrafts(draftsToSave = drafts) {
+    const selected = draftsToSave.filter((draft) => draft.selected);
     if (selected.length === 0) {
-      setError("Выберите хотя бы одну операцию для сохранения.");
+      setError(null);
+      await onSaved();
       return;
     }
 
     setIsSaving(true);
     setError(null);
     try {
-      await Promise.all(
-        selected.map((draft) =>
-          transactionApi.createTransaction({
-            amountMinor: amountToMinor(draft.amount),
-            currency: draft.currency,
-            date: draft.date,
-            merchant: draft.merchant,
-            categoryId: draft.categoryId || undefined,
-            bankId: draft.bankId || undefined,
-            confidence: draft.confidence,
-            sourceType: "screenshot",
-          }),
-        ),
+      await transactionApi.createTransactions(
+        selected.map((draft) => ({
+          amountMinor: amountToMinor(draft.amount),
+          currency: draft.currency,
+          date: draft.date,
+          merchant: draft.merchant,
+          categoryId: draft.categoryId || undefined,
+          bankId: draft.bankId || undefined,
+          confidence: draft.confidence,
+          sourceType: "screenshot",
+        })),
       );
       clearDrafts();
       await onSaved();

@@ -14,6 +14,14 @@ export type CreateTransactionRequest = {
   sourceType?: "screenshot" | "manual" | "statement";
 };
 
+export type UpdateTransactionRequest = Partial<
+  Omit<CreateTransactionRequest, "bankId" | "categoryId" | "notes">
+> & {
+  bankId?: string | null;
+  categoryId?: string | null;
+  notes?: string | null;
+};
+
 export type CategoryPayload = {
   bgColor: string;
   color: string;
@@ -50,6 +58,16 @@ export const transactionApi = {
   createTransaction: (transaction: CreateTransactionRequest) =>
     request<Transaction>("/api/transactions", {
       method: "POST",
+      body: JSON.stringify(transaction),
+    }),
+  createTransactions: (transactions: CreateTransactionRequest[]) =>
+    request<Transaction[]>("/api/transactions", {
+      method: "POST",
+      body: JSON.stringify(transactions),
+    }),
+  updateTransaction: (id: string, transaction: UpdateTransactionRequest) =>
+    request<Transaction>(`/api/transactions/${id}`, {
+      method: "PATCH",
       body: JSON.stringify(transaction),
     }),
   deleteTransaction: (id: string) =>

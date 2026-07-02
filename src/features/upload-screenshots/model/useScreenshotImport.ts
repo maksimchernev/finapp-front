@@ -7,19 +7,22 @@ import type {
   ParsedTransaction,
   UploadJob,
 } from "@/features/upload-screenshots/model/types";
+import {
+  attachDraftsToUploadJob,
+  removeUploadJob,
+  updateUploadJobDraft,
+} from "@/features/upload-screenshots/model/uploadJobDrafts";
 
 export function useScreenshotImport({
   banks,
   categories,
   onCreateBank,
   onUploadStarted,
-  onParsed,
 }: {
   banks: Bank[];
   categories: Category[];
   onCreateBank: (name: string, keywords?: string[]) => Promise<Bank>;
   onUploadStarted: () => void;
-  onParsed: (drafts: ParsedTransaction[]) => void;
 }) {
   const [jobs, setJobs] = useState<UploadJob[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -66,15 +69,16 @@ export function useScreenshotImport({
       progress: 0,
       status: "queued",
       message: "В очереди",
+      drafts: [],
     }));
 
     setJobs((current) => [...current, ...queuedJobs]);
 
-    const parsed: ParsedTransaction[] = [];
     const knownBanks = [...banks];
 
-    for (const file of images) {
-      updateJob(file.name, {
+    for (const [index, file] of images.entries()) {
+      const jobId = queuedJobs[index].id;
+      updateJob(jobId, {
         status: "processing",
         message: "Распознаем операции",
         progress: 3,
@@ -84,7 +88,7 @@ export function useScreenshotImport({
           file,
           categories,
           (progress, message) => {
-            updateJob(file.name, {
+            updateJob(jobId, {
               progress: Math.max(5, Math.min(98, progress)),
               message,
             });
@@ -103,34 +107,42 @@ export function useScreenshotImport({
             }))
           : transactionsFromFile;
 
-        parsed.push(...transactionsWithBank);
-        updateJob(file.name, {
+        setJobs((current) =>
+          attachDraftsToUploadJob(current, jobId, transactionsWithBank),
+        );
+        updateJob(jobId, {
           status: "done",
           progress: 100,
           message: `Готово. ${transactionsFromFile.length} распознано`,
         });
       } catch (ocrError) {
-        updateJob(file.name, {
+        updateJob(jobId, {
           status: "error",
           progress: 100,
           message: ocrError instanceof Error ? ocrError.message : "Ошибка OCR",
         });
       }
     }
-
-    onParsed(parsed);
   }
 
-  function updateJob(fileName: string, patch: Partial<UploadJob>) {
+  function updateJob(jobId: string, patch: Partial<UploadJob>) {
     setJobs((current) =>
       current.map((job) =>
-        job.fileName === fileName ? { ...job, ...patch } : job,
+        job.id === jobId ? { ...job, ...patch } : job,
       ),
     );
   }
 
+  function updateDraft(jobId: string, localId: string, patch: Partial<ParsedTransaction>) {
+    setJobs((current) => updateUploadJobDraft(current, jobId, localId, patch));
+  }
+
   function resetJobs() {
     setJobs([]);
+  }
+
+  function removeJob(jobId: string) {
+    setJobs((current) => removeUploadJob(current, jobId));
   }
 
   function clearError() {
@@ -142,7 +154,9 @@ export function useScreenshotImport({
     error,
     clearError,
     handleFiles,
+    removeJob,
     resetJobs,
+    updateDraft,
   };
 }
 

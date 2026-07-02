@@ -12,6 +12,8 @@ export function ReviewPage({
   banks,
   categories,
   isSaving,
+  reviewProgress,
+  saveLabel = "Сохранить",
   onBack,
   onSave,
   onUpdate,
@@ -20,36 +22,54 @@ export function ReviewPage({
   banks: Bank[];
   categories: Category[];
   isSaving: boolean;
+  reviewProgress?: {
+    current: number;
+    total: number;
+  };
+  saveLabel?: string;
   onBack: () => void;
   onSave: () => void;
   onUpdate: (localId: string, patch: Partial<ParsedTransaction>) => void;
 }) {
   const selectedCount = drafts.filter((draft) => draft.selected).length;
+  const saveSummary = `Выбрано ${selectedCount} из ${drafts.length}`;
+
+  const title = `Проверка ${reviewProgress ? `${reviewProgress.current} / ${reviewProgress.total}` : ""}`;
+  const subtitle = saveSummary;
 
   return (
     <section className={styles.screen}>
-      <HeaderWithBack
-        title="Проверьте операции"
-        subtitle={`${selectedCount} из ${drafts.length} будут сохранены`}
-        onBack={onBack}
-      />
+      <HeaderWithBack title={title} subtitle={subtitle} onBack={onBack} />
 
       {drafts.length === 0 ? (
         <EmptyState text="Нет распознанных операций. Вернитесь к загрузке и добавьте скриншот." />
       ) : (
         <div className={styles.reviewList}>
           {drafts.map((draft) => (
-            <DraftCard key={draft.localId} draft={draft} banks={banks} categories={categories} onUpdate={onUpdate} />
+            <DraftCard
+              key={draft.localId}
+              draft={draft}
+              banks={banks}
+              categories={categories}
+              onUpdate={onUpdate}
+            />
           ))}
         </div>
       )}
 
       <div className={clsx(styles.actionRow, styles.stickyActions)}>
-        <button className={clsx(styles.secondaryAction, styles.compact)} onClick={onBack}>
+        <button
+          className={clsx(styles.secondaryAction, styles.compact)}
+          onClick={onBack}
+        >
           Назад
         </button>
-        <button className={clsx(styles.primaryAction, styles.compact)} onClick={onSave} disabled={isSaving || selectedCount === 0}>
-          {isSaving ? "Сохраняю..." : "Сохранить всё"}
+        <button
+          className={clsx(styles.primaryAction, styles.compact)}
+          onClick={onSave}
+          disabled={isSaving}
+        >
+          {isSaving ? "Сохраняю..." : saveLabel}
         </button>
       </div>
     </section>

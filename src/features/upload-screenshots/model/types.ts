@@ -18,4 +18,5 @@ export interface UploadJob {
   progress: number;
   status: "queued" | "processing" | "done" | "error";
   message: string;
+  drafts: ParsedTransaction[];
 }

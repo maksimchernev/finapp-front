@@ -12,6 +12,7 @@ describe("app routes", () => {
     expect(appRoutes.upload).toBe("/upload");
     expect(appRoutes.review).toBe("/review");
     expect(appRoutes.analytics).toBe("/analytics");
+    expect(appRoutes.transactions).toBe("/transactions");
     expect(appRoutes.categories).toBe("/categories");
     expect(appRoutes.banks).toBe("/banks");
     expect(appRoutes.settings).toBe("/settings");
@@ -22,6 +23,7 @@ describe("app routes", () => {
     expect(isPrivateRoute("/upload")).toBe(true);
     expect(isPrivateRoute("/review")).toBe(true);
     expect(isPrivateRoute("/analytics")).toBe(true);
+    expect(isPrivateRoute("/transactions")).toBe(true);
     expect(isPrivateRoute("/categories")).toBe(true);
     expect(isPrivateRoute("/banks")).toBe(true);
     expect(isPrivateRoute("/settings")).toBe(true);
@@ -32,6 +34,7 @@ describe("app routes", () => {
   it("keeps review grouped under the import bottom-nav item", () => {
     expect(getBottomNavActiveItem("/")).toBe("home");
     expect(getBottomNavActiveItem("/analytics")).toBe("home");
+    expect(getBottomNavActiveItem("/transactions")).toBe("home");
     expect(getBottomNavActiveItem("/categories")).toBe("categories");
     expect(getBottomNavActiveItem("/upload")).toBe("upload");
     expect(getBottomNavActiveItem("/review")).toBe("upload");

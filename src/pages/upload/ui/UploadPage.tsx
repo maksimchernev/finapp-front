@@ -28,7 +28,7 @@ export function UploadPage({
   onCreateManualTransaction: (transaction: CreateTransactionRequest) => Promise<void>;
   onFiles: (files: FileList | File[]) => void;
   onResetRecent: () => void;
-  onReview: () => void;
+  onReview: (jobId: string) => void;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isManualDialogOpen, setIsManualDialogOpen] = useState(false);
@@ -116,7 +116,7 @@ export function UploadPage({
               <UploadJobRow
                 key={job.id}
                 job={job}
-                onClick={job.status === "done" ? onReview : undefined}
+                onReview={job.status === "done" ? onReview : undefined}
               />
             ))}
           </div>

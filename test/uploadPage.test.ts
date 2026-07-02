@@ -54,6 +54,7 @@ describe("UploadPage", () => {
             message: "Готово. 3 учтено",
             progress: 100,
             status: "done",
+            drafts: [],
           },
         ],
         onBack: () => undefined,
