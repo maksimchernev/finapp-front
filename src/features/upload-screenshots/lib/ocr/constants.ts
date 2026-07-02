@@ -25,6 +25,28 @@ export const MONTHS: Record<string, number> = {
   ноября: 10,
   дек: 11,
   декабря: 11,
+  jan: 0,
+  january: 0,
+  feb: 1,
+  february: 1,
+  mar: 2,
+  march: 2,
+  apr: 3,
+  april: 3,
+  jun: 5,
+  june: 5,
+  jul: 6,
+  july: 6,
+  aug: 7,
+  august: 7,
+  sep: 8,
+  september: 8,
+  oct: 9,
+  october: 9,
+  nov: 10,
+  november: 10,
+  dec: 11,
+  december: 11,
 };
 
 export const POSITIVE_HINTS = [
@@ -83,7 +105,7 @@ export const CATEGORY_HINTS = [
 ];
 
 export const DATE_HEADER_REGEX =
-  /^(\d{1,2})\s+(янв(?:аря)?|фев(?:раля)?|мар(?:та)?|апр(?:еля)?|мая?|июн(?:я)?|июл(?:я)?|авг(?:уста)?|сен(?:тября)?|окт(?:ября)?|ноя(?:бря)?|дек(?:абря)?)\.?(?:,?\s*[а-яё]{2})?(?:\s+[+\-]?\s?(?:\d{1,3}(?:[ .]\d{3})+|\d+)(?:[,.]\d{1,2})?\s*(?:₽|руб\.?|rub|rur|€|eur|\$|usd|[РPp])?)?$/i;
+  /^(\d{1,2})\s+(янв(?:аря)?|фев(?:раля)?|мар(?:та)?|апр(?:еля)?|мая?|июн(?:я)?|июл(?:я)?|авг(?:уста)?|сен(?:тября)?|окт(?:ября)?|ноя(?:бря)?|дек(?:абря)?|jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\.?(?:,?\s*[a-zа-яё]{2,3})?(?:\s+[+\-]?\s?(?:\d{1,3}(?:[ .]\d{3})+|\d+)(?:[,.]\d{1,2})?\s*(?:₽|руб\.?|rub|rur|€|eur|\$|usd|[РPp])?)?$/i;
 
 export const AMOUNT_PATTERN =
   /([+\-]?\s?(?:\d{1,3}(?:[ .]\d{3})+|\d+)(?:[,.]\d{1,2})?)\s*(₽|руб\.?|rub|rur|€|eur|\$|usd|[РPp])?/i;

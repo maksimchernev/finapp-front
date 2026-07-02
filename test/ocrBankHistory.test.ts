@@ -23,6 +23,16 @@ const categories: Category[] = [
     keywords: ["фастфуд", "pizza"],
   },
   {
+    id: "transport",
+    name: "transport",
+    nameRu: "Транспорт",
+    icon: "bus",
+    color: "#000",
+    bgColor: "#fff",
+    type: "expense",
+    keywords: ["transport", "carsharing", "такси"],
+  },
+  {
     id: "other_expense",
     name: "other_expense",
     nameRu: "Прочие расходы",
@@ -77,103 +87,126 @@ const categories: Category[] = [
 const bankHistoryRawText = `11:38 #7 HHA 36 J
 © История С
 21 ИЮНЯ
-$ Smart -680,10 Р
+$ DEMO STORE -612,34 Р
 Продукты +6 Р
-(5) Пятёрочка -73793 Р
+(5) Тест Маркет -73456 Р
 \\“ 7 Л Продукты +7 P
 20 ИЮНЯ
-VODOPAD256 -75P
+DEMO-SERVICE -75P
 Прочие расходы
-(5) Пятёрочка -282,78 Р
+(5) Тест Маркет -281,45 Р
 \\“ 7 Л Продукты +2 Р
-IP ZULMEEVA -785,04 P
+IP DEMOFOOD -785,04 P
 Продукты +7 P
 19 ИЮНЯ
-IP ZULMEEVA -259,44 p
+IP DEMOFOOD -259,44 p
 Продукты +2 Р
-IP ZULMEEVA -2739,73 Р
+IP DEMOFOOD -2739,73 Р
 Продукты +27 Р
-— Пятёрочка —2 542,05 Р
+— Тест Маркет —2 542,05 Р
 (5 "*
 Главный Платежи & История Чаты
 `;
 
-const ozonBankRawText = `15:27 94 RC HHA 297
+const digitalBankRawText = `15:27 94 RC HHA 297
 Операции
 Расходы Доходы
-О 61 О59Р @) 92 505P
+О 10 О20Р @) 30 000P
 28 июня, Вс
-КуулКлевер - 446,04 Р
-Супермаркеты * Карта **0836
+DEMO GROCERY - 446,04 Р
+Супермаркеты * Карта **0000
 Проценты на остаток +22,34Р
 ®
 ополнения * Ежедневный доход
 27 июня, Сб
-Компенсация за подарок от Ozor +2 000
+Компенсация по тестовой акции +2 000
 Другое + Основной счёт
-Ozon -2 052Р
-Ozon * Кредитная карта
-PRIO-VNESHTORGBANK (РА - 3 500
-Платежи в бюджет * Карта **0836
+DEMO-CARD -2 052Р
+DEMO-CARD * Кредитная карта
+DEMO-PAYMENT (РА - 3 500
+Платежи в бюджет * Карта **0000
 Проценты на остаток +23,47P
 ®
 ополнения * Ежедневный доход
 26 июня, Пт
-COOL PIZZA -165Р
-Фастфуд * Карта **0836 +8P
-COOL PIZZA -1839Р
-Фастфуд * Карта **0836 +91P
-= УФК по Тульской области(МИ ФНО +5 447Р`;
+DEMO PIZZA -165Р
+Фастфуд * Карта **0000 +8P
+DEMO PIZZA -1839Р
+Фастфуд * Карта **0000 +91P
+= DEMO BUDGET PAYMENT +5 447Р`;
 
-const ozonInterestWithoutPlusRawText = `Операции
+const interestWithoutPlusRawText = `Операции
 28 июня, Вс
 Проценты на остаток 22,34Р
 Пополнения * Ежедневный доход`;
 
 const relativeDateHeadersRawText = `История
 Сегодня
-Кофе -150Р
+DEMO COFFEE -150Р
 Вчера
-Пятёрочка -737,93 Р`;
+DEMO MARKET -737,93 Р`;
 
 const xplatFastFoodRawText = `Операции
 Сегодня
-XPLAT*IP RUBAN D. S. -390Р
-Фастфуд * Карта **0836 +19Р`;
+XPLAT*IP DEMO CAFE -390Р
+Фастфуд * Карта **0000 +19Р`;
 
 const internalTransfersRawText = `Операции
 Сегодня
-Анастасия Сергеевна Ч. - 50 000Р
+TESTRECIPIENTA - 12 345Р
 Перевод * Основной счёт
-Перевод между счетами 50 000Р
+Перевод между счетами 12 345Р
 Ежедневный доход > Основной счёт
 Вчера
 Перевод между счетами 4 100Р
 Ежедневный доход > Основной счёт`;
 
-const sberCardHistoryRawText = `Поиск с GigaChat
-Платёжный счёт •• 6991 Тип операции Период
-20 июня, сб 5 000 ₽
-у, Анастасия Сергеевна Ч 5 000 Р
+const cardHistoryRawText = `Поиск
+Платёжный счёт •• 0000 Тип операции Период
+20 июня, сб 1 200 ₽
+у, TESTRECIPIENTA 1 200 Р
 Перевод по CBI
 Платёжный счёт: 1 Р
-$ Людмила Геннадьевна Ч. +5 000 Р
+$ TESTSENDERB +1 200 Р
 Входящий перевод
-Платёжный счёт: 5 001 Р
+Платёжный счёт: 1 201 Р
 16 июня, вт
-Максим Денисович Ч. +1 Р
+TESTSENDERC +1 Р
 CHK
 Перевод no CBI
 Платёжный счёт: 1 Р
 15 июня, пн
-§ СберБанк 53 959,55 Р
+§ DEMO-BANK 8 765,43 Р
 Погашение кредита
 Платёжный счёт: 0 P
 14 июня, вс
-Максим Денисович Ч. +53 959,55 Р
+TESTSENDERC +8 765,43 Р
 CHK
 Перевод no CBI
-Платёжный счёт: 53 959,55 Р`;
+Платёжный счёт: 8 765,43 Р`;
+
+const englishBankRawText = `13:47 4 | DEMOBANK | ит @
+< Transactions Q hs
+Black X No transfers
+12 000 Р 11 500 Р
+Spending Income
+27 June
+DEMO CARSHARE -58,96 Р
+Carsharing +14,74 Debit card
+DEMO CARSHARE +690 Р
+Carsharing Debit card
+DEMO CARSHARE -690 Р
+Carsharing Debit card
+DEMO CARSHARE -/3,93 Р
+Carsharing +18,48 Debit card
+DEMO CARSHARE +690 Р
+Carsharing Debit card
+DEMO CARSHARE -690 Р
+Carsharing Debit card
+DEMO CARSHARE +690 Р
+Carsharing Debit card
+9 © е@ :
+Main Payments City Chat Hub`;
 
 const seedLikeCategories: Category[] = [
   {
@@ -211,14 +244,14 @@ describe("OCR bank history parser", () => {
     const result = parseTransactions(bankHistoryRawText, 72, "history.png", categories);
 
     expect(result.map(({ merchant, amount }) => ({ merchant, amount }))).toEqual([
-      { merchant: "Smart", amount: -680.1 },
-      { merchant: "Пятёрочка", amount: -737.93 },
-      { merchant: "VODOPAD256", amount: -75 },
-      { merchant: "Пятёрочка", amount: -282.78 },
-      { merchant: "IP ZULMEEVA", amount: -785.04 },
-      { merchant: "IP ZULMEEVA", amount: -259.44 },
-      { merchant: "IP ZULMEEVA", amount: -2739.73 },
-      { merchant: "Пятёрочка", amount: -2542.05 },
+      { merchant: "DEMO STORE", amount: -612.34 },
+      { merchant: "Тест Маркет", amount: -734.56 },
+      { merchant: "DEMO-SERVICE", amount: -75 },
+      { merchant: "Тест Маркет", amount: -281.45 },
+      { merchant: "IP DEMOFOOD", amount: -785.04 },
+      { merchant: "IP DEMOFOOD", amount: -259.44 },
+      { merchant: "IP DEMOFOOD", amount: -2739.73 },
+      { merchant: "Тест Маркет", amount: -2542.05 },
     ]);
     expect(result.map((transaction) => transaction.date.slice(0, 10))).toEqual([
       "2026-06-21",
@@ -247,19 +280,19 @@ describe("OCR bank history parser", () => {
     expect(result[1].confidence).toBeLessThan(result[0].confidence);
   });
 
-  it("extracts Ozon Bank history rows without cashback detail rows", () => {
-    const result = parseTransactions(ozonBankRawText, 68, "ozon.png", categories);
+  it("extracts digital bank history rows without cashback detail rows", () => {
+    const result = parseTransactions(digitalBankRawText, 68, "digital-bank.png", categories);
 
     expect(result.map(({ merchant, amount }) => ({ merchant, amount }))).toEqual([
-      { merchant: "КуулКлевер", amount: -446.04 },
+      { merchant: "DEMO GROCERY", amount: -446.04 },
       { merchant: "Проценты на остаток", amount: 22.34 },
-      { merchant: "Компенсация за подарок от Ozor", amount: 2000 },
-      { merchant: "Ozon", amount: -2052 },
-      { merchant: "PRIO-VNESHTORGBANK РА", amount: -3500 },
+      { merchant: "Компенсация по тестовой акции", amount: 2000 },
+      { merchant: "DEMO-CARD", amount: -2052 },
+      { merchant: "DEMO-PAYMENT РА", amount: -3500 },
       { merchant: "Проценты на остаток", amount: 23.47 },
-      { merchant: "COOL PIZZA", amount: -165 },
-      { merchant: "COOL PIZZA", amount: -1839 },
-      { merchant: "УФК по Тульской области МИ ФНО", amount: 5447 },
+      { merchant: "DEMO PIZZA", amount: -165 },
+      { merchant: "DEMO PIZZA", amount: -1839 },
+      { merchant: "DEMO BUDGET PAYMENT", amount: 5447 },
     ]);
     expect(result.map((transaction) => transaction.date.slice(0, 10))).toEqual([
       "2026-06-28",
@@ -287,8 +320,8 @@ describe("OCR bank history parser", () => {
     ]);
   });
 
-  it("treats Ozon interest rows as income even when OCR misses the plus sign", () => {
-    const result = parseTransactions(ozonInterestWithoutPlusRawText, 68, "ozon.png", categories);
+  it("treats interest rows as income even when OCR misses the plus sign", () => {
+    const result = parseTransactions(interestWithoutPlusRawText, 68, "digital-bank.png", categories);
 
     expect(result.map(({ merchant, amount, categoryId }) => ({ merchant, amount, categoryId }))).toEqual([
       { merchant: "Проценты на остаток", amount: 22.34, categoryId: "interest" },
@@ -299,8 +332,8 @@ describe("OCR bank history parser", () => {
     const result = parseTransactions(relativeDateHeadersRawText, 72, "relative.png", categories);
 
     expect(result.map(({ merchant, amount }) => ({ merchant, amount }))).toEqual([
-      { merchant: "Кофе", amount: -150 },
-      { merchant: "Пятёрочка", amount: -737.93 },
+      { merchant: "DEMO COFFEE", amount: -150 },
+      { merchant: "DEMO MARKET", amount: -737.93 },
     ]);
     expect(result.map((transaction) => transaction.date.slice(0, 10))).toEqual([
       "2026-06-26",
@@ -308,39 +341,71 @@ describe("OCR bank history parser", () => {
     ]);
   });
 
-  it("matches Ozon fast food hints to restaurant category from default seed", () => {
-    const result = parseTransactions(xplatFastFoodRawText, 72, "ozon.png", seedLikeCategories);
+  it("matches fast food hints to restaurant category from default seed", () => {
+    const result = parseTransactions(xplatFastFoodRawText, 72, "digital-bank.png", seedLikeCategories);
 
     expect(result.map(({ merchant, amount, categoryId }) => ({ merchant, amount, categoryId }))).toEqual([
-      { merchant: "XPLAT IP RUBAN D. S.", amount: -390, categoryId: "cafe_restaurants" },
+      { merchant: "XPLAT IP DEMO CAFE", amount: -390, categoryId: "cafe_restaurants" },
     ]);
   });
 
   it("ignores internal transfers between own accounts but keeps transfers to people", () => {
-    const result = parseTransactions(internalTransfersRawText, 72, "ozon.png", categories);
+    const result = parseTransactions(internalTransfersRawText, 72, "digital-bank.png", categories);
 
     expect(result.map(({ merchant, amount }) => ({ merchant, amount }))).toEqual([
-      { merchant: "Анастасия Сергеевна Ч.", amount: -50000 },
+      { merchant: "TESTRECIPIENTA", amount: -12345 },
     ]);
   });
 
-  it("extracts Sber card-style transfer blocks with date total in header", () => {
-    const result = parseTransactions(sberCardHistoryRawText, 72, "sber.png", categories);
+  it("extracts card-style transfer blocks with date total in header", () => {
+    const result = parseTransactions(cardHistoryRawText, 72, "card-history.png", categories);
 
     expect(result.map(({ merchant, amount }) => ({ merchant, amount }))).toEqual([
-      { merchant: "Анастасия Сергеевна Ч", amount: -5000 },
-      { merchant: "Людмила Геннадьевна Ч.", amount: 5000 },
-      { merchant: "Максим Денисович Ч.", amount: 1 },
-      { merchant: "СберБанк", amount: -53959.55 },
-      { merchant: "Максим Денисович Ч.", amount: 53959.55 },
+      { merchant: "TESTRECIPIENTA", amount: -1200 },
+      { merchant: "TESTSENDERB", amount: 1200 },
+      { merchant: "TESTSENDERC", amount: 1 },
+      { merchant: "DEMO-BANK", amount: -8765.43 },
+      { merchant: "TESTSENDERC", amount: 8765.43 },
     ]);
-    expect(result.find((transaction) => transaction.merchant === "СберБанк")?.categoryId).toBe("loans");
+    expect(result.find((transaction) => transaction.merchant === "DEMO-BANK")?.categoryId).toBe("loans");
     expect(result.map((transaction) => transaction.date.slice(0, 10))).toEqual([
       "2026-06-20",
       "2026-06-20",
       "2026-06-16",
       "2026-06-15",
       "2026-06-14",
+    ]);
+  });
+
+  it("extracts English bank history with English date and category hints", () => {
+    const result = parseTransactions(englishBankRawText, 83, "english-bank.png", categories);
+
+    expect(result.map(({ merchant, amount }) => ({ merchant, amount }))).toEqual([
+      { merchant: "DEMO CARSHARE", amount: -58.96 },
+      { merchant: "DEMO CARSHARE", amount: 690 },
+      { merchant: "DEMO CARSHARE", amount: -690 },
+      { merchant: "DEMO CARSHARE", amount: -73.93 },
+      { merchant: "DEMO CARSHARE", amount: 690 },
+      { merchant: "DEMO CARSHARE", amount: -690 },
+      { merchant: "DEMO CARSHARE", amount: 690 },
+    ]);
+    expect(result.map((transaction) => transaction.date.slice(0, 10))).toEqual([
+      "2026-06-27",
+      "2026-06-27",
+      "2026-06-27",
+      "2026-06-27",
+      "2026-06-27",
+      "2026-06-27",
+      "2026-06-27",
+    ]);
+    expect(result.map((transaction) => transaction.categoryId)).toEqual([
+      "transport",
+      "other_income",
+      "transport",
+      "transport",
+      "other_income",
+      "transport",
+      "other_income",
     ]);
   });
 });
