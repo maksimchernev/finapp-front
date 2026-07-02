@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import clsx from "clsx";
 import { formatMoney } from "@/entities/transaction/lib/format";
-import { buildDailyExpenseBars } from "@/entities/transaction/lib/statistics";
+import { buildDailyAmountBars } from "@/entities/transaction/lib/statistics";
 import type { Statistics, Transaction } from "@/entities/transaction/model/types";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
@@ -16,8 +16,9 @@ export function AnalyticsPage({
   transactions: Transaction[];
   onBack: () => void;
 }) {
-  const dayBars = useMemo(() => buildDailyExpenseBars(transactions), [transactions]);
-  const maxCategory = Math.max(...(statistics?.byCategory.map((item) => item.totalMinor) || [1]));
+  const expenseBars = useMemo(() => buildDailyAmountBars(transactions, "expense"), [transactions]);
+  const incomeBars = useMemo(() => buildDailyAmountBars(transactions, "income"), [transactions]);
+  const maxCategory = Math.max(...(statistics?.byCategory.map((item) => Math.abs(item.totalMinor)) || [1]));
 
   return (
     <section className={styles.screen}>
@@ -36,7 +37,19 @@ export function AnalyticsPage({
       <section className={styles.chartCard}>
         <h3>Расходы по дням</h3>
         <div className={styles.barChart}>
-          {dayBars.map((bar) => (
+          {expenseBars.map((bar) => (
+            <div className={styles.barColumn} key={bar.label}>
+              <span style={{ height: `${bar.percent}%` }} />
+              <small>{bar.label}</small>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.chartCard}>
+        <h3>Доходы по дням</h3>
+        <div className={clsx(styles.barChart, styles.incomeChart)}>
+          {incomeBars.map((bar) => (
             <div className={styles.barColumn} key={bar.label}>
               <span style={{ height: `${bar.percent}%` }} />
               <small>{bar.label}</small>
@@ -56,10 +69,15 @@ export function AnalyticsPage({
                     <i style={{ background: category.color }} />
                     {category.nameRu}
                   </span>
-                  <b>{formatMoney(-totalMinor)}</b>
+                  <b>{formatMoney(totalMinor)}</b>
                 </div>
                 <div className={styles.progressTrack} style={{ background: category.bgColor }}>
-                  <span style={{ width: `${Math.max(6, (totalMinor / maxCategory) * 100)}%`, background: category.color }} />
+                  <span
+                    style={{
+                      width: `${Math.max(6, (Math.abs(totalMinor) / maxCategory) * 100)}%`,
+                      background: category.color,
+                    }}
+                  />
                 </div>
               </div>
             ))}

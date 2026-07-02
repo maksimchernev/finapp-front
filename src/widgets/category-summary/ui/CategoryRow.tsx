@@ -13,7 +13,7 @@ export function CategoryRow({ category, totalMinor, count }: { category: Categor
         <b>{category.nameRu}</b>
         <small>{count} операций</small>
       </div>
-      <strong>{formatMoney(-totalMinor)}</strong>
+      <strong>{formatMoney(totalMinor)}</strong>
     </div>
   );
 }

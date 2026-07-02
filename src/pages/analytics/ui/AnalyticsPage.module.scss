@@ -81,6 +81,10 @@
   }
 }
 
+.incomeChart .barColumn span {
+  background: linear-gradient(180deg, var(--accent-b), #4f8f64);
+}
+
 .categoryProgress {
   display: grid;
   gap: 11px;
