@@ -9,20 +9,8 @@ import { AuthStories } from "@/widgets/auth-stories/ui/AuthStories";
 import { AppLayout } from "@/shared/ui/AppLayout";
 import styles from "@/pages/auth/ui/AuthPage.module.scss";
 
-export function AuthPage({
-  error,
-  onToken,
-}: {
-  error: string | null;
-  onToken: (token: string) => void; /// для теста
-}) {
-  const [manualToken, setManualToken] = useState("");
+export function AuthPage({ error }: { error: string | null }) {
   const [showStories, setShowStories] = useState(() => !hasSeenAuthStories());
-
-  function submitManualToken() {
-    if (!manualToken.trim()) return;
-    onToken(manualToken.trim());
-  }
 
   function completeStories() {
     rememberAuthStoriesSeen();
@@ -49,8 +37,9 @@ export function AuthPage({
       </div>
       <h1>Все доходы и расходы. За несколько минут.</h1>
       <p>
-        Summa не просит доступ к банковскому кабинету и не хранит ваши скриншоты.
-        Распознавание происходит на устройстве, а в базу попадают только подтвержденные вами операции.
+        Summa не просит доступ к банковскому кабинету и не хранит ваши
+        скриншоты. Распознавание происходит на устройстве, а в базу попадают
+        только подтвержденные вами операции.
       </p>
       <TrustPills />
       {error && <div className={styles.inlineError}>{error}</div>}
@@ -61,18 +50,6 @@ export function AuthPage({
         <a className={styles.secondaryAction} href={authUrls.yandex}>
           Войти через Яндекс
         </a>
-      </div>
-      <div className={styles.manualToken}>
-        <label htmlFor="manual-token">JWT для локальной разработки</label>
-        <div>
-          <input
-            id="manual-token"
-            value={manualToken}
-            onChange={(event) => setManualToken(event.target.value)}
-            placeholder="eyJhbGciOi..."
-          />
-          <button onClick={submitManualToken}>Открыть</button>
-        </div>
       </div>
     </AppLayout>
   );

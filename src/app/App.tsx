@@ -13,12 +13,10 @@ export default function App() {
     <Routes>
       {/* ловим неавторизованные  */}
       <Route element={<GuestOnly token={session.token} />}>
-        <Route
-          path={appRoutes.login}
-          element={
-            <AuthPage error={session.error} onToken={session.acceptToken} />
-          }
-        />
+      <Route
+        path={appRoutes.login}
+        element={<AuthPage error={session.error} />}
+      />
       </Route>
 
       {/* ловим после oauth */}

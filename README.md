@@ -6,7 +6,6 @@ React/Vite frontend для Summa: персонального трекера до
 
 - OAuth-вход через backend-маршруты Google и Yandex.
 - Callback `/auth/callback?token=...` с сохранением JWT в `localStorage`.
-- Локальный ввод JWT для разработки без настроенного OAuth.
 - Загрузка нескольких PNG/JPG через file picker или drag and drop.
 - Локальное распознавание в браузере через `tesseract.js`.
 - Парсинг суммы, валюты, даты и получателя регулярными выражениями.
@@ -42,5 +41,3 @@ FRONTEND_URL=http://localhost:3002
 GOOGLE_CALLBACK_URL=http://localhost:3001/api/auth/google/callback
 YANDEX_CALLBACK_URL=http://localhost:3001/api/auth/yandex/callback
 ```
-
-Для разработки без OAuth можно создать тестового пользователя и JWT по инструкции в `/Users/cmd/Desktop/finapp/bend/QUICKSTART.md`, затем вставить токен на экране входа.
