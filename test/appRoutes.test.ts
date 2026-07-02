@@ -31,7 +31,7 @@ describe("app routes", () => {
 
   it("keeps review grouped under the import bottom-nav item", () => {
     expect(getBottomNavActiveItem("/")).toBe("home");
-    expect(getBottomNavActiveItem("/analytics")).toBe("analytics");
+    expect(getBottomNavActiveItem("/analytics")).toBe("home");
     expect(getBottomNavActiveItem("/categories")).toBe("categories");
     expect(getBottomNavActiveItem("/upload")).toBe("upload");
     expect(getBottomNavActiveItem("/review")).toBe("upload");

@@ -25,7 +25,9 @@ export function useScreenshotImport({
   const [error, setError] = useState<string | null>(null);
 
   async function handleFiles(files: FileList | File[]) {
-    const currentFileNames = new Set(jobs.map((job) => normalizeFileName(job.fileName)));
+    const currentFileNames = new Set(
+      jobs.map((job) => normalizeFileName(job.fileName)),
+    );
     const duplicateNames = new Set<string>();
     const images = Array.from(files).filter((file) => {
       if (!file.type.startsWith("image/")) {
@@ -66,10 +68,7 @@ export function useScreenshotImport({
       message: "В очереди",
     }));
 
-    setJobs((current) => [
-      ...current,
-      ...queuedJobs,
-    ]);
+    setJobs((current) => [...current, ...queuedJobs]);
 
     const parsed: ParsedTransaction[] = [];
     const knownBanks = [...banks];
@@ -108,7 +107,7 @@ export function useScreenshotImport({
         updateJob(file.name, {
           status: "done",
           progress: 100,
-          message: `Готово. ${transactionsFromFile.length} учтено`,
+          message: `Готово. ${transactionsFromFile.length} распознано`,
         });
       } catch (ocrError) {
         updateJob(file.name, {

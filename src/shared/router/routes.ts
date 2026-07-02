@@ -12,7 +12,6 @@ export const appRoutes = {
 
 export type BottomNavItem =
   | "home"
-  | "analytics"
   | "categories"
   | "upload"
   | "banks"
@@ -34,10 +33,6 @@ export function isPrivateRoute(pathname: string) {
 
 export function getBottomNavActiveItem(pathname: string): BottomNavItem {
   const normalizedPath = normalizePath(pathname);
-
-  if (normalizedPath === appRoutes.analytics) {
-    return "analytics";
-  }
 
   if (normalizedPath === appRoutes.categories) {
     return "categories";
