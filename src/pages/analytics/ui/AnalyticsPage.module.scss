@@ -29,6 +29,11 @@
   }
 }
 
+.moneyStack {
+  display: grid;
+  gap: 3px;
+}
+
 .blue {
   color: var(--accent-a);
   background: var(--blue-soft);
@@ -49,6 +54,52 @@
     margin: 0;
     font-size: 16px;
   }
+}
+
+.chartHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+
+  small {
+    display: block;
+    margin-top: 3px;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+}
+
+.switchStack {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+}
+
+.segmentedControl {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(36, 76, 56, 0.08);
+
+  button {
+    border: 0;
+    border-radius: 999px;
+    padding: 6px 10px;
+    color: var(--text-muted);
+    background: transparent;
+    font-size: 12px;
+    font-weight: 700;
+  }
+}
+
+.selectedSegment {
+  color: var(--ink) !important;
+  background: var(--surface) !important;
+  box-shadow: 0 6px 14px rgba(36, 76, 56, 0.13);
 }
 
 .barChart {
@@ -131,5 +182,17 @@
 @media (max-width: 380px) {
   .metricsGrid {
     grid-template-columns: 1fr;
+  }
+
+  .chartHead {
+    display: grid;
+  }
+
+  .switchStack {
+    justify-items: stretch;
+  }
+
+  .segmentedControl {
+    justify-content: flex-start;
   }
 }

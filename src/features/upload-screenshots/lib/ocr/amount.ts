@@ -34,7 +34,8 @@ export function extractAmount(text: string) {
 export function extractTrailingAmount(
   line: string,
 ): LineAmountCandidate | null {
-  const match = line.match(TRAILING_AMOUNT_PATTERN);
+  const searchableLine = removeTrailingHistoryMetadata(line);
+  const match = searchableLine.match(TRAILING_AMOUNT_PATTERN);
   if (!match || match.index === undefined) {
     return null;
   }
@@ -49,6 +50,11 @@ export function extractTrailingAmount(
   }
 
   return { ...amount, index: match.index };
+}
+
+// Убирает метаданные строки истории, которые OCR иногда приклеивает после суммы.
+function removeTrailingHistoryMetadata(line: string) {
+  return line.replace(/\s+\d{1,2}:\d{2}(?:\s+gif)?\s*$/i, "").trimEnd();
 }
 
 // Приводит найденную строку суммы к числу, валюте и служебным флагам.
@@ -87,11 +93,12 @@ export function parseAmountCandidate(
   };
 }
 
-// Нормализует OCR-варианты валюты к RUB, EUR или USD.
+// Нормализует OCR-варианты валюты к ISO-коду валюты.
 export function normalizeCurrency(value?: string) {
   const currency = value?.toLowerCase();
   if (!currency) return "RUB";
   if (currency.includes("€") || currency.includes("eur")) return "EUR";
   if (currency.includes("$") || currency.includes("usd")) return "USD";
+  if (currency.includes("ft") || currency.includes("huf")) return "HUF";
   return "RUB";
 }

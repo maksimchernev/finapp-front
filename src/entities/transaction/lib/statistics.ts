@@ -2,7 +2,11 @@ import type { Transaction } from "@/entities/transaction/model/types";
 
 export type DailyAmountKind = "expense" | "income";
 
-export function buildDailyAmountBars(transactions: Transaction[], kind: DailyAmountKind) {
+export function buildDailyAmountBars(
+  transactions: Transaction[],
+  kind: DailyAmountKind,
+  currency?: string,
+) {
   const lastSeven = [...Array(7)].map((_, index) => {
     const date = new Date();
     date.setDate(date.getDate() - (6 - index));
@@ -17,6 +21,7 @@ export function buildDailyAmountBars(transactions: Transaction[], kind: DailyAmo
   for (const transaction of transactions) {
     if (kind === "expense" && transaction.amountMinor >= 0) continue;
     if (kind === "income" && transaction.amountMinor <= 0) continue;
+    if (currency && transaction.currency !== currency) continue;
     const key = new Date(transaction.date).toISOString().slice(0, 10);
     const bucket = lastSeven.find((item) => item.key === key);
     if (bucket) bucket.total += Math.abs(transaction.amountMinor);

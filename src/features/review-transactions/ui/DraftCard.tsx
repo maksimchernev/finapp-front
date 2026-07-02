@@ -1,6 +1,5 @@
-import { Check, Trash2 } from "lucide-react";
+import { Check } from "lucide-react";
 import clsx from "clsx";
-import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
 import { dateOnlyToIso, toDateInput } from "@/entities/transaction/lib/format";
 import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
@@ -8,12 +7,10 @@ import styles from "@/features/review-transactions/ui/DraftCard.module.scss";
 
 export function DraftCard({
   draft,
-  banks,
   categories,
   onUpdate,
 }: {
   draft: ParsedTransaction;
-  banks: Bank[];
   categories: Category[];
   onUpdate: (localId: string, patch: Partial<ParsedTransaction>) => void;
 }) {
@@ -35,13 +32,6 @@ export function DraftCard({
           />
           <span>{draft.merchant}</span>
         </label>
-        <button
-          className={clsx(styles.iconButton, styles.danger)}
-          onClick={() => onUpdate(draft.localId, { selected: false })}
-          aria-label="Исключить"
-        >
-          <Trash2 size={17} />
-        </button>
       </div>
 
       <div className={styles.editGrid}>
@@ -72,6 +62,7 @@ export function DraftCard({
             <option value="RUB">RUB</option>
             <option value="EUR">EUR</option>
             <option value="USD">USD</option>
+            <option value="HUF">HUF</option>
           </select>
         </label>
       </div>
@@ -83,18 +74,6 @@ export function DraftCard({
           {categories.map((item) => (
             <option key={item.id} value={item.id}>
               {item.nameRu}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label className={styles.categorySelect}>
-        Банк
-        <select value={draft.bankId || ""} onChange={(event) => onUpdate(draft.localId, { bankId: event.target.value })}>
-          <option value="">Не выбран</option>
-          {banks.map((bank) => (
-            <option key={bank.id} value={bank.id}>
-              {bank.name}
             </option>
           ))}
         </select>

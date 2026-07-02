@@ -16,12 +16,21 @@ export interface Transaction {
   notes?: string | null;
 }
 
+export interface CurrencyTotals {
+  currency: string;
+  totalIncomeMinor: number;
+  totalExpenseMinor: number;
+  balanceMinor: number;
+}
+
 export interface Statistics {
   totalIncomeMinor: number;
   totalExpenseMinor: number;
   balanceMinor: number;
+  totalsByCurrency?: CurrencyTotals[];
   byCategory: Array<{
     category: Category;
+    currency?: string;
     totalMinor: number;
     count: number;
   }>;

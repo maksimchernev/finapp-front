@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  Bell,
   Camera,
   ChevronRight,
   Eye,
@@ -13,6 +12,7 @@ import type {
   Statistics,
   Transaction,
 } from "@/entities/transaction/model/types";
+import { getStatisticsCurrencyTotals } from "@/entities/transaction/lib/currencyTotals";
 import type { User } from "@/entities/user/model/types";
 import { formatDashboardMoney } from "@/pages/dashboard/lib/moneyVisibility";
 import { EmptyState } from "@/shared/ui/EmptyState";
@@ -41,6 +41,17 @@ export function DashboardPage({
   const categoryStats =
     statistics?.byCategory.filter((item) => item.totalMinor < 0).slice(0, 4) ??
     [];
+  const currencyTotals = getStatisticsCurrencyTotals(statistics);
+  const displayedTotals = currencyTotals.length
+    ? currencyTotals
+    : [
+        {
+          currency: "RUB",
+          totalIncomeMinor: 0,
+          totalExpenseMinor: 0,
+          balanceMinor: 0,
+        },
+      ];
   const latest = transactions.slice(0, 4);
   const VisibilityIcon = isMoneyVisible ? Eye : EyeOff;
 
@@ -56,21 +67,23 @@ export function DashboardPage({
               : "Доходы и расходы обновлены"}
           </span>
         </div>
-        <button className={styles.iconButton} aria-label="Уведомления">
-          <Bell size={20} />
-        </button>
       </header>
 
       <section className={styles.balanceCard}>
         <div className={styles.balanceRow}>
           <div>
             <span>Картина месяца</span>
-            <strong>
-              {formatDashboardMoney(
-                statistics?.balanceMinor || 0,
-                isMoneyVisible,
-              )}
-            </strong>
+            <div className={styles.moneyStack}>
+              {displayedTotals.map((item) => (
+                <strong key={item.currency}>
+                  {formatDashboardMoney(
+                    item.balanceMinor,
+                    isMoneyVisible,
+                    item.currency,
+                  )}
+                </strong>
+              ))}
+            </div>
           </div>
           <button
             className={styles.glassButton}
@@ -85,21 +98,27 @@ export function DashboardPage({
         <div className={styles.balanceMeta}>
           <div>
             <span>Доходы</span>
-            <b>
-              {formatDashboardMoney(
-                statistics?.totalIncomeMinor || 0,
-                isMoneyVisible,
-              )}
-            </b>
+            {displayedTotals.map((item) => (
+              <b key={item.currency}>
+                {formatDashboardMoney(
+                  item.totalIncomeMinor,
+                  isMoneyVisible,
+                  item.currency,
+                )}
+              </b>
+            ))}
           </div>
           <div>
             <span>Расходы</span>
-            <b>
-              {formatDashboardMoney(
-                -(statistics?.totalExpenseMinor || 0),
-                isMoneyVisible,
-              )}
-            </b>
+            {displayedTotals.map((item) => (
+              <b key={item.currency}>
+                {formatDashboardMoney(
+                  -item.totalExpenseMinor,
+                  isMoneyVisible,
+                  item.currency,
+                )}
+              </b>
+            ))}
           </div>
         </div>
       </section>
@@ -133,7 +152,7 @@ export function DashboardPage({
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();
-            onTransactions();
+            onAnalytics();
           }
         }}
       >
@@ -147,10 +166,11 @@ export function DashboardPage({
           <EmptyState text="Загрузите первую историю операций — Summa соберет категории после проверки." />
         ) : (
           <div className={styles.stack}>
-            {categoryStats.map(({ category, totalMinor, count }) => (
+            {categoryStats.map(({ category, currency, totalMinor, count }) => (
               <CategoryRow
-                key={category.id}
+                key={`${category.id}:${currency || "RUB"}`}
                 category={category}
+                currency={currency}
                 totalMinor={totalMinor}
                 count={count}
               />

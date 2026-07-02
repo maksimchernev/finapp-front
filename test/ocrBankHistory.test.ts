@@ -208,6 +208,32 @@ Carsharing Debit card
 9 © е@ :
 Main Payments City Chat Hub`;
 
+const forintBankRawText = `Февраль Март Апрель Май Июнь
+25 июня -9 938 Ft
+TESTSENDER -6 500 Ft
+21:25 GIF
+McDonald's -790 Ft
+20:42
+Lime -3 708 Ft
+20:38
+Maxsport Catering -990 Ft
+19:03
+TESTRECIPIENTA +750 Ft
+17:05 GIF
+TESTRECIPIENTB +1 300 Ft
+16:47
+21 июня +15 200 Ft
+TESTRECIPIENTA +5 200 Ft
+13:48 GIF
+Demo present
+TESTRECIPIENTB +10 000 Ft
+13:44`;
+
+const forintInlineMetaRawText = `Февраль Март Апрель Май Июнь
+25 июня -9 938 Ft
+TESTSENDER -6 500 Ft 21:25 GIF
+McDonald's -790 Ft 20:42`;
+
 const seedLikeCategories: Category[] = [
   {
     id: "cafe_restaurants",
@@ -406,6 +432,40 @@ describe("OCR bank history parser", () => {
       "other_income",
       "transport",
       "other_income",
+    ]);
+  });
+
+  it("extracts forint bank history rows with HUF currency", () => {
+    const result = parseTransactions(forintBankRawText, 84, "forint-bank.jpeg", categories);
+
+    expect(result.map(({ merchant, amount, currency }) => ({ merchant, amount, currency }))).toEqual([
+      { merchant: "TESTSENDER", amount: -6500, currency: "HUF" },
+      { merchant: "McDonald's", amount: -790, currency: "HUF" },
+      { merchant: "Lime", amount: -3708, currency: "HUF" },
+      { merchant: "Maxsport Catering", amount: -990, currency: "HUF" },
+      { merchant: "TESTRECIPIENTA", amount: 750, currency: "HUF" },
+      { merchant: "TESTRECIPIENTB", amount: 1300, currency: "HUF" },
+      { merchant: "TESTRECIPIENTA", amount: 5200, currency: "HUF" },
+      { merchant: "TESTRECIPIENTB", amount: 10000, currency: "HUF" },
+    ]);
+    expect(result.map((transaction) => transaction.date.slice(0, 10))).toEqual([
+      "2026-06-25",
+      "2026-06-25",
+      "2026-06-25",
+      "2026-06-25",
+      "2026-06-25",
+      "2026-06-25",
+      "2026-06-21",
+      "2026-06-21",
+    ]);
+  });
+
+  it("extracts forint rows when OCR keeps time metadata after the amount", () => {
+    const result = parseTransactions(forintInlineMetaRawText, 84, "forint-bank.jpeg", categories);
+
+    expect(result.map(({ merchant, amount, currency }) => ({ merchant, amount, currency }))).toEqual([
+      { merchant: "TESTSENDER", amount: -6500, currency: "HUF" },
+      { merchant: "McDonald's", amount: -790, currency: "HUF" },
     ]);
   });
 });

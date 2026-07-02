@@ -1,5 +1,6 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import type { Bank } from "@/entities/bank/model/types";
 import { ReviewPage } from "@/pages/review/ui/ReviewPage";
 import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
 
@@ -43,6 +44,16 @@ const unselectedDraft: ParsedTransaction = {
   sourceFile: "one.png",
   rawText: "Coffee 100",
   selected: false,
+};
+
+const bank: Bank = {
+  id: "bank-1",
+  userId: "user-1",
+  name: "T-Bank",
+  normalizedName: "t-bank",
+  keywords: [],
+  createdAt: "2026-07-02T00:00:00.000Z",
+  updatedAt: "2026-07-02T00:00:00.000Z",
 };
 
 describe("ReviewPage", () => {
@@ -99,5 +110,74 @@ describe("ReviewPage", () => {
     );
 
     expect(html).toContain("Сохранить все");
+  });
+
+  it("renders one bank selector for the whole review", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(ReviewPage, {
+        drafts: [
+          { ...unselectedDraft, localId: "draft-1", bankId: "bank-1" },
+          { ...unselectedDraft, localId: "draft-2", bankId: "bank-1" },
+        ],
+        banks: [bank],
+        categories: [],
+        isSaving: false,
+        onBack: () => undefined,
+        onSave: () => undefined,
+        onUpdate: () => undefined,
+      }),
+    );
+
+    expect(html).toContain("Банк");
+    expect(html).toContain("T-Bank");
+  });
+
+  it("applies the selected bank to every draft in the current review", () => {
+    const updates: Array<[string, Partial<ParsedTransaction>]> = [];
+    const element = ReviewPage({
+      drafts: [
+        { ...unselectedDraft, localId: "draft-1" },
+        { ...unselectedDraft, localId: "draft-2" },
+      ],
+      banks: [bank],
+      categories: [],
+      isSaving: false,
+      onBack: () => undefined,
+      onSave: () => undefined,
+      onUpdate: (localId, patch) => {
+        updates.push([localId, patch]);
+      },
+    });
+
+    const children = React.Children.toArray(element.props.children);
+    const bankSelector = children.find(
+      (child) =>
+        React.isValidElement(child) &&
+        (child.props as { "data-testid"?: string })["data-testid"] ===
+          "review-bank-selector",
+    );
+
+    if (!React.isValidElement(bankSelector)) {
+      throw new Error("review bank selector was not rendered");
+    }
+
+    const select = React.Children.toArray(
+      (bankSelector.props as { children: React.ReactNode }).children,
+    ).find(
+      (child) => React.isValidElement(child) && child.type === "select",
+    );
+
+    if (!React.isValidElement(select)) {
+      throw new Error("review bank select was not rendered");
+    }
+
+    (select.props as { onChange: (event: { target: { value: string } }) => void }).onChange({
+      target: { value: "bank-1" },
+    });
+
+    expect(updates).toEqual([
+      ["draft-1", { bankId: "bank-1" }],
+      ["draft-2", { bankId: "bank-1" }],
+    ]);
   });
 });
