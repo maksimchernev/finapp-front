@@ -14,8 +14,31 @@ export type CreateTransactionRequest = {
   sourceType?: "screenshot" | "manual" | "statement";
 };
 
+export type CategoryPayload = {
+  bgColor: string;
+  color: string;
+  icon: string;
+  keywords: string[];
+  nameRu: string;
+  type: "expense" | "income";
+};
+
 export const categoryApi = {
   categories: () => request<Category[]>("/api/categories"),
+  createCategory: (category: CategoryPayload) =>
+    request<Category>("/api/categories", {
+      method: "POST",
+      body: JSON.stringify(category),
+    }),
+  updateCategory: (id: string, category: CategoryPayload) =>
+    request<Category>(`/api/categories/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(category),
+    }),
+  deleteCategory: (id: string) =>
+    request<void>(`/api/categories/${id}`, {
+      method: "DELETE",
+    }),
 };
 
 export const transactionApi = {

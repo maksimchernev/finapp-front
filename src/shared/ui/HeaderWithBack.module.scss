@@ -11,8 +11,19 @@
 }
 
 .compactTopbar {
-  justify-content: flex-start;
   gap: 12px;
+}
+
+.leading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.action {
+  flex: 0 0 auto;
 }
 
 .iconButton {

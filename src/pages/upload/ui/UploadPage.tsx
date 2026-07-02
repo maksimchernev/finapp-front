@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Check, CloudUpload, Plus } from "lucide-react";
+import { Check, CloudUpload, Plus, RotateCcw } from "lucide-react";
 import clsx from "clsx";
 import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
@@ -18,6 +18,7 @@ export function UploadPage({
   onBack,
   onCreateManualTransaction,
   onFiles,
+  onResetRecent,
   onReview,
 }: {
   banks: Bank[];
@@ -26,11 +27,11 @@ export function UploadPage({
   onBack: () => void;
   onCreateManualTransaction: (transaction: CreateTransactionRequest) => Promise<void>;
   onFiles: (files: FileList | File[]) => void;
+  onResetRecent: () => void;
   onReview: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isManualDialogOpen, setIsManualDialogOpen] = useState(false);
-  const hasDoneJobs = jobs.some((job) => job.status === "done");
 
   return (
     <section className={styles.screen}>
@@ -38,6 +39,17 @@ export function UploadPage({
         title="Загрузить операции"
         subtitle="Загрузили. Проверили. Готово."
         onBack={onBack}
+        action={
+          <button
+            type="button"
+            className={styles.iconButton}
+            aria-label="Добавить операцию вручную"
+            title="Добавить операцию вручную"
+            onClick={() => setIsManualDialogOpen(true)}
+          >
+            <Plus size={18} />
+          </button>
+        }
       />
       <div
         className={styles.uploadZone}
@@ -83,32 +95,29 @@ export function UploadPage({
 
       <section className={styles.sectionBlock}>
         <div className={styles.sectionTitle}>
-          <h3>Добавить вручную</h3>
-        </div>
-        <div className={styles.manualCta}>
-          <p>Для наличных, переводов и операций, которых нет на скриншоте.</p>
-          <button
-            className={styles.primaryAction}
-            type="button"
-            onClick={() => setIsManualDialogOpen(true)}
-          >
-            <Plus size={18} />
-            Добавить операцию
-          </button>
-        </div>
-      </section>
-
-      <section className={styles.sectionBlock}>
-        <div className={styles.sectionTitle}>
           <h3>Последние загрузки</h3>
-          {hasDoneJobs && <button onClick={onReview}>Проверить</button>}
+          {jobs.length > 0 && (
+            <button
+              type="button"
+              className={styles.iconButton}
+              aria-label="Сбросить последние загрузки"
+              title="Сбросить последние загрузки"
+              onClick={onResetRecent}
+            >
+              <RotateCcw size={18} />
+            </button>
+          )}
         </div>
         {jobs.length === 0 ? (
           <EmptyState text="Перетащите сюда скриншоты истории операций или выберите файлы." />
         ) : (
           <div className={styles.stack}>
             {jobs.map((job) => (
-              <UploadJobRow key={job.id} job={job} />
+              <UploadJobRow
+                key={job.id}
+                job={job}
+                onClick={job.status === "done" ? onReview : undefined}
+              />
             ))}
           </div>
         )}

@@ -5,17 +5,25 @@ export const appRoutes = {
   upload: "/upload",
   review: "/review",
   analytics: "/analytics",
+  categories: "/categories",
   banks: "/banks",
   settings: "/settings",
 } as const;
 
-export type BottomNavItem = "home" | "analytics" | "upload" | "banks" | "settings";
+export type BottomNavItem =
+  | "home"
+  | "analytics"
+  | "categories"
+  | "upload"
+  | "banks"
+  | "settings";
 
 const privateRoutes = new Set<string>([
   appRoutes.dashboard,
   appRoutes.upload,
   appRoutes.review,
   appRoutes.analytics,
+  appRoutes.categories,
   appRoutes.banks,
   appRoutes.settings,
 ]);
@@ -29,6 +37,10 @@ export function getBottomNavActiveItem(pathname: string): BottomNavItem {
 
   if (normalizedPath === appRoutes.analytics) {
     return "analytics";
+  }
+
+  if (normalizedPath === appRoutes.categories) {
+    return "categories";
   }
 
   if (

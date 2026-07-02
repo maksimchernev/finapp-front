@@ -11,10 +11,12 @@ import { AppLayout } from "@/shared/ui/AppLayout";
 import { BottomNav } from "@/widgets/bottom-nav/ui/BottomNav";
 import { AnalyticsPage } from "@/pages/analytics/ui/AnalyticsPage";
 import { BanksPage } from "@/pages/banks/ui/BanksPage";
+import { CategoriesPage } from "@/pages/categories/ui/CategoriesPage";
 import { DashboardPage } from "@/pages/dashboard/ui/DashboardPage";
 import { ReviewPage } from "@/pages/review/ui/ReviewPage";
 import { SettingsPage } from "@/pages/settings/ui/SettingsPage";
 import { UploadPage } from "@/pages/upload/ui/UploadPage";
+import { resetUploadSession } from "@/pages/workspace/lib/uploadSession";
 import styles from "@/pages/workspace/ui/WorkspacePage.module.scss";
 
 export function WorkspacePage({
@@ -44,9 +46,6 @@ export function WorkspacePage({
     },
     onParsed: (drafts) => {
       review.appendDrafts(drafts);
-      if (drafts.length > 0) {
-        navigate(appRoutes.review);
-      }
     },
   });
 
@@ -58,13 +57,23 @@ export function WorkspacePage({
     review.clearError();
   }
 
+  function handleResetUploadSession() {
+    resetUploadSession({
+      clearReviewDrafts: review.clearDrafts,
+      clearReviewError: review.clearError,
+      clearUploadError: upload.clearError,
+      resetUploadJobs: upload.resetJobs,
+    });
+  }
+
   function handleLogout() {
-    review.clearDrafts();
-    upload.resetJobs();
+    handleResetUploadSession();
     onLogout();
   }
 
-  async function handleCreateManualTransaction(transaction: CreateTransactionRequest) {
+  async function handleCreateManualTransaction(
+    transaction: CreateTransactionRequest,
+  ) {
     await transactionApi.createTransaction(transaction);
     await finance.reload();
   }
@@ -111,6 +120,7 @@ export function WorkspacePage({
               onBack={() => navigate(appRoutes.dashboard)}
               onCreateManualTransaction={handleCreateManualTransaction}
               onFiles={upload.handleFiles}
+              onResetRecent={handleResetUploadSession}
               onReview={() => navigate(appRoutes.review)}
             />
           }
@@ -136,6 +146,17 @@ export function WorkspacePage({
               statistics={finance.statistics}
               transactions={finance.transactions}
               onBack={() => navigate(appRoutes.dashboard)}
+            />
+          }
+        />
+        <Route
+          path="categories"
+          element={
+            <CategoriesPage
+              categories={finance.categories}
+              onCreateCategory={finance.createCategory}
+              onDeleteCategory={finance.deleteCategory}
+              onUpdateCategory={finance.updateCategory}
             />
           }
         />

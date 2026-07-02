@@ -6,6 +6,7 @@ import {
   categoryApi,
   transactionApi,
 } from "@/entities/transaction/api/transactionApi";
+import type { CategoryPayload } from "@/entities/transaction/api/transactionApi";
 import type {
   Statistics,
   Transaction,
@@ -106,6 +107,29 @@ export function useFinanceData({
     return bank;
   }
 
+  async function createCategory(category: CategoryPayload) {
+    const createdCategory = await categoryApi.createCategory(category);
+    setCategories((current) =>
+      [...current, createdCategory].sort(compareCategories),
+    );
+    return createdCategory;
+  }
+
+  async function updateCategory(id: string, category: CategoryPayload) {
+    const updatedCategory = await categoryApi.updateCategory(id, category);
+    setCategories((current) =>
+      current
+        .map((item) => (item.id === updatedCategory.id ? updatedCategory : item))
+        .sort(compareCategories),
+    );
+    return updatedCategory;
+  }
+
+  async function deleteCategory(id: string) {
+    await categoryApi.deleteCategory(id);
+    setCategories((current) => current.filter((item) => item.id !== id));
+  }
+
   async function updateUserName(name: string) {
     const updatedUser = await userApi.updateProfile({ name });
     setUser(updatedUser);
@@ -126,8 +150,17 @@ export function useFinanceData({
     error,
     clearError,
     createBank,
+    createCategory,
+    deleteCategory,
     reload,
     updateBank,
+    updateCategory,
     updateUserName,
   };
+}
+
+function compareCategories(a: Category, b: Category) {
+  return a.type === b.type
+    ? a.nameRu.localeCompare(b.nameRu)
+    : a.type.localeCompare(b.type);
 }

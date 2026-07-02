@@ -3,11 +3,16 @@ import clsx from "clsx";
 import type { UploadJob } from "@/features/upload-screenshots/model/types";
 import styles from "@/features/upload-screenshots/ui/UploadJobRow.module.scss";
 
-export function UploadJobRow({ job }: { job: UploadJob }) {
+export function UploadJobRow({
+  job,
+  onClick,
+}: {
+  job: UploadJob;
+  onClick?: () => void;
+}) {
   const statusClass = job.status === "done" ? styles.done : job.status === "error" ? styles.error : "";
-
-  return (
-    <div className={styles.uploadRow}>
+  const content = (
+    <>
       <div className={styles.uploadRowMain}>
         <span className={clsx(styles.fileStatus, statusClass)}>
           {job.status === "done" ? <FileCheck size={22} /> : <FileText size={22} />}
@@ -21,6 +26,21 @@ export function UploadJobRow({ job }: { job: UploadJob }) {
       <div className={clsx(styles.progressTrack, styles.thin)}>
         <span style={{ width: `${job.progress}%` }} />
       </div>
-    </div>
+    </>
   );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        className={clsx(styles.uploadRow, styles.interactive)}
+        onClick={onClick}
+        aria-label={`Проверить загрузку ${job.fileName}`}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return <div className={styles.uploadRow}>{content}</div>;
 }

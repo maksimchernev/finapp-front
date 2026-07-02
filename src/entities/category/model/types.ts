@@ -7,4 +7,6 @@ export interface Category {
   bgColor: string;
   type: "expense" | "income";
   keywords: string[];
+  isDefault?: boolean;
+  userId?: string | null;
 }
