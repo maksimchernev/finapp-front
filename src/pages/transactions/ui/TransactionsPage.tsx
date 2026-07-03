@@ -12,6 +12,7 @@ import {
   toTransactionUpdatePayload,
   type TransactionEditForm,
 } from "@/pages/transactions/lib/transactionEditor";
+import { Dialog } from "@/shared/ui/Dialog";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
 import styles from "@/pages/transactions/ui/TransactionsPage.module.scss";
@@ -138,18 +139,12 @@ export function TransactionsPage({
       </section>
 
       {editingTransaction && form && (
-        <div
-          className={styles.backdrop}
-          role="presentation"
-          onMouseDown={closeDialog}
+        <Dialog
+          ariaLabelledBy="transaction-edit-title"
+          backdropClassName={styles.backdrop}
+          className={styles.dialog}
+          onClose={closeDialog}
         >
-          <section
-            aria-labelledby="transaction-edit-title"
-            aria-modal="true"
-            className={styles.dialog}
-            role="dialog"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
             <header className={styles.dialogHeader}>
               <div>
                 <span>операция</span>
@@ -289,8 +284,7 @@ export function TransactionsPage({
                 </button>
               </div>
             </form>
-          </section>
-        </div>
+        </Dialog>
       )}
     </section>
   );

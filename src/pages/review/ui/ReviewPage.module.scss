@@ -3,6 +3,13 @@
   gap: 18px;
   min-width: 0;
   max-width: 100%;
+
+  .reviewFileName {
+    color: var(--accent-a);
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+  }
 }
 
 .reviewList {
@@ -40,7 +47,7 @@
 
 .stickyActions {
   position: sticky;
-  bottom: 86px;
+  bottom: 98px;
 }
 
 .primaryAction,

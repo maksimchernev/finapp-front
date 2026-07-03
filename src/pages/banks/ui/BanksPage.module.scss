@@ -175,7 +175,7 @@
 
 .dialog {
   width: min(100%, 430px);
-  max-height: min(720px, calc(100dvh - 40px));
+  max-height: min(720px, 100dvh);
   overflow: auto;
   padding: 18px;
   border: 1px solid rgba(36, 76, 56, 0.14);

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Building2, Plus, X } from "lucide-react";
 import type { Bank } from "@/entities/bank/model/types";
+import { Dialog } from "@/shared/ui/Dialog";
 import styles from "@/pages/banks/ui/BanksPage.module.scss";
 
 export function BanksPage({
@@ -146,7 +147,7 @@ export function BanksPage({
 
       <p className={styles.keywordHint}>
         Ключевое слово — это текст, который стабильно попадает на скриншоты
-        этого банка: название банка или, например, GigaChat для Сбербанка.
+        этого банка. Например, название банка.
       </p>
 
       {createError && <p className={styles.errorText}>{createError}</p>}
@@ -182,62 +183,54 @@ export function BanksPage({
       </section>
 
       {editingBank && (
-        <div
-          className={styles.backdrop}
-          role="presentation"
-          onMouseDown={closeEditModal}
+        <Dialog
+          ariaLabelledBy="bank-edit-title"
+          backdropClassName={styles.backdrop}
+          className={styles.dialog}
+          onClose={closeEditModal}
         >
-          <section
-            aria-labelledby="bank-edit-title"
-            aria-modal="true"
-            className={styles.dialog}
-            role="dialog"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <header className={styles.dialogHeader}>
-              <div>
-                <span>банк</span>
-                <h3 id="bank-edit-title">Редактировать банк</h3>
-              </div>
-              <button
-                aria-label="Закрыть"
-                className={styles.closeButton}
-                type="button"
-                onClick={closeEditModal}
-              >
-                <X size={20} />
-              </button>
-            </header>
+          <header className={styles.dialogHeader}>
+            <div>
+              <span>банк</span>
+              <h3 id="bank-edit-title">Редактировать банк</h3>
+            </div>
+            <button
+              aria-label="Закрыть"
+              className={styles.closeButton}
+              type="button"
+              onClick={closeEditModal}
+            >
+              <X size={20} />
+            </button>
+          </header>
 
-            <form className={styles.editForm} onSubmit={handleUpdateBank}>
-              <label>
-                Имя банка
-                <input
-                  value={editName}
-                  onChange={(event) => setEditName(event.target.value)}
-                  maxLength={80}
-                  placeholder="Например, Ozon Банк"
-                />
-              </label>
-              <label>
-                Ключевики
-                <input
-                  value={editKeywords}
-                  onChange={(event) => setEditKeywords(event.target.value)}
-                  placeholder="Через запятую: ozon банк, 0zon банк"
-                />
-              </label>
-              <p className={styles.modalHint}>
-                Используйте слова, которые стабильно попадают на скриншоты этого
-                банка.
-              </p>
-              {editError && <p className={styles.errorText}>{editError}</p>}
-              <button type="submit" disabled={isUpdatingBank}>
-                {isUpdatingBank ? "Сохраняю" : "Сохранить"}
-              </button>
-            </form>
-          </section>
-        </div>
+          <form className={styles.editForm} onSubmit={handleUpdateBank}>
+            <label>
+              Имя банка
+              <input
+                value={editName}
+                onChange={(event) => setEditName(event.target.value)}
+                maxLength={80}
+              />
+            </label>
+            <label>
+              Ключевые слова
+              <input
+                value={editKeywords}
+                onChange={(event) => setEditKeywords(event.target.value)}
+                placeholder="Через запятую"
+              />
+            </label>
+            <p className={styles.modalHint}>
+              Используйте слова, которые стабильно попадают на скриншоты этого
+              банка.
+            </p>
+            {editError && <p className={styles.errorText}>{editError}</p>}
+            <button type="submit" disabled={isUpdatingBank}>
+              {isUpdatingBank ? "Сохраняю" : "Сохранить"}
+            </button>
+          </form>
+        </Dialog>
       )}
     </section>
   );

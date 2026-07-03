@@ -37,7 +37,9 @@ export function WorkspacePage({
   onUnauthorized: (message: string) => void;
 }) {
   const navigate = useNavigate();
-  const [activeReviewJobId, setActiveReviewJobId] = useState<string | null>(null);
+  const [activeReviewJobId, setActiveReviewJobId] = useState<string | null>(
+    null,
+  );
   const finance = useFinanceData({ token, onUnauthorized });
   const review = useTransactionReview({
     onSaved: async () => {
@@ -56,9 +58,13 @@ export function WorkspacePage({
     },
   });
 
-  const activeReviewJob = upload.jobs.find((job) => job.id === activeReviewJobId);
+  const activeReviewJob = upload.jobs.find(
+    (job) => job.id === activeReviewJobId,
+  );
   const doneReviewJobs = getDoneUploadJobs(upload.jobs);
-  const activeReviewIndex = doneReviewJobs.findIndex((job) => job.id === activeReviewJobId);
+  const activeReviewIndex = doneReviewJobs.findIndex(
+    (job) => job.id === activeReviewJobId,
+  );
   const isFinalReviewJob = activeReviewJobId
     ? isLastDoneUploadJob(upload.jobs, activeReviewJobId)
     : false;
@@ -109,7 +115,10 @@ export function WorkspacePage({
       return;
     }
 
-    const previousReviewJob = getPreviousDoneUploadJob(upload.jobs, activeReviewJobId);
+    const previousReviewJob = getPreviousDoneUploadJob(
+      upload.jobs,
+      activeReviewJobId,
+    );
     if (!previousReviewJob) {
       navigate(appRoutes.upload);
       return;
@@ -124,6 +133,7 @@ export function WorkspacePage({
     const nextReviewJob = getNextDoneUploadJob(upload.jobs, activeReviewJobId);
     if (nextReviewJob) {
       setActiveReviewJobId(nextReviewJob.id);
+      window.scrollTo(0, 0);
       return;
     }
 
@@ -183,6 +193,7 @@ export function WorkspacePage({
           element={
             <ReviewPage
               drafts={activeReviewJob?.drafts ?? []}
+              reviewFileName={activeReviewJob?.fileName ?? ""}
               banks={finance.banks}
               categories={finance.categories}
               isSaving={review.isSaving}

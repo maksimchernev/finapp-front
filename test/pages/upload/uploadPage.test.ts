@@ -13,8 +13,13 @@ jest.mock("@/pages/upload/ui/UploadPage.module.scss", () =>
 );
 
 jest.mock("@/features/upload-screenshots/ui/UploadJobRow", () => ({
-  UploadJobRow: ({ job }: { job: UploadJob }) =>
-    React.createElement("div", { "data-job": job.fileName }),
+  UploadJobRow: ({
+    bankName,
+    job,
+  }: {
+    bankName?: string;
+    job: UploadJob;
+  }) => React.createElement("div", { "data-bank": bankName, "data-job": job.fileName }),
 }));
 
 jest.mock("@/pages/upload/ui/ManualTransactionDialog", () => ({
@@ -88,5 +93,54 @@ describe("UploadPage", () => {
     expect(html).not.toContain(">Добавить операцию<");
     expect(html).not.toContain("Добавить вручную");
     expect(html).not.toContain("Для наличных, переводов и операций, которых нет на скриншоте.");
+  });
+
+  it("passes recognized bank name to recent upload jobs", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(UploadPage, {
+        banks: [
+          {
+            id: "bank-1",
+            userId: "user-1",
+            name: "Т-Банк",
+            normalizedName: "т-банк",
+            keywords: ["t-bank"],
+            createdAt: "2026-07-03T00:00:00.000Z",
+            updatedAt: "2026-07-03T00:00:00.000Z",
+          },
+        ],
+        categories: [],
+        jobs: [
+          {
+            id: "job-1",
+            fileName: "tbank.png",
+            message: "Готово. 3 распознано",
+            progress: 100,
+            status: "done",
+            drafts: [
+              {
+                localId: "draft-1",
+                amount: -100,
+                currency: "RUB",
+                date: "2026-07-03",
+                merchant: "Coffee",
+                bankId: "bank-1",
+                confidence: 0.9,
+                sourceFile: "tbank.png",
+                rawText: "T-Bank Coffee",
+                selected: true,
+              },
+            ],
+          },
+        ],
+        onBack: () => undefined,
+        onCreateManualTransaction: async () => undefined,
+        onFiles: () => undefined,
+        onResetRecent: () => undefined,
+        onReview: () => undefined,
+      }),
+    );
+
+    expect(html).toContain('data-bank="Т-Банк"');
   });
 });

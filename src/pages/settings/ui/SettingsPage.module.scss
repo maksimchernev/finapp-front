@@ -30,7 +30,11 @@
   border: 1px solid var(--line);
   border-radius: 8px;
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.36)),
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.72),
+      rgba(255, 255, 255, 0.36)
+    ),
     var(--surface);
   color: inherit;
   font: inherit;
@@ -149,7 +153,11 @@
   gap: 8px;
   color: #8b211f;
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.58), rgba(251, 234, 234, 0.82)),
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.58),
+      rgba(251, 234, 234, 0.82)
+    ),
     #fbeaea;
   font-weight: 800;
 }
@@ -167,7 +175,7 @@
 
 .dialog {
   width: min(100%, 430px);
-  max-height: min(780px, calc(100dvh - 40px));
+  max-height: min(780px, 100dvh);
   overflow: auto;
   padding: 18px;
   border: 1px solid rgba(36, 76, 56, 0.14);

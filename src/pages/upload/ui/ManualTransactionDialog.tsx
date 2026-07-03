@@ -8,6 +8,7 @@ import {
   toManualTransactionPayload,
   type ManualTransactionForm,
 } from "@/pages/upload/lib/manualTransaction";
+import { Dialog } from "@/shared/ui/Dialog";
 import styles from "@/pages/upload/ui/ManualTransactionDialog.module.scss";
 
 export function ManualTransactionDialog({
@@ -64,55 +65,53 @@ export function ManualTransactionDialog({
   }
 
   return (
-    <div className={styles.backdrop} role="presentation" onMouseDown={closeDialog}>
-      <section
-        aria-labelledby="manual-transaction-title"
-        aria-modal="true"
-        className={styles.dialog}
-        role="dialog"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <header className={styles.header}>
-          <div>
-            <span>ручной ввод</span>
-            <h3 id="manual-transaction-title">Новая операция</h3>
-          </div>
+    <Dialog
+      ariaLabelledBy="manual-transaction-title"
+      backdropClassName={styles.backdrop}
+      className={styles.dialog}
+      onClose={closeDialog}
+    >
+      <header className={styles.header}>
+        <div>
+          <span>ручной ввод</span>
+          <h3 id="manual-transaction-title">Новая операция</h3>
+        </div>
+        <button
+          aria-label="Закрыть"
+          className={styles.closeButton}
+          type="button"
+          onClick={closeDialog}
+        >
+          <X size={20} />
+        </button>
+      </header>
+
+      <form className={styles.manualForm} onSubmit={handleManualSubmit}>
+        <div className={styles.segmented}>
           <button
-            aria-label="Закрыть"
-            className={styles.closeButton}
             type="button"
-            onClick={closeDialog}
+            className={manualForm.kind === "expense" ? styles.selectedSegment : undefined}
+            onClick={() => updateManualForm({ categoryId: "", kind: "expense" })}
           >
-            <X size={20} />
+            Расход
           </button>
-        </header>
+          <button
+            type="button"
+            className={manualForm.kind === "income" ? styles.selectedSegment : undefined}
+            onClick={() => updateManualForm({ categoryId: "", kind: "income" })}
+          >
+            Доход
+          </button>
+        </div>
 
-        <form className={styles.manualForm} onSubmit={handleManualSubmit}>
-          <div className={styles.segmented}>
-            <button
-              type="button"
-              className={manualForm.kind === "expense" ? styles.selectedSegment : undefined}
-              onClick={() => updateManualForm({ categoryId: "", kind: "expense" })}
-            >
-              Расход
-            </button>
-            <button
-              type="button"
-              className={manualForm.kind === "income" ? styles.selectedSegment : undefined}
-              onClick={() => updateManualForm({ categoryId: "", kind: "income" })}
-            >
-              Доход
-            </button>
-          </div>
-
-          <label>
-            Имя транзакции
-            <input
-              value={manualForm.merchant}
-              onChange={(event) => updateManualForm({ merchant: event.target.value })}
-              placeholder="Например, КуулКлевер"
-            />
-          </label>
+        <label>
+          Имя транзакции
+          <input
+            value={manualForm.merchant}
+            onChange={(event) => updateManualForm({ merchant: event.target.value })}
+            placeholder="Например, КуулКлевер"
+          />
+        </label>
 
           <div className={styles.manualGrid}>
             <label>
@@ -165,14 +164,13 @@ export function ManualTransactionDialog({
             </label>
           </div>
 
-          {manualError && <p className={styles.errorText}>{manualError}</p>}
+        {manualError && <p className={styles.errorText}>{manualError}</p>}
 
-          <button className={styles.primaryAction} type="submit" disabled={isManualSaving}>
-            {isManualSaving ? "Сохраняю..." : "Сохранить операцию"}
-          </button>
-        </form>
-      </section>
-    </div>
+        <button className={styles.primaryAction} type="submit" disabled={isManualSaving}>
+          {isManualSaving ? "Сохраняю..." : "Сохранить операцию"}
+        </button>
+      </form>
+    </Dialog>
   );
 }
 

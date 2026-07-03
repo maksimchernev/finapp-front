@@ -25,7 +25,9 @@ export function UploadPage({
   categories: Category[];
   jobs: UploadJob[];
   onBack: () => void;
-  onCreateManualTransaction: (transaction: CreateTransactionRequest) => Promise<void>;
+  onCreateManualTransaction: (
+    transaction: CreateTransactionRequest,
+  ) => Promise<void>;
   onFiles: (files: FileList | File[]) => void;
   onResetRecent: () => void;
   onReview: (jobId: string) => void;
@@ -115,6 +117,7 @@ export function UploadPage({
             {jobs.map((job) => (
               <UploadJobRow
                 key={job.id}
+                bankName={getUploadJobBankName(job, banks)}
                 job={job}
                 onReview={job.status === "done" ? onReview : undefined}
               />
@@ -132,4 +135,9 @@ export function UploadPage({
       />
     </section>
   );
+}
+
+function getUploadJobBankName(job: UploadJob, banks: Bank[]) {
+  const bankId = job.drafts.find((draft) => draft.bankId)?.bankId;
+  return banks.find((bank) => bank.id === bankId)?.name;
 }

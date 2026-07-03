@@ -14,6 +14,7 @@ import {
   toCategoryPayload,
   type CategoryForm,
 } from "@/pages/categories/lib/categoryForm";
+import { Dialog } from "@/shared/ui/Dialog";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import styles from "@/pages/categories/ui/CategoriesPage.module.scss";
 
@@ -229,14 +230,12 @@ export function CategoriesPage({
       </section>
 
       {form && (
-        <div className={styles.backdrop} role="presentation" onMouseDown={closeDialog}>
-          <section
-            aria-labelledby="category-edit-title"
-            aria-modal="true"
-            className={styles.dialog}
-            role="dialog"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
+        <Dialog
+          ariaLabelledBy="category-edit-title"
+          backdropClassName={styles.backdrop}
+          className={styles.dialog}
+          onClose={closeDialog}
+        >
             <header className={styles.dialogHeader}>
               <div>
                 <span>{editingCategory ? "категория" : "новая категория"}</span>
@@ -407,8 +406,7 @@ export function CategoriesPage({
                 </button>
               </div>
             </form>
-          </section>
-        </div>
+        </Dialog>
       )}
     </section>
   );

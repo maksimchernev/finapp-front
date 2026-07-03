@@ -1,3 +1,4 @@
+import { renderToStaticMarkup } from "react-dom/server";
 import { UploadJobRow } from "@/features/upload-screenshots/ui/UploadJobRow";
 import type { UploadJob } from "@/features/upload-screenshots/model/types";
 
@@ -43,5 +44,13 @@ describe("UploadJobRow", () => {
 
     expect(element.type).toBe("div");
     expect(element.props["aria-label"]).toBeUndefined();
+  });
+
+  it("renders recognized bank name without a label", () => {
+    const props = { job, bankName: "Т-Банк" };
+    const html = renderToStaticMarkup(UploadJobRow(props));
+
+    expect(html).toContain("Т-Банк");
+    expect(html).not.toContain("Банк:");
   });
 });

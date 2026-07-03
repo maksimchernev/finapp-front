@@ -9,6 +9,7 @@ import styles from "@/pages/review/ui/ReviewPage.module.scss";
 
 export function ReviewPage({
   drafts,
+  reviewFileName,
   banks,
   categories,
   isSaving,
@@ -19,6 +20,7 @@ export function ReviewPage({
   onUpdate,
 }: {
   drafts: ParsedTransaction[];
+  reviewFileName: string;
   banks: Bank[];
   categories: Category[];
   isSaving: boolean;
@@ -47,15 +49,17 @@ export function ReviewPage({
   return (
     <section className={styles.screen}>
       <HeaderWithBack title={title} subtitle={subtitle} onBack={onBack} />
-
+      <p className={styles.reviewFileName}>{reviewFileName}</p>
       {drafts.length > 0 ? (
-        <label className={styles.reviewBankSelect} data-testid="review-bank-selector">
-          Банк
+        <label
+          className={styles.reviewBankSelect}
+          data-testid="review-bank-selector"
+        >
           <select
             value={selectedBankId}
             onChange={(event) => handleReviewBankChange(event.target.value)}
           >
-            <option value="">Не выбран</option>
+            <option value="">Банк не выбран</option>
             {banks.map((bank) => (
               <option key={bank.id} value={bank.id}>
                 {bank.name}

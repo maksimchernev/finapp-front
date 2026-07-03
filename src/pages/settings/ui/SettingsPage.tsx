@@ -8,6 +8,7 @@ import {
   X,
 } from "lucide-react";
 import type { User } from "@/entities/user/model/types";
+import { Dialog } from "@/shared/ui/Dialog";
 import styles from "@/pages/settings/ui/SettingsPage.module.scss";
 
 export function SettingsPage({
@@ -129,109 +130,102 @@ export function SettingsPage({
       </button>
 
       {isProfileModalOpen && (
-        <div
-          className={styles.backdrop}
-          role="presentation"
-          onMouseDown={closeProfileModal}
+        <Dialog
+          ariaLabelledBy="profile-edit-title"
+          backdropClassName={styles.backdrop}
+          className={styles.dialog}
+          onClose={closeProfileModal}
         >
-          <section
-            aria-labelledby="profile-edit-title"
-            aria-modal="true"
-            className={styles.dialog}
-            role="dialog"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <header className={styles.dialogHeader}>
+          <header className={styles.dialogHeader}>
+            <div>
+              <span>профиль</span>
+              <h3 id="profile-edit-title">Редактировать профиль</h3>
+            </div>
+            <button
+              aria-label="Закрыть"
+              className={styles.closeButton}
+              type="button"
+              onClick={closeProfileModal}
+            >
+              <X size={20} />
+            </button>
+          </header>
+
+          <form className={styles.profileForm} onSubmit={handleNameSubmit}>
+            <div className={styles.avatarEditor}>
+              <span>Аватар</span>
               <div>
-                <span>профиль</span>
-                <h3 id="profile-edit-title">Редактировать профиль</h3>
+                {user?.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt=""
+                    className={styles.avatarPreview}
+                  />
+                ) : (
+                  <span className={styles.avatarPreviewPlaceholder}>
+                    <UserCircle size={34} />
+                  </span>
+                )}
+                <button type="button" disabled>
+                  <Camera size={16} />
+                  Изменить позже
+                </button>
               </div>
-              <button
-                aria-label="Закрыть"
-                className={styles.closeButton}
-                type="button"
-                onClick={closeProfileModal}
-              >
-                <X size={20} />
-              </button>
-            </header>
+            </div>
 
-            <form className={styles.profileForm} onSubmit={handleNameSubmit}>
-              <div className={styles.avatarEditor}>
-                <span>Аватар</span>
-                <div>
-                  {user?.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt=""
-                      className={styles.avatarPreview}
-                    />
-                  ) : (
-                    <span className={styles.avatarPreviewPlaceholder}>
-                      <UserCircle size={34} />
-                    </span>
-                  )}
-                  <button type="button" disabled>
-                    <Camera size={16} />
-                    Изменить позже
-                  </button>
-                </div>
-              </div>
+            <label>
+              Имя
+              <input
+                value={name}
+                onChange={(event) => {
+                  setName(event.target.value);
+                  setNameError(null);
+                }}
+                maxLength={80}
+                placeholder="Например, Алексей"
+              />
+            </label>
 
+            <label>
+              Дефолтная валюта
+              <select disabled value={user?.preferences?.defaultCurrency ?? "RUB"}>
+                <option value="RUB">RUB</option>
+                <option value="EUR">EUR</option>
+                <option value="USD">USD</option>
+              </select>
+            </label>
+
+            <label>
+              Язык
+              <select disabled value="ru">
+                <option value="ru">Русский</option>
+              </select>
+            </label>
+
+            {user?.phone && (
               <label>
-                Имя
-                <input
-                  value={name}
-                  onChange={(event) => {
-                    setName(event.target.value);
-                    setNameError(null);
-                  }}
-                  maxLength={80}
-                  placeholder="Например, Алексей"
-                />
+                Телефон
+                <input readOnly value={user.phone} />
               </label>
+            )}
 
+            {user?.email && (
               <label>
-                Дефолтная валюта
-                <select disabled value={user?.preferences?.defaultCurrency ?? "RUB"}>
-                  <option value="RUB">RUB</option>
-                  <option value="EUR">EUR</option>
-                  <option value="USD">USD</option>
-                </select>
+                Email
+                <input readOnly value={user.email} />
               </label>
+            )}
 
-              <label>
-                Язык
-                <select disabled value="ru">
-                  <option value="ru">Русский</option>
-                </select>
-              </label>
+            {nameError && <p className={styles.errorText}>{nameError}</p>}
 
-              {user?.phone && (
-                <label>
-                  Телефон
-                  <input readOnly value={user.phone} />
-                </label>
-              )}
-
-              {user?.email && (
-                <label>
-                  Email
-                  <input readOnly value={user.email} />
-                </label>
-              )}
-
-              {nameError && <p className={styles.errorText}>{nameError}</p>}
-
-              <button
-                type="submit"
-                disabled={isSavingName || name.trim() === (user?.name ?? "")}
-              >
-                {isSavingName ? "Сохраняю" : "Сохранить"}
-              </button>
-            </form>
-          </section>
-        </div>
+            <button
+              type="submit"
+              disabled={isSavingName || name.trim() === (user?.name ?? "")}
+            >
+              {isSavingName ? "Сохраняю" : "Сохранить"}
+            </button>
+          </form>
+        </Dialog>
       )}
     </section>
   );

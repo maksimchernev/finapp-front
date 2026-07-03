@@ -23,6 +23,7 @@ export function parseTransactions(
     fileName,
     categories,
   );
+
   if (historyRows.length > 0) {
     return historyRows;
   }
