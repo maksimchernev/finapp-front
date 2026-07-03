@@ -4,9 +4,8 @@ services:
   - type: web
     name: summa-front
     runtime: static
-    plan: free
     buildCommand: npm ci --include=dev && npm run build
-    staticPublishPath: dist
+    staticPublishPath: ./dist
     autoDeployTrigger: checksPass
     envVars:
       - key: VITE_DIRECT_API_URL
