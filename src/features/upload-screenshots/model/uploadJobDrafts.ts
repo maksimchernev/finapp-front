@@ -8,6 +8,16 @@ export function attachDraftsToUploadJob(
   return jobs.map((job) => (job.id === jobId ? { ...job, drafts } : job));
 }
 
+export function appendDraftToUploadJob(
+  jobs: UploadJob[],
+  jobId: string,
+  draft: ParsedTransaction,
+) {
+  return jobs.map((job) =>
+    job.id === jobId ? { ...job, drafts: [...job.drafts, draft] } : job,
+  );
+}
+
 export function updateUploadJobDraft(
   jobs: UploadJob[],
   jobId: string,
@@ -21,6 +31,21 @@ export function updateUploadJobDraft(
           drafts: job.drafts.map((draft) =>
             draft.localId === localId ? { ...draft, ...patch } : draft,
           ),
+        }
+      : job,
+  );
+}
+
+export function removeDraftFromUploadJob(
+  jobs: UploadJob[],
+  jobId: string,
+  localId: string,
+) {
+  return jobs.map((job) =>
+    job.id === jobId
+      ? {
+          ...job,
+          drafts: job.drafts.filter((draft) => draft.localId !== localId),
         }
       : job,
   );

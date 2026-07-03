@@ -146,6 +146,45 @@ DEMO COFFEE -150Р
 Вчера
 DEMO MARKET -737,93 Р`;
 
+const relativeDateHeadersWithCalendarRawText = `История
+Сегодня, 20 июня -533 2
+Максим Денисович Ч. -4 162 ₽
+Между счетами
+© Самокат -533 Р
+Супермаркеты
+Вчера, 24 июня
+Банкомат +4 100 ₽
+Операции с наличными`;
+
+const ozonRelativeDateRawText = `13:14 А THAR СЕ
+История А AQ
+Сегодня, 5 июля -533 2
+Максим Денисович Ч. -4162 Р
+
+банк
+Между счетами
+© Самокат -533 Р
+Супермаркеты +25 @
+Вчера, 2 июля
+Банкомат +4100 Р
+Операции с наличными
+25 июня
+Максим Денисович Ч +62 Р
+банк
+Входящие переводы
+© VK*Parking-NN -61,50 Р
+Операция отклонена Ф
+22 июня -2 459 Р
+© Автодор -2 459 Р
+Государственные услуги
+Оплата по УИН 0412479001000022087609295
+Максим Денисович Ч +2 459 Р
+банк
+Входящие переводы
+17 июня -131P
+© UDACHNYY —-131 Р
+Супермаркеты`;
+
 const xplatFastFoodRawText = `Операции
 Сегодня
 XPLAT*IP DEMO CAFE -390Р
@@ -184,6 +223,24 @@ TESTSENDERC +8 765,43 Р
 CHK
 Перевод no CBI
 Платёжный счёт: 8 765,43 Р`;
+
+const sberYesterdayRawText = `ae 4 4 4
+a oo
+a oo
+Что показывать Vv Период v Карта или счёт м Cyt
+Buepa
+у, Максим Денисович Ч 3 901 Р
+Перевод по CBI
+Платёжный счёт: 0 P
+1 июля, ср
+$ Людмила Геннадьевна Ч. +3 900 Р
+Входящий перевод
+Платёжный счёт: 3 901 Р
+29 июня, пн
+© Вы вошли в Домклик
+С помощью Сбер ID в 15:12 мск. Узнать детали —
+нажмите здесь.
+Детали входа`;
 
 const englishBankRawText = `13:47 4 | DEMOBANK | ит @
 < Transactions Q hs
@@ -243,7 +300,20 @@ const seedLikeCategories: Category[] = [
     color: "#000",
     bgColor: "#fff",
     type: "expense",
-    keywords: ["cafe", "restaurant", "bar", "starbucks", "mcdonalds", "pizza", "кафе", "ресторан", "бар", "фастфуд", "пицца", "еда"],
+    keywords: [
+      "cafe",
+      "restaurant",
+      "bar",
+      "starbucks",
+      "mcdonalds",
+      "pizza",
+      "кафе",
+      "ресторан",
+      "бар",
+      "фастфуд",
+      "пицца",
+      "еда",
+    ],
   },
   {
     id: "other_expense",
@@ -267,9 +337,16 @@ describe("OCR bank history parser", () => {
   });
 
   it("extracts expense rows from noisy mobile bank history text", () => {
-    const result = parseTransactions(bankHistoryRawText, 72, "history.png", categories);
+    const result = parseTransactions(
+      bankHistoryRawText,
+      72,
+      "history.png",
+      categories,
+    );
 
-    expect(result.map(({ merchant, amount }) => ({ merchant, amount }))).toEqual([
+    expect(
+      result.map(({ merchant, amount }) => ({ merchant, amount })),
+    ).toEqual([
       { merchant: "DEMO STORE", amount: -612.34 },
       { merchant: "Тест Маркет", amount: -734.56 },
       { merchant: "DEMO-SERVICE", amount: -75 },
@@ -289,7 +366,9 @@ describe("OCR bank history parser", () => {
       "2026-06-19",
       "2026-06-19",
     ]);
-    expect(result.every((transaction) => transaction.currency === "RUB")).toBe(true);
+    expect(result.every((transaction) => transaction.currency === "RUB")).toBe(
+      true,
+    );
     expect(result.map((transaction) => transaction.categoryId)).toEqual([
       "groceries",
       "groceries",
@@ -301,15 +380,24 @@ describe("OCR bank history parser", () => {
       "other_expense",
     ]);
 
-    const confidenceValues = result.map((transaction) => transaction.confidence);
+    const confidenceValues = result.map(
+      (transaction) => transaction.confidence,
+    );
     expect(new Set(confidenceValues).size).toBeGreaterThan(1);
     expect(result[1].confidence).toBeLessThan(result[0].confidence);
   });
 
   it("extracts digital bank history rows without cashback detail rows", () => {
-    const result = parseTransactions(digitalBankRawText, 68, "digital-bank.png", categories);
+    const result = parseTransactions(
+      digitalBankRawText,
+      68,
+      "digital-bank.png",
+      categories,
+    );
 
-    expect(result.map(({ merchant, amount }) => ({ merchant, amount }))).toEqual([
+    expect(
+      result.map(({ merchant, amount }) => ({ merchant, amount })),
+    ).toEqual([
       { merchant: "DEMO GROCERY", amount: -446.04 },
       { merchant: "Проценты на остаток", amount: 22.34 },
       { merchant: "Компенсация по тестовой акции", amount: 2000 },
@@ -331,8 +419,14 @@ describe("OCR bank history parser", () => {
       "2026-06-26",
       "2026-06-26",
     ]);
-    expect(result.some((transaction) => transaction.amount === 8 || transaction.amount === 91)).toBe(false);
-    expect(result.some((transaction) => transaction.amount === 92505)).toBe(false);
+    expect(
+      result.some(
+        (transaction) => transaction.amount === 8 || transaction.amount === 91,
+      ),
+    ).toBe(false);
+    expect(result.some((transaction) => transaction.amount === 92505)).toBe(
+      false,
+    );
     expect(result.map((transaction) => transaction.categoryId)).toEqual([
       "groceries",
       "interest",
@@ -347,17 +441,39 @@ describe("OCR bank history parser", () => {
   });
 
   it("treats interest rows as income even when OCR misses the plus sign", () => {
-    const result = parseTransactions(interestWithoutPlusRawText, 68, "digital-bank.png", categories);
+    const result = parseTransactions(
+      interestWithoutPlusRawText,
+      68,
+      "digital-bank.png",
+      categories,
+    );
 
-    expect(result.map(({ merchant, amount, categoryId }) => ({ merchant, amount, categoryId }))).toEqual([
-      { merchant: "Проценты на остаток", amount: 22.34, categoryId: "interest" },
+    expect(
+      result.map(({ merchant, amount, categoryId }) => ({
+        merchant,
+        amount,
+        categoryId,
+      })),
+    ).toEqual([
+      {
+        merchant: "Проценты на остаток",
+        amount: 22.34,
+        categoryId: "interest",
+      },
     ]);
   });
 
   it("uses today and yesterday headers as transaction dates", () => {
-    const result = parseTransactions(relativeDateHeadersRawText, 72, "relative.png", categories);
+    const result = parseTransactions(
+      relativeDateHeadersRawText,
+      72,
+      "relative.png",
+      categories,
+    );
 
-    expect(result.map(({ merchant, amount }) => ({ merchant, amount }))).toEqual([
+    expect(
+      result.map(({ merchant, amount }) => ({ merchant, amount })),
+    ).toEqual([
       { merchant: "DEMO COFFEE", amount: -150 },
       { merchant: "DEMO MARKET", amount: -737.93 },
     ]);
@@ -367,33 +483,107 @@ describe("OCR bank history parser", () => {
     ]);
   });
 
-  it("matches fast food hints to restaurant category from default seed", () => {
-    const result = parseTransactions(xplatFastFoodRawText, 72, "digital-bank.png", seedLikeCategories);
+  it("uses explicit calendar dates from today and yesterday headers", () => {
+    const result = parseTransactions(
+      relativeDateHeadersWithCalendarRawText,
+      72,
+      "ozon-history.png",
+      categories,
+    );
 
-    expect(result.map(({ merchant, amount, categoryId }) => ({ merchant, amount, categoryId }))).toEqual([
-      { merchant: "XPLAT IP DEMO CAFE", amount: -390, categoryId: "cafe_restaurants" },
+    expect(
+      result.map(({ merchant, amount }) => ({ merchant, amount })),
+    ).toEqual([
+      { merchant: "Максим Денисович Ч.", amount: -4162 },
+      { merchant: "Самокат", amount: -533 },
+      { merchant: "Банкомат", amount: 4100 },
+    ]);
+    expect(result.map((transaction) => transaction.date.slice(0, 10))).toEqual([
+      "2026-06-20",
+      "2026-06-20",
+      "2026-06-24",
     ]);
   });
 
-  it("ignores internal transfers between own accounts but keeps transfers to people", () => {
-    const result = parseTransactions(internalTransfersRawText, 72, "digital-bank.png", categories);
+  it("extracts samokat from ozon raw OCR under noisy today header", () => {
+    const result = parseTransactions(
+      ozonRelativeDateRawText,
+      72,
+      "ozon-history.png",
+      categories,
+    );
 
-    expect(result.map(({ merchant, amount }) => ({ merchant, amount }))).toEqual([
+    expect(result).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          merchant: "Самокат",
+          amount: -533,
+        }),
+      ]),
+    );
+  });
+
+  it("matches fast food hints to restaurant category from default seed", () => {
+    const result = parseTransactions(
+      xplatFastFoodRawText,
+      72,
+      "digital-bank.png",
+      seedLikeCategories,
+    );
+
+    expect(
+      result.map(({ merchant, amount, categoryId }) => ({
+        merchant,
+        amount,
+        categoryId,
+      })),
+    ).toEqual([
+      {
+        merchant: "XPLAT IP DEMO CAFE",
+        amount: -390,
+        categoryId: "cafe_restaurants",
+      },
+    ]);
+  });
+
+  it("keeps internal transfer rows as regular transactions", () => {
+    const result = parseTransactions(
+      internalTransfersRawText,
+      72,
+      "digital-bank.png",
+      categories,
+    );
+
+    expect(
+      result.map(({ merchant, amount }) => ({ merchant, amount })),
+    ).toEqual([
       { merchant: "TESTRECIPIENTA", amount: -12345 },
+      { merchant: "Перевод между счетами", amount: -12345 },
+      { merchant: "Перевод между счетами", amount: -4100 },
     ]);
   });
 
   it("extracts card-style transfer blocks with date total in header", () => {
-    const result = parseTransactions(cardHistoryRawText, 72, "card-history.png", categories);
+    const result = parseTransactions(
+      cardHistoryRawText,
+      72,
+      "card-history.png",
+      categories,
+    );
 
-    expect(result.map(({ merchant, amount }) => ({ merchant, amount }))).toEqual([
+    expect(
+      result.map(({ merchant, amount }) => ({ merchant, amount })),
+    ).toEqual([
       { merchant: "TESTRECIPIENTA", amount: -1200 },
       { merchant: "TESTSENDERB", amount: 1200 },
       { merchant: "TESTSENDERC", amount: 1 },
       { merchant: "DEMO-BANK", amount: -8765.43 },
       { merchant: "TESTSENDERC", amount: 8765.43 },
     ]);
-    expect(result.find((transaction) => transaction.merchant === "DEMO-BANK")?.categoryId).toBe("loans");
+    expect(
+      result.find((transaction) => transaction.merchant === "DEMO-BANK")
+        ?.categoryId,
+    ).toBe("loans");
     expect(result.map((transaction) => transaction.date.slice(0, 10))).toEqual([
       "2026-06-20",
       "2026-06-20",
@@ -403,10 +593,32 @@ describe("OCR bank history parser", () => {
     ]);
   });
 
-  it("extracts English bank history with English date and category hints", () => {
-    const result = parseTransactions(englishBankRawText, 83, "english-bank.png", categories);
+  it("extracts outgoing SBP transfer under OCR-misread yesterday header", () => {
+    const result = parseTransactions(
+      sberYesterdayRawText,
+      72,
+      "sber-yesterday.png",
+      categories,
+    );
 
     expect(result.map(({ merchant, amount }) => ({ merchant, amount }))).toEqual([
+      { merchant: "Максим Денисович Ч", amount: -3901 },
+      { merchant: "Людмила Геннадьевна Ч.", amount: 3900 },
+    ]);
+    expect(result[0].date.slice(0, 10)).toBe("2026-06-25");
+  });
+
+  it("extracts English bank history with English date and category hints", () => {
+    const result = parseTransactions(
+      englishBankRawText,
+      83,
+      "english-bank.png",
+      categories,
+    );
+
+    expect(
+      result.map(({ merchant, amount }) => ({ merchant, amount })),
+    ).toEqual([
       { merchant: "DEMO CARSHARE", amount: -58.96 },
       { merchant: "DEMO CARSHARE", amount: 690 },
       { merchant: "DEMO CARSHARE", amount: -690 },
@@ -436,9 +648,20 @@ describe("OCR bank history parser", () => {
   });
 
   it("extracts forint bank history rows with HUF currency", () => {
-    const result = parseTransactions(forintBankRawText, 84, "forint-bank.jpeg", categories);
+    const result = parseTransactions(
+      forintBankRawText,
+      84,
+      "forint-bank.jpeg",
+      categories,
+    );
 
-    expect(result.map(({ merchant, amount, currency }) => ({ merchant, amount, currency }))).toEqual([
+    expect(
+      result.map(({ merchant, amount, currency }) => ({
+        merchant,
+        amount,
+        currency,
+      })),
+    ).toEqual([
       { merchant: "TESTSENDER", amount: -6500, currency: "HUF" },
       { merchant: "McDonald's", amount: -790, currency: "HUF" },
       { merchant: "Lime", amount: -3708, currency: "HUF" },
@@ -461,9 +684,20 @@ describe("OCR bank history parser", () => {
   });
 
   it("extracts forint rows when OCR keeps time metadata after the amount", () => {
-    const result = parseTransactions(forintInlineMetaRawText, 84, "forint-bank.jpeg", categories);
+    const result = parseTransactions(
+      forintInlineMetaRawText,
+      84,
+      "forint-bank.jpeg",
+      categories,
+    );
 
-    expect(result.map(({ merchant, amount, currency }) => ({ merchant, amount, currency }))).toEqual([
+    expect(
+      result.map(({ merchant, amount, currency }) => ({
+        merchant,
+        amount,
+        currency,
+      })),
+    ).toEqual([
       { merchant: "TESTSENDER", amount: -6500, currency: "HUF" },
       { merchant: "McDonald's", amount: -790, currency: "HUF" },
     ]);

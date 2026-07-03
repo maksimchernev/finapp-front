@@ -47,7 +47,6 @@ export function parseBankHistoryRows(
       !amountResult ||
       !date ||
       isHistoryChromeLine(line) ||
-      isInternalTransferLine(line) ||
       isHistoryDetailLine(line)
     ) {
       return;
@@ -123,9 +122,4 @@ function isHistoryDetailLine(line: string) {
     lower.includes("*") &&
     /(карта|сч[её]т|кредитная|основной|ежедневный доход)/i.test(lower)
   );
-}
-
-// Осознанно пропускает внутреннее движение денег между своими счетами.
-function isInternalTransferLine(line: string) {
-  return /перевод\s+между\s+сч[её]тами/i.test(line);
 }

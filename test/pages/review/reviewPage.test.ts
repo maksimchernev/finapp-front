@@ -1,7 +1,10 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Bank } from "@/entities/bank/model/types";
-import { ReviewPage } from "@/pages/review/ui/ReviewPage";
+import {
+  applyReviewBankToDrafts,
+  ReviewPage,
+} from "@/pages/review/ui/ReviewPage";
 import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
 
 jest.mock(
@@ -16,17 +19,36 @@ jest.mock(
 );
 
 jest.mock("@/features/review-transactions/ui/DraftCard", () => ({
-  DraftCard: () => React.createElement("article", null, "draft"),
+  DraftCard: ({
+    draft,
+    isManual,
+    onDelete,
+  }: {
+    draft: ParsedTransaction;
+    isManual?: boolean;
+    onDelete?: (localId: string) => void;
+  }) =>
+    React.createElement(
+      "article",
+      {
+        "data-delete-enabled": Boolean(onDelete),
+        "data-draft-id": draft.localId,
+        "data-manual": Boolean(isManual),
+      },
+      "draft",
+    ),
 }));
 
 jest.mock("@/shared/ui/HeaderWithBack", () => ({
   HeaderWithBack: ({
+    action,
     title,
     subtitle,
   }: {
+    action?: React.ReactNode;
     title: string;
     subtitle?: string;
-  }) => React.createElement("header", null, title, subtitle),
+  }) => React.createElement("header", null, title, subtitle, action),
 }));
 
 jest.mock("@/shared/ui/EmptyState", () => ({
@@ -134,50 +156,120 @@ describe("ReviewPage", () => {
 
   it("applies the selected bank to every draft in the current review", () => {
     const updates: Array<[string, Partial<ParsedTransaction>]> = [];
-    const element = ReviewPage({
-      drafts: [
+    applyReviewBankToDrafts(
+      [
         { ...unselectedDraft, localId: "draft-1" },
         { ...unselectedDraft, localId: "draft-2" },
       ],
-      banks: [bank],
-      categories: [],
-      isSaving: false,
-      onBack: () => undefined,
-      onSave: () => undefined,
-      onUpdate: (localId, patch) => {
+      "bank-1",
+      (localId, patch) => {
         updates.push([localId, patch]);
       },
-    });
-
-    const children = React.Children.toArray(element.props.children);
-    const bankSelector = children.find(
-      (child) =>
-        React.isValidElement(child) &&
-        (child.props as { "data-testid"?: string })["data-testid"] ===
-          "review-bank-selector",
     );
-
-    if (!React.isValidElement(bankSelector)) {
-      throw new Error("review bank selector was not rendered");
-    }
-
-    const select = React.Children.toArray(
-      (bankSelector.props as { children: React.ReactNode }).children,
-    ).find(
-      (child) => React.isValidElement(child) && child.type === "select",
-    );
-
-    if (!React.isValidElement(select)) {
-      throw new Error("review bank select was not rendered");
-    }
-
-    (select.props as { onChange: (event: { target: { value: string } }) => void }).onChange({
-      target: { value: "bank-1" },
-    });
 
     expect(updates).toEqual([
       ["draft-1", { bankId: "bank-1" }],
       ["draft-2", { bankId: "bank-1" }],
     ]);
+  });
+
+  it("exposes a plus action for adding a manual draft", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(ReviewPage, {
+        drafts: [],
+        banks: [],
+        categories: [],
+        isSaving: false,
+        onBack: () => undefined,
+        onSave: () => undefined,
+        onUpdate: () => undefined,
+        onAddDraft: () => undefined,
+      }),
+    );
+
+    expect(html).toContain('aria-label="Добавить транзакцию"');
+  });
+
+  it("disables saving when a selected draft has no date", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(ReviewPage, {
+        drafts: [{ ...unselectedDraft, date: "", selected: true }],
+        banks: [],
+        categories: [],
+        isSaving: false,
+        onBack: () => undefined,
+        onSave: () => undefined,
+        onUpdate: () => undefined,
+      }),
+    );
+
+    expect(html).toContain('disabled=""');
+  });
+
+  it("disables saving when a selected draft has no category", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(ReviewPage, {
+        drafts: [
+          {
+            ...unselectedDraft,
+            categoryId: "",
+            selected: true,
+          },
+        ],
+        banks: [],
+        categories: [],
+        isSaving: false,
+        onBack: () => undefined,
+        onSave: () => undefined,
+        onUpdate: () => undefined,
+      }),
+    );
+
+    expect(html).toContain('disabled=""');
+  });
+
+  it("passes delete action only to manual drafts", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(ReviewPage, {
+        drafts: [
+          { ...unselectedDraft, localId: "draft-1" },
+          { ...unselectedDraft, localId: "manual-1" },
+        ],
+        banks: [],
+        categories: [],
+        isSaving: false,
+        onBack: () => undefined,
+        onDeleteDraft: () => undefined,
+        onSave: () => undefined,
+        onUpdate: () => undefined,
+      }),
+    );
+
+    expect(html).toContain(
+      'data-delete-enabled="false" data-draft-id="draft-1"',
+    );
+    expect(html).toContain(
+      'data-delete-enabled="true" data-draft-id="manual-1"',
+    );
+  });
+
+  it("marks only manual drafts as manual cards", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(ReviewPage, {
+        drafts: [
+          { ...unselectedDraft, localId: "draft-1" },
+          { ...unselectedDraft, localId: "manual-1" },
+        ],
+        banks: [],
+        categories: [],
+        isSaving: false,
+        onBack: () => undefined,
+        onSave: () => undefined,
+        onUpdate: () => undefined,
+      }),
+    );
+
+    expect(html).toContain('data-draft-id="draft-1" data-manual="false"');
+    expect(html).toContain('data-draft-id="manual-1" data-manual="true"');
   });
 });

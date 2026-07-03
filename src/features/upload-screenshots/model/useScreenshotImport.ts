@@ -8,7 +8,9 @@ import type {
   UploadJob,
 } from "@/features/upload-screenshots/model/types";
 import {
+  appendDraftToUploadJob,
   attachDraftsToUploadJob,
+  removeDraftFromUploadJob,
   removeUploadJob,
   updateUploadJobDraft,
 } from "@/features/upload-screenshots/model/uploadJobDrafts";
@@ -137,6 +139,14 @@ export function useScreenshotImport({
     setJobs((current) => updateUploadJobDraft(current, jobId, localId, patch));
   }
 
+  function addDraft(jobId: string, draft: ParsedTransaction) {
+    setJobs((current) => appendDraftToUploadJob(current, jobId, draft));
+  }
+
+  function removeDraft(jobId: string, localId: string) {
+    setJobs((current) => removeDraftFromUploadJob(current, jobId, localId));
+  }
+
   function resetJobs() {
     setJobs([]);
   }
@@ -154,6 +164,8 @@ export function useScreenshotImport({
     error,
     clearError,
     handleFiles,
+    addDraft,
+    removeDraft,
     removeJob,
     resetJobs,
     updateDraft,

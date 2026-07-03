@@ -1,9 +1,11 @@
 import type { ParsedTransaction, UploadJob } from "@/features/upload-screenshots/model/types";
 import {
+  appendDraftToUploadJob,
   attachDraftsToUploadJob,
   getNextDoneUploadJob,
   getPreviousDoneUploadJob,
   isLastDoneUploadJob,
+  removeDraftFromUploadJob,
   removeUploadJob,
   updateUploadJobDraft,
 } from "@/features/upload-screenshots/model/uploadJobDrafts";
@@ -54,6 +56,20 @@ describe("upload job drafts", () => {
     expect(nextJobs[1].drafts).toEqual([nextDraft]);
   });
 
+  it("appends a manual draft to the bottom of the matching upload job", () => {
+    const manualDraft = {
+      ...baseDraft,
+      localId: "manual-1",
+      merchant: "Новая транзакция",
+      sourceFile: "one.png",
+    };
+
+    const nextJobs = appendDraftToUploadJob(jobs, "job-1", manualDraft);
+
+    expect(nextJobs[0].drafts).toEqual([baseDraft, manualDraft]);
+    expect(nextJobs[1].drafts).toEqual([]);
+  });
+
   it("updates a draft only inside the selected upload job", () => {
     const nextJobs = updateUploadJobDraft(jobs, "job-1", "draft-1", {
       selected: false,
@@ -65,6 +81,29 @@ describe("upload job drafts", () => {
       merchant: "Edited Coffee",
     });
     expect(nextJobs[1].drafts).toEqual([]);
+  });
+
+  it("removes a draft only from the matching upload job", () => {
+    const nextJobs = removeDraftFromUploadJob(
+      [
+        {
+          ...jobs[0],
+          drafts: [
+            baseDraft,
+            { ...baseDraft, localId: "manual-1", merchant: "Новая транзакция" },
+          ],
+        },
+        {
+          ...jobs[1],
+          drafts: [{ ...baseDraft, localId: "manual-1", sourceFile: "two.png" }],
+        },
+      ],
+      "job-1",
+      "manual-1",
+    );
+
+    expect(nextJobs[0].drafts).toEqual([baseDraft]);
+    expect(nextJobs[1].drafts).toHaveLength(1);
   });
 
   it("removes only the saved upload job", () => {

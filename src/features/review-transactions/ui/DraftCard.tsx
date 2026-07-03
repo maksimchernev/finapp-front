@@ -1,19 +1,29 @@
-import { Check } from "lucide-react";
+import { Check, Trash2 } from "lucide-react";
 import clsx from "clsx";
+import type { Ref } from "react";
 import type { Category } from "@/entities/category/model/types";
 import { dateOnlyToIso, toDateInput } from "@/entities/transaction/lib/format";
 import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
 import styles from "@/features/review-transactions/ui/DraftCard.module.scss";
 
 export function DraftCard({
+  cardRef,
   draft,
   categories,
+  isManual = false,
+  onDelete,
   onUpdate,
 }: {
+  cardRef?: Ref<HTMLElement>;
   draft: ParsedTransaction;
   categories: Category[];
+  isManual?: boolean;
+  onDelete?: (localId: string) => void;
   onUpdate: (localId: string, patch: Partial<ParsedTransaction>) => void;
 }) {
+  const isDateMissing = !draft.date;
+  const isCategoryMissing = draft.selected && !draft.categoryId;
+  const dateValue = draft.date ? toDateInput(draft.date) : "";
   const confidenceTone =
     draft.confidence >= 80
       ? styles.confidenceHigh
@@ -22,7 +32,10 @@ export function DraftCard({
         : styles.confidenceLow;
 
   return (
-    <article className={clsx(styles.draftCard, !draft.selected && styles.muted)}>
+    <article
+      ref={cardRef}
+      className={clsx(styles.draftCard, !draft.selected && styles.muted)}
+    >
       <div className={styles.draftHead}>
         <label className={styles.checkline}>
           <input
@@ -32,6 +45,17 @@ export function DraftCard({
           />
           <span>{draft.merchant}</span>
         </label>
+        {onDelete ? (
+          <button
+            type="button"
+            className={clsx(styles.iconButton, styles.danger)}
+            aria-label={`Удалить транзакцию ${draft.merchant}`}
+            title="Удалить транзакцию"
+            onClick={() => onDelete(draft.localId)}
+          >
+            <Trash2 size={17} />
+          </button>
+        ) : null}
       </div>
 
       <div className={styles.editGrid}>
@@ -51,9 +75,15 @@ export function DraftCard({
         <label>
           Дата
           <input
+            aria-invalid={isDateMissing}
+            className={clsx(isDateMissing && styles.dateInvalid)}
             type="date"
-            value={toDateInput(draft.date)}
-            onChange={(event) => onUpdate(draft.localId, { date: dateOnlyToIso(event.target.value) })}
+            value={dateValue}
+            onChange={(event) =>
+              onUpdate(draft.localId, {
+                date: event.target.value ? dateOnlyToIso(event.target.value) : "",
+              })
+            }
           />
         </label>
         <label>
@@ -69,7 +99,12 @@ export function DraftCard({
 
       <label className={styles.categorySelect}>
         Категория
-        <select value={draft.categoryId || ""} onChange={(event) => onUpdate(draft.localId, { categoryId: event.target.value })}>
+        <select
+          aria-invalid={isCategoryMissing}
+          className={clsx(isCategoryMissing && styles.fieldInvalid)}
+          value={draft.categoryId || ""}
+          onChange={(event) => onUpdate(draft.localId, { categoryId: event.target.value })}
+        >
           <option value="">Без категории</option>
           {categories.map((item) => (
             <option key={item.id} value={item.id}>
@@ -79,13 +114,15 @@ export function DraftCard({
         </select>
       </label>
 
-      <div className={styles.confidenceLine}>
-        <span className={confidenceTone}>
-          <Check size={13} />
-          Уверенность распознавания {draft.confidence}%
-        </span>
-        <small>{draft.sourceFile}</small>
-      </div>
+      {!isManual ? (
+        <div className={styles.confidenceLine}>
+          <span className={confidenceTone}>
+            <Check size={13} />
+            Уверенность распознавания {draft.confidence}%
+          </span>
+          <small>{draft.sourceFile}</small>
+        </div>
+      ) : null}
     </article>
   );
 }

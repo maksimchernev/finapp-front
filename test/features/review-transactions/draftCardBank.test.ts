@@ -60,4 +60,69 @@ describe("DraftCard bank selection", () => {
 
     expect(html).not.toContain('aria-label="Исключить"');
   });
+
+  it("renders a delete action when deletion is available", () => {
+    const html = renderToStaticMarkup(
+      DraftCard({
+        draft: { ...draft, localId: "manual-1" },
+        categories: [],
+        onDelete: () => undefined,
+        onUpdate: () => undefined,
+      }),
+    );
+
+    expect(html).toContain('aria-label="Удалить транзакцию Coffee"');
+  });
+
+  it("does not render a delete action for regular drafts", () => {
+    const html = renderToStaticMarkup(
+      DraftCard({
+        draft,
+        categories: [],
+        onUpdate: () => undefined,
+      }),
+    );
+
+    expect(html).not.toContain("Удалить транзакцию");
+  });
+
+  it("does not render OCR confidence for a manual draft", () => {
+    const html = renderToStaticMarkup(
+      DraftCard({
+        draft: { ...draft, localId: "manual-1" },
+        categories: [],
+        isManual: true,
+        onDelete: () => undefined,
+        onUpdate: () => undefined,
+      }),
+    );
+
+    expect(html).not.toContain("Уверенность распознавания");
+    expect(html).not.toContain("one.png");
+  });
+
+  it("marks the date input invalid when the date is empty", () => {
+    const html = renderToStaticMarkup(
+      DraftCard({
+        draft: { ...draft, date: "" },
+        categories: [],
+        onUpdate: () => undefined,
+      }),
+    );
+
+    expect(html).toContain('aria-invalid="true"');
+  });
+
+  it("marks the category select invalid when selected draft has no category", () => {
+    const html = renderToStaticMarkup(
+      DraftCard({
+        draft: { ...draft, categoryId: "" },
+        categories: [],
+        onUpdate: () => undefined,
+      }),
+    );
+
+    expect(html).toContain('aria-invalid="true"');
+    expect(html).toContain('<option value="" selected="">Без категории</option>');
+  });
 });

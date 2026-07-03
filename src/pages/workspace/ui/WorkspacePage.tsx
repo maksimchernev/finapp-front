@@ -21,6 +21,10 @@ import { BanksPage } from "@/pages/banks/ui/BanksPage";
 import { CategoriesPage } from "@/pages/categories/ui/CategoriesPage";
 import { DashboardPage } from "@/pages/dashboard/ui/DashboardPage";
 import { ReviewPage } from "@/pages/review/ui/ReviewPage";
+import {
+  createManualReviewDraft,
+  getReviewDraftBankId,
+} from "@/pages/review/lib/manualReviewDraft";
 import { SettingsPage } from "@/pages/settings/ui/SettingsPage";
 import { TransactionsPage } from "@/pages/transactions/ui/TransactionsPage";
 import { UploadPage } from "@/pages/upload/ui/UploadPage";
@@ -140,6 +144,18 @@ export function WorkspacePage({
     void review.saveDrafts(doneReviewJobs.flatMap((job) => job.drafts));
   }
 
+  function handleAddReviewDraft() {
+    if (!activeReviewJobId || !activeReviewJob) return;
+
+    upload.addDraft(
+      activeReviewJobId,
+      createManualReviewDraft({
+        bankId: getReviewDraftBankId(activeReviewJob.drafts),
+        sourceFile: activeReviewJob.fileName,
+      }),
+    );
+  }
+
   if (finance.isLoading) {
     return (
       <AppLayout contentClassName={clsx(styles.appShell, styles.centered)}>
@@ -193,13 +209,18 @@ export function WorkspacePage({
           element={
             <ReviewPage
               drafts={activeReviewJob?.drafts ?? []}
-              reviewFileName={activeReviewJob?.fileName ?? ""}
               banks={finance.banks}
               categories={finance.categories}
               isSaving={review.isSaving}
               reviewProgress={reviewProgress}
-              saveLabel={isFinalReviewJob ? "Сохранить все" : "Сохранить"}
+              saveLabel={isFinalReviewJob ? "Сохранить все" : "Далее"}
               onBack={handlePreviousReview}
+              onAddDraft={handleAddReviewDraft}
+              onDeleteDraft={(localId) => {
+                if (activeReviewJobId) {
+                  upload.removeDraft(activeReviewJobId, localId);
+                }
+              }}
               onSave={handleContinueReview}
               onUpdate={(localId, patch) => {
                 if (activeReviewJobId) {
