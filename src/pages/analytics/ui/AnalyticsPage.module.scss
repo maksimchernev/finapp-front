@@ -9,6 +9,35 @@
   gap: 12px;
 }
 
+.monthTabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  button {
+    flex: 0 0 auto;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 13px;
+    color: var(--text-muted);
+    background: var(--surface);
+    font-size: 13px;
+    font-weight: 800;
+  }
+}
+
+.selectedMonth {
+  color: var(--ink) !important;
+  border-color: rgba(36, 76, 56, 0.28) !important;
+  background: rgba(36, 76, 56, 0.08) !important;
+}
+
 .metric {
   min-width: 0;
   padding: 16px;
@@ -45,6 +74,7 @@
 }
 
 .chartCard {
+  position: relative;
   padding: 15px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -74,6 +104,19 @@
   display: grid;
   justify-items: end;
   gap: 7px;
+}
+
+.zoomOutButton {
+  position: absolute;
+  top: 0;
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(36, 76, 56, 0.14);
+  border-radius: 999px;
+  color: var(--accent-a);
+  background: rgba(36, 76, 56, 0.08);
 }
 
 .segmentedControl {
@@ -134,6 +177,11 @@
 
 .incomeChart .barColumn span {
   background: linear-gradient(180deg, var(--accent-b), #4f8f64);
+}
+
+.chartCanvas {
+  height: 194px;
+  padding-top: 14px;
 }
 
 .categoryProgress {

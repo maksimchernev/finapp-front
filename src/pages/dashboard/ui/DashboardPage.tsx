@@ -15,6 +15,8 @@ import type {
 import { getStatisticsCurrencyTotals } from "@/entities/transaction/lib/currencyTotals";
 import type { User } from "@/entities/user/model/types";
 import { formatDashboardMoney } from "@/pages/dashboard/lib/moneyVisibility";
+import { getSelectedCurrency } from "@/shared/lib/currencySwitcher";
+import { CurrencySwitcher } from "@/shared/ui/CurrencySwitcher";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { CategoryRow } from "@/widgets/category-summary/ui/CategoryRow";
 import { TransactionRow } from "@/widgets/transaction-list/ui/TransactionRow";
@@ -38,9 +40,6 @@ export function DashboardPage({
   onTransactions: () => void;
 }) {
   const [isMoneyVisible, setIsMoneyVisible] = useState(true);
-  const categoryStats =
-    statistics?.byCategory.filter((item) => item.totalMinor < 0).slice(0, 4) ??
-    [];
   const currencyTotals = getStatisticsCurrencyTotals(statistics);
   const displayedTotals = currencyTotals.length
     ? currencyTotals
@@ -52,6 +51,30 @@ export function DashboardPage({
           balanceMinor: 0,
         },
       ];
+  const availableCurrencies = Array.from(
+    new Set([
+      ...displayedTotals.map((item) => item.currency),
+      ...(statistics?.byCategory.map((item) => item.currency || "RUB") ?? []),
+    ]),
+  );
+  const [dashboardCurrency, setDashboardCurrency] = useState(
+    availableCurrencies[0] || "RUB",
+  );
+  const selectedDashboardCurrency = getSelectedCurrency(
+    availableCurrencies,
+    dashboardCurrency,
+  );
+  const selectedTotals = displayedTotals.filter(
+    (item) => item.currency === selectedDashboardCurrency,
+  );
+  const categoryStats =
+    statistics?.byCategory
+      .filter(
+        (item) =>
+          item.totalMinor < 0 &&
+          (item.currency || "RUB") === selectedDashboardCurrency,
+      )
+      .slice(0, 4) ?? [];
   const latest = transactions.slice(0, 4);
   const VisibilityIcon = isMoneyVisible ? Eye : EyeOff;
 
@@ -67,6 +90,12 @@ export function DashboardPage({
               : "Доходы и расходы обновлены"}
           </span>
         </div>
+        <CurrencySwitcher
+          currencies={availableCurrencies}
+          value={selectedDashboardCurrency}
+          label="Валюта"
+          onChange={setDashboardCurrency}
+        />
       </header>
 
       <section className={styles.balanceCard}>
@@ -74,7 +103,7 @@ export function DashboardPage({
           <div>
             <span>Картина месяца</span>
             <div className={styles.moneyStack}>
-              {displayedTotals.map((item) => (
+              {selectedTotals.map((item) => (
                 <strong key={item.currency}>
                   {formatDashboardMoney(
                     item.balanceMinor,
@@ -98,7 +127,7 @@ export function DashboardPage({
         <div className={styles.balanceMeta}>
           <div>
             <span>Доходы</span>
-            {displayedTotals.map((item) => (
+            {selectedTotals.map((item) => (
               <b key={item.currency}>
                 {formatDashboardMoney(
                   item.totalIncomeMinor,
@@ -110,7 +139,7 @@ export function DashboardPage({
           </div>
           <div>
             <span>Расходы</span>
-            {displayedTotals.map((item) => (
+            {selectedTotals.map((item) => (
               <b key={item.currency}>
                 {formatDashboardMoney(
                   -item.totalExpenseMinor,

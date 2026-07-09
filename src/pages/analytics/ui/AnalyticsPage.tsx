@@ -1,20 +1,37 @@
 import { useMemo, useState } from "react";
 import clsx from "clsx";
-import {
-  formatCurrencyTotal,
-  getStatisticsCurrencyTotals,
-} from "@/entities/transaction/lib/currencyTotals";
+import { Minimize2 } from "lucide-react";
+import { formatCurrencyTotal } from "@/entities/transaction/lib/currencyTotals";
 import { formatMoney } from "@/entities/transaction/lib/format";
-import { buildDailyAmountBars } from "@/entities/transaction/lib/statistics";
 import type { Statistics, Transaction } from "@/entities/transaction/model/types";
+import {
+  type AnalyticsBar,
+  type AnalyticsWeekRange,
+  buildAnalyticsAmountBars,
+  buildAnalyticsMonthTabs,
+  buildMonthCategoryStats,
+  buildMonthCurrencyTotals,
+  filterTransactionsByMonth,
+  getAnalyticsBarDay,
+  getMonthWeekRange,
+  getMonthWeekStartDay,
+  shouldShowAnalyticsTooltip,
+  type AnalyticsChartMode,
+} from "@/pages/analytics/lib/analyticsPeriods";
+import {
+  getCurrencySwitcherMode,
+  getSelectedCurrency,
+} from "@/shared/lib/currencySwitcher";
+import { CurrencySwitcher } from "@/shared/ui/CurrencySwitcher";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
+import { AnalyticsBarChart } from "@/pages/analytics/ui/AnalyticsBarChart";
 import styles from "@/pages/analytics/ui/AnalyticsPage.module.scss";
 
 type ChartKind = "expense" | "income";
 
 export function AnalyticsPage({
-  statistics,
+  statistics: _statistics,
   transactions,
   onBack,
 }: {
@@ -23,8 +40,30 @@ export function AnalyticsPage({
   onBack: () => void;
 }) {
   const [chartKind, setChartKind] = useState<ChartKind>("expense");
-  const maxCategory = Math.max(...(statistics?.byCategory.map((item) => Math.abs(item.totalMinor)) || [1]));
-  const currencyTotals = getStatisticsCurrencyTotals(statistics);
+  const [chartMode, setChartMode] = useState<AnalyticsChartMode>("month");
+  const [selectedWeekStartDay, setSelectedWeekStartDay] = useState(1);
+  const [hoveredWeekRange, setHoveredWeekRange] =
+    useState<AnalyticsWeekRange | null>(null);
+  const monthTabs = useMemo(
+    () => buildAnalyticsMonthTabs(transactions),
+    [transactions],
+  );
+  const [selectedMonthKey, setSelectedMonthKey] = useState<string | null>(null);
+  const activeMonthKey =
+    selectedMonthKey && monthTabs.some((tab) => tab.key === selectedMonthKey)
+      ? selectedMonthKey
+      : monthTabs[0].key;
+  const activeMonthLabel =
+    monthTabs.find((tab) => tab.key === activeMonthKey)?.label ?? "";
+  const monthTransactions = useMemo(
+    () => filterTransactionsByMonth(transactions, activeMonthKey),
+    [activeMonthKey, transactions],
+  );
+  const categoryStats = useMemo(
+    () => buildMonthCategoryStats(monthTransactions),
+    [monthTransactions],
+  );
+  const currencyTotals = buildMonthCurrencyTotals(monthTransactions);
   const displayedTotals = currencyTotals.length
     ? currencyTotals
     : [
@@ -38,28 +77,131 @@ export function AnalyticsPage({
   const availableCurrencies = Array.from(
     new Set([
       ...displayedTotals.map((item) => item.currency),
-      ...transactions.map((transaction) => transaction.currency),
+      ...monthTransactions.map((transaction) => transaction.currency),
     ]),
   );
   const [chartCurrency, setChartCurrency] = useState(
     availableCurrencies[0] || "RUB",
   );
-  const selectedChartCurrency = availableCurrencies.includes(chartCurrency)
-    ? chartCurrency
-    : availableCurrencies[0] || "RUB";
-  const chartBars = useMemo(
-    () => buildDailyAmountBars(transactions, chartKind, selectedChartCurrency),
-    [chartKind, selectedChartCurrency, transactions],
+  const selectedChartCurrency = getSelectedCurrency(
+    availableCurrencies,
+    chartCurrency,
   );
+  const showCurrencySwitcher =
+    getCurrencySwitcherMode(availableCurrencies) !== "hidden";
+  const selectedTotals = displayedTotals.filter(
+    (item) => item.currency === selectedChartCurrency,
+  );
+  const selectedCategoryStats = categoryStats.filter(
+    (item) => item.currency === selectedChartCurrency,
+  );
+  const maxCategory = Math.max(
+    ...selectedCategoryStats.map((item) => Math.abs(item.totalMinor)),
+    1,
+  );
+  const chartBars = useMemo(
+    () =>
+      buildAnalyticsAmountBars(monthTransactions, {
+        currency: selectedChartCurrency,
+        kind: chartKind,
+        mode: chartMode,
+        monthKey: activeMonthKey,
+        weekStartDay: selectedWeekStartDay,
+      }),
+    [
+      activeMonthKey,
+      chartKind,
+      chartMode,
+      monthTransactions,
+      selectedChartCurrency,
+      selectedWeekStartDay,
+    ],
+  );
+  const chartPeriodLabel =
+    chartMode === "week"
+      ? `${selectedWeekStartDay}-${Number(
+          chartBars[chartBars.length - 1]?.label ?? selectedWeekStartDay,
+        )}`
+      : activeMonthLabel;
+
+  function selectMonth(monthKey: string) {
+    setSelectedMonthKey(monthKey);
+    setChartMode("month");
+    setSelectedWeekStartDay(1);
+    setHoveredWeekRange(null);
+  }
+
+  function drillDownToWeek(bar: AnalyticsBar) {
+    if (chartMode !== "month") return;
+
+    const day = getAnalyticsBarDay(bar);
+    if (!Number.isFinite(day)) return;
+
+    setSelectedWeekStartDay(getMonthWeekStartDay(day));
+    setChartMode("week");
+    setHoveredWeekRange(null);
+  }
+
+  function previewWeek(bar: AnalyticsBar | null) {
+    if (chartMode !== "month" || !bar) {
+      setHoveredWeekRange(null);
+      return;
+    }
+
+    const day = getAnalyticsBarDay(bar);
+    if (!Number.isFinite(day)) {
+      setHoveredWeekRange(null);
+      return;
+    }
+
+    const range = getMonthWeekRange(activeMonthKey, day);
+    setHoveredWeekRange((current) =>
+      current?.startKey === range.startKey && current.endKey === range.endKey
+        ? current
+        : range,
+    );
+  }
+
+  function zoomOutToMonth() {
+    setChartMode("month");
+    setSelectedWeekStartDay(1);
+    setHoveredWeekRange(null);
+  }
 
   return (
     <section className={styles.screen}>
-      <HeaderWithBack title="Сводка" subtitle="Доходы и расходы по сохраненным операциям" onBack={onBack} />
+      <HeaderWithBack
+        title="Сводка"
+        subtitle="Доходы и расходы по месяцам"
+        onBack={onBack}
+        action={
+          showCurrencySwitcher ? (
+            <CurrencySwitcher
+              currencies={availableCurrencies}
+              value={selectedChartCurrency}
+              label="Валюта"
+              onChange={setChartCurrency}
+            />
+          ) : undefined
+        }
+      />
+      <div className={styles.monthTabs} aria-label="Месяц аналитики">
+        {monthTabs.map((month) => (
+          <button
+            key={month.key}
+            className={month.key === activeMonthKey ? styles.selectedMonth : undefined}
+            type="button"
+            onClick={() => selectMonth(month.key)}
+          >
+            {month.label}
+          </button>
+        ))}
+      </div>
       <div className={styles.metricsGrid}>
         <div className={clsx(styles.metric, styles.blue)}>
           <span>Всего потрачено</span>
           <div className={styles.moneyStack}>
-            {displayedTotals.map((item) => (
+            {selectedTotals.map((item) => (
               <b key={item.currency}>
                 {formatCurrencyTotal(-item.totalExpenseMinor, item.currency)}
               </b>
@@ -69,7 +211,7 @@ export function AnalyticsPage({
         <div className={clsx(styles.metric, styles.green)}>
           <span>Всего получено</span>
           <div className={styles.moneyStack}>
-            {displayedTotals.map((item) => (
+            {selectedTotals.map((item) => (
               <b key={item.currency}>
                 {formatCurrencyTotal(item.totalIncomeMinor, item.currency)}
               </b>
@@ -84,10 +226,21 @@ export function AnalyticsPage({
             <h3>Динамика</h3>
             <small>
               {chartKind === "expense" ? "Расходы" : "Доходы"} ·{" "}
-              {selectedChartCurrency}
+              {chartPeriodLabel} · {selectedChartCurrency}
             </small>
           </div>
           <div className={styles.switchStack}>
+            {chartMode === "week" && (
+              <button
+                className={styles.zoomOutButton}
+                type="button"
+                aria-label="Отдалиться до месяца"
+                title="Отдалиться до месяца"
+                onClick={zoomOutToMonth}
+              >
+                <Minimize2 size={16} aria-hidden="true" />
+              </button>
+            )}
             <div className={styles.segmentedControl} aria-label="Тип графика">
               {(["expense", "income"] as const).map((kind) => (
                 <button
@@ -100,51 +253,33 @@ export function AnalyticsPage({
                 </button>
               ))}
             </div>
-            <div className={styles.segmentedControl} aria-label="Валюта графика">
-              {availableCurrencies.map((currency) => (
-                <button
-                  key={currency}
-                  className={
-                    currency === selectedChartCurrency
-                      ? styles.selectedSegment
-                      : undefined
-                  }
-                  type="button"
-                  onClick={() => setChartCurrency(currency)}
-                >
-                  {currency}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
-        <div
-          className={clsx(
-            styles.barChart,
-            chartKind === "income" && styles.incomeChart,
-          )}
-        >
-          {chartBars.map((bar) => (
-            <div className={styles.barColumn} key={bar.label}>
-              <span style={{ height: `${bar.percent}%` }} />
-              <small>{bar.label}</small>
-            </div>
-          ))}
+        <div className={styles.chartCanvas}>
+          <AnalyticsBarChart
+            bars={chartBars}
+            currency={selectedChartCurrency}
+            highlightedRange={chartMode === "month" ? hoveredWeekRange : null}
+            kind={chartKind}
+            onBarHover={previewWeek}
+            onBarSelect={drillDownToWeek}
+            showTooltip={shouldShowAnalyticsTooltip(chartMode)}
+          />
         </div>
       </section>
 
       <section className={styles.chartCard}>
-        <h3>Разбивка по категориям</h3>
-        {statistics?.byCategory.length ? (
+        <h3>Разбивка по категориям за {activeMonthLabel.toLowerCase()}</h3>
+        {selectedCategoryStats.length ? (
           <div className={styles.categoryProgress}>
-            {statistics.byCategory.map(({ category, currency, totalMinor }) => (
-              <div key={`${category.id}:${currency || "RUB"}`}>
+            {selectedCategoryStats.map(({ category, currency, totalMinor }) => (
+              <div key={`${category.id}:${currency}`}>
                 <div className={styles.progressLabel}>
                   <span>
                     <i style={{ background: category.color }} />
                     {category.nameRu}
                   </span>
-                  <b>{formatMoney(totalMinor, currency || "RUB")}</b>
+                  <b>{formatMoney(totalMinor, currency)}</b>
                 </div>
                 <div className={styles.progressTrack} style={{ background: category.bgColor }}>
                   <span
