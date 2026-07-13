@@ -59,6 +59,21 @@ export function filterTransactionsByMonth(
   );
 }
 
+export function filterTransactionsByWeek(
+  transactions: readonly Transaction[],
+  monthKey: string,
+  weekStartDay: number,
+) {
+  const range = getMonthWeekRange(monthKey, weekStartDay);
+
+  return transactions.filter((transaction) => {
+    if (getTransactionMonthKey(transaction) !== monthKey) return false;
+
+    const day = getTransactionDay(transaction);
+    return day >= range.startDay && day <= range.endDay;
+  });
+}
+
 export function buildAnalyticsAmountBars(
   transactions: readonly Transaction[],
   {
@@ -111,6 +126,34 @@ export function getMonthWeekRange(
     startKey: getDayKey(monthKey, startDay),
     endKey: getDayKey(monthKey, endDay),
   };
+}
+
+export function isMonthWeekStarted(
+  monthKey: string,
+  weekStartDay: number,
+  today = new Date(),
+) {
+  const todayMonthKey = getMonthKey(today);
+  if (monthKey < todayMonthKey) return true;
+  if (monthKey > todayMonthKey) return false;
+
+  return weekStartDay <= getDateDay(today);
+}
+
+export function getLastStartedWeekStartDay(
+  monthKey: string,
+  today = new Date(),
+) {
+  if (monthKey > getMonthKey(today)) return null;
+
+  const daysInMonth = getDaysInMonth(monthKey);
+  const maxDay =
+    monthKey === getMonthKey(today)
+      ? Math.min(getDateDay(today), daysInMonth)
+      : daysInMonth;
+
+  if (maxDay < 1) return null;
+  return getMonthWeekStartDay(maxDay);
 }
 
 export function getAnalyticsBarDay(bar: AnalyticsBar) {
@@ -230,6 +273,10 @@ function getTransactionDay(transaction: Transaction) {
 
 function getMonthKey(date: Date) {
   return date.toISOString().slice(0, 7);
+}
+
+function getDateDay(date: Date) {
+  return Number(date.toISOString().slice(8, 10));
 }
 
 function getDaysInMonth(monthKey: string) {

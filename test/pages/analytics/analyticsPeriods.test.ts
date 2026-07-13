@@ -2,9 +2,12 @@ import {
   buildAnalyticsAmountBars,
   buildAnalyticsMonthTabs,
   filterTransactionsByMonth,
+  filterTransactionsByWeek,
   getAnalyticsBarDay,
+  getLastStartedWeekStartDay,
   getMonthWeekRange,
   getMonthWeekStartDay,
+  isMonthWeekStarted,
   shouldShowAnalyticsTooltip,
 } from "@/pages/analytics/lib/analyticsPeriods";
 import type { Transaction } from "@/entities/transaction/model/types";
@@ -52,6 +55,21 @@ describe("analytics periods", () => {
     ]);
   });
 
+  it("filters transactions by the selected week inside the month", () => {
+    const transactions = [
+      createTransaction(-1000, "2026-07-07T10:00:00.000Z"),
+      createTransaction(-2000, "2026-07-08T10:00:00.000Z"),
+      createTransaction(-3000, "2026-07-14T10:00:00.000Z"),
+      createTransaction(-4000, "2026-07-15T10:00:00.000Z"),
+      createTransaction(-5000, "2026-06-10T10:00:00.000Z"),
+    ];
+
+    expect(filterTransactionsByWeek(transactions, "2026-07", 8)).toEqual([
+      transactions[1],
+      transactions[2],
+    ]);
+  });
+
   it("finds the week start day for a clicked month bar", () => {
     expect(getAnalyticsBarDay({ key: "2026-07-08", label: "8", total: 0 })).toBe(8);
     expect(getMonthWeekStartDay(1)).toBe(1);
@@ -67,6 +85,23 @@ describe("analytics periods", () => {
       startDay: 29,
       startKey: "2026-07-29",
     });
+  });
+
+  it("detects whether a week has already started", () => {
+    const today = new Date("2026-07-13T09:00:00.000Z");
+
+    expect(isMonthWeekStarted("2026-07", 8, today)).toBe(true);
+    expect(isMonthWeekStarted("2026-07", 15, today)).toBe(false);
+    expect(isMonthWeekStarted("2026-06", 29, today)).toBe(true);
+    expect(isMonthWeekStarted("2026-08", 1, today)).toBe(false);
+  });
+
+  it("finds the last started week for the selected month", () => {
+    const today = new Date("2026-07-13T09:00:00.000Z");
+
+    expect(getLastStartedWeekStartDay("2026-07", today)).toBe(8);
+    expect(getLastStartedWeekStartDay("2026-06", today)).toBe(29);
+    expect(getLastStartedWeekStartDay("2026-08", today)).toBeNull();
   });
 
   it("hides bar tooltips on the month chart but keeps them on week drill-down", () => {

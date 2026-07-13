@@ -101,20 +101,18 @@
 }
 
 .switchStack {
-  display: grid;
-  justify-items: end;
-  gap: 7px;
+  display: flex;
 }
 
-.zoomOutButton {
-  position: absolute;
-  top: 0;
+.zoomBtn {
   width: 34px;
   height: 34px;
+  margin-left: 4px;
   display: inline-grid;
   place-items: center;
   border: 1px solid rgba(36, 76, 56, 0.14);
   border-radius: 999px;
+
   color: var(--accent-a);
   background: rgba(36, 76, 56, 0.08);
 }

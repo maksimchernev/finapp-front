@@ -1,9 +1,12 @@
 import { useMemo, useState } from "react";
 import clsx from "clsx";
-import { Minimize2 } from "lucide-react";
+import { Minimize2, Maximize2 } from "lucide-react";
 import { formatCurrencyTotal } from "@/entities/transaction/lib/currencyTotals";
 import { formatMoney } from "@/entities/transaction/lib/format";
-import type { Statistics, Transaction } from "@/entities/transaction/model/types";
+import type {
+  Statistics,
+  Transaction,
+} from "@/entities/transaction/model/types";
 import {
   type AnalyticsBar,
   type AnalyticsWeekRange,
@@ -12,9 +15,12 @@ import {
   buildMonthCategoryStats,
   buildMonthCurrencyTotals,
   filterTransactionsByMonth,
+  filterTransactionsByWeek,
   getAnalyticsBarDay,
+  getLastStartedWeekStartDay,
   getMonthWeekRange,
   getMonthWeekStartDay,
+  isMonthWeekStarted,
   shouldShowAnalyticsTooltip,
   type AnalyticsChartMode,
 } from "@/pages/analytics/lib/analyticsPeriods";
@@ -63,7 +69,18 @@ export function AnalyticsPage({
     () => buildMonthCategoryStats(monthTransactions),
     [monthTransactions],
   );
-  const currencyTotals = buildMonthCurrencyTotals(monthTransactions);
+  const periodTransactions = useMemo(
+    () =>
+      chartMode === "week"
+        ? filterTransactionsByWeek(
+            monthTransactions,
+            activeMonthKey,
+            selectedWeekStartDay,
+          )
+        : monthTransactions,
+    [activeMonthKey, chartMode, monthTransactions, selectedWeekStartDay],
+  );
+  const currencyTotals = buildMonthCurrencyTotals(periodTransactions);
   const displayedTotals = currencyTotals.length
     ? currencyTotals
     : [
@@ -92,6 +109,16 @@ export function AnalyticsPage({
   const selectedTotals = displayedTotals.filter(
     (item) => item.currency === selectedChartCurrency,
   );
+  const visibleTotals = selectedTotals.length
+    ? selectedTotals
+    : [
+        {
+          currency: selectedChartCurrency,
+          totalIncomeMinor: 0,
+          totalExpenseMinor: 0,
+          balanceMinor: 0,
+        },
+      ];
   const selectedCategoryStats = categoryStats.filter(
     (item) => item.currency === selectedChartCurrency,
   );
@@ -137,7 +164,10 @@ export function AnalyticsPage({
     const day = getAnalyticsBarDay(bar);
     if (!Number.isFinite(day)) return;
 
-    setSelectedWeekStartDay(getMonthWeekStartDay(day));
+    const weekStartDay = getMonthWeekStartDay(day);
+    if (!isMonthWeekStarted(activeMonthKey, weekStartDay)) return;
+
+    setSelectedWeekStartDay(weekStartDay);
     setChartMode("week");
     setHoveredWeekRange(null);
   }
@@ -155,6 +185,11 @@ export function AnalyticsPage({
     }
 
     const range = getMonthWeekRange(activeMonthKey, day);
+    if (!isMonthWeekStarted(activeMonthKey, range.startDay)) {
+      setHoveredWeekRange(null);
+      return;
+    }
+
     setHoveredWeekRange((current) =>
       current?.startKey === range.startKey && current.endKey === range.endKey
         ? current
@@ -162,10 +197,28 @@ export function AnalyticsPage({
     );
   }
 
+  function zoomInToLastStartedWeek() {
+    const weekStartDay = getLastStartedWeekStartDay(activeMonthKey);
+    if (!weekStartDay) return;
+
+    setSelectedWeekStartDay(weekStartDay);
+    setChartMode("week");
+    setHoveredWeekRange(null);
+  }
+
   function zoomOutToMonth() {
     setChartMode("month");
     setSelectedWeekStartDay(1);
     setHoveredWeekRange(null);
+  }
+
+  function toggleZoom() {
+    if (chartMode === "month") {
+      zoomInToLastStartedWeek();
+      return;
+    }
+
+    zoomOutToMonth();
   }
 
   return (
@@ -189,7 +242,9 @@ export function AnalyticsPage({
         {monthTabs.map((month) => (
           <button
             key={month.key}
-            className={month.key === activeMonthKey ? styles.selectedMonth : undefined}
+            className={
+              month.key === activeMonthKey ? styles.selectedMonth : undefined
+            }
             type="button"
             onClick={() => selectMonth(month.key)}
           >
@@ -201,7 +256,7 @@ export function AnalyticsPage({
         <div className={clsx(styles.metric, styles.blue)}>
           <span>Всего потрачено</span>
           <div className={styles.moneyStack}>
-            {selectedTotals.map((item) => (
+            {visibleTotals.map((item) => (
               <b key={item.currency}>
                 {formatCurrencyTotal(-item.totalExpenseMinor, item.currency)}
               </b>
@@ -211,7 +266,7 @@ export function AnalyticsPage({
         <div className={clsx(styles.metric, styles.green)}>
           <span>Всего получено</span>
           <div className={styles.moneyStack}>
-            {selectedTotals.map((item) => (
+            {visibleTotals.map((item) => (
               <b key={item.currency}>
                 {formatCurrencyTotal(item.totalIncomeMinor, item.currency)}
               </b>
@@ -230,22 +285,13 @@ export function AnalyticsPage({
             </small>
           </div>
           <div className={styles.switchStack}>
-            {chartMode === "week" && (
-              <button
-                className={styles.zoomOutButton}
-                type="button"
-                aria-label="Отдалиться до месяца"
-                title="Отдалиться до месяца"
-                onClick={zoomOutToMonth}
-              >
-                <Minimize2 size={16} aria-hidden="true" />
-              </button>
-            )}
             <div className={styles.segmentedControl} aria-label="Тип графика">
               {(["expense", "income"] as const).map((kind) => (
                 <button
                   key={kind}
-                  className={kind === chartKind ? styles.selectedSegment : undefined}
+                  className={
+                    kind === chartKind ? styles.selectedSegment : undefined
+                  }
                   type="button"
                   onClick={() => setChartKind(kind)}
                 >
@@ -253,6 +299,28 @@ export function AnalyticsPage({
                 </button>
               ))}
             </div>
+            <button
+              className={styles.zoomBtn}
+              type="button"
+              aria-label={
+                chartMode === "month"
+                  ? "Приблизить до последней недели"
+                  : "Отдалиться до месяца"
+              }
+              title={
+                chartMode === "month"
+                  ? "Приблизить до последней недели"
+                  : "Отдалиться до месяца"
+              }
+              onClick={toggleZoom}
+            >
+              {chartMode === "week" && (
+                <Minimize2 size={16} aria-hidden="true" />
+              )}
+              {chartMode === "month" && (
+                <Maximize2 size={16} aria-hidden="true" />
+              )}
+            </button>
           </div>
         </div>
         <div className={styles.chartCanvas}>
@@ -269,7 +337,9 @@ export function AnalyticsPage({
       </section>
 
       <section className={styles.chartCard}>
-        <h3>Разбивка по категориям за {activeMonthLabel.toLowerCase()}</h3>
+        <h3 style={{ marginBottom: 4 }}>
+          Подробнее за {activeMonthLabel.toLowerCase()}
+        </h3>
         {selectedCategoryStats.length ? (
           <div className={styles.categoryProgress}>
             {selectedCategoryStats.map(({ category, currency, totalMinor }) => (
@@ -281,7 +351,10 @@ export function AnalyticsPage({
                   </span>
                   <b>{formatMoney(totalMinor, currency)}</b>
                 </div>
-                <div className={styles.progressTrack} style={{ background: category.bgColor }}>
+                <div
+                  className={styles.progressTrack}
+                  style={{ background: category.bgColor }}
+                >
                   <span
                     style={{
                       width: `${Math.max(6, (Math.abs(totalMinor) / maxCategory) * 100)}%`,
