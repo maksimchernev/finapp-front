@@ -6,7 +6,7 @@ services:
     runtime: static
     buildCommand: npm ci --include=dev && npm run build
     staticPublishPath: ./dist
-    autoDeployTrigger: checksPass
+    autoDeployTrigger: commit
     envVars:
       - key: VITE_DIRECT_API_URL
         sync: false
