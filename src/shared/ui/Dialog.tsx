@@ -20,18 +20,20 @@ export function Dialog({
   children,
   className,
   onClose,
+  resetPageScroll = true,
 }: {
   ariaLabelledBy: string;
   backdropClassName: string;
   children: ReactNode;
   className: string;
   onClose: () => void;
+  resetPageScroll?: boolean;
 }) {
   const dialogRef = useRef<HTMLElement>(null);
 
   useBrowserLayoutEffect(() => {
-    resetDialogScroll(dialogRef.current);
-  }, []);
+    resetDialogScroll(dialogRef.current, getPageScrollTarget(), resetPageScroll);
+  }, [resetPageScroll]);
 
   return (
     <div className={backdropClassName} role="presentation" onMouseDown={onClose}>
@@ -52,8 +54,11 @@ export function Dialog({
 export function resetDialogScroll(
   dialog: ScrollTarget | null,
   page: ScrollTarget | null = getPageScrollTarget(),
+  resetPage = true,
 ) {
-  resetScrollTarget(page);
+  if (resetPage) {
+    resetScrollTarget(page);
+  }
   resetScrollTarget(dialog);
 }
 

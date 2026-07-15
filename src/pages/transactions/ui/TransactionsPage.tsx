@@ -302,6 +302,7 @@ export function TransactionsPage({
           backdropClassName={styles.backdrop}
           className={styles.dialog}
           onClose={closeDialog}
+          resetPageScroll={false}
         >
             <header className={styles.dialogHeader}>
               <div>
