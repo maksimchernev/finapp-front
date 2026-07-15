@@ -10,7 +10,13 @@ Prevent the native date input and currency select from overlapping in transactio
 
 ## Design
 
-Keep the existing two-column layout for transaction name and amount. At viewport widths up to `440px`, make the third and fourth fields, Date and Currency, span both grid columns. They therefore appear as separate full-width rows without changing field values, events, validation, or desktop layout.
+Keep the existing desktop layout. At viewport widths up to `440px`, arrange the edit fields as follows:
+
+1. Transaction Name spans the full width.
+2. Amount and Currency share the next row in two equal columns.
+3. Date spans the full width on the final row.
+
+Use CSS grid placement only, without reordering the JSX or changing field values, events, validation, or accessibility semantics.
 
 The change remains local to `DraftCard.module.scss`. No shared input styles or review state are changed.
 
@@ -22,7 +28,7 @@ Key `ReviewPage` by `activeReviewJobId` in `WorkspacePage`. React will recreate 
 
 ## Verification
 
-- Add a focused source-level style regression test for the `440px` breakpoint and full-width third/fourth grid fields.
+- Add a focused source-level style regression test for the `440px` breakpoint and the approved Name, Amount/Currency, Date placement.
 - Add a focused workspace regression assertion that `ReviewPage` is keyed by `activeReviewJobId` and the ineffective window scroll call is absent.
 - Verify the test fails before the stylesheet change and passes afterward.
 - Run the complete frontend test suite and production build.
