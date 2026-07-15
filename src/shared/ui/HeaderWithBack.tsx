@@ -4,11 +4,13 @@ import clsx from "clsx";
 import styles from "@/shared/ui/HeaderWithBack.module.scss";
 
 export function HeaderWithBack({
+  eyebrow,
   title,
   subtitle,
   onBack,
   action,
 }: {
+  eyebrow?: string;
   title: string;
   subtitle: string;
   onBack?: () => void;
@@ -27,6 +29,7 @@ export function HeaderWithBack({
           </button>
         ) : null}
         <div>
+          {eyebrow ? <span className={styles.eyebrow}>{eyebrow}</span> : null}
           <h2>{title}</h2>
           <span className={styles.eyebrow}>{subtitle}</span>
         </div>

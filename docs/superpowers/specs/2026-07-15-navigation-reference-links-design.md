@@ -20,6 +20,8 @@ Use a chart icon for Analytics and a transaction-list icon for Operations. The a
 
 Pages directly represented in bottom navigation are first-level pages: Dashboard, Analytics, Upload, Transactions, and Settings. Their page headers do not show a back arrow.
 
+Every first-level page header shows the `summa` eyebrow above its title. Analytics, Upload, and Transactions pass this value through the shared header; Dashboard and Settings retain their existing local eyebrow markup.
+
 Pages opened from those destinations are second-level pages. Review, Banks, and Categories show a back arrow. The shared header renders its back control only when an `onBack` callback is supplied, so the hierarchy is explicit in each page API without duplicating header markup.
 
 ## Settings reference section

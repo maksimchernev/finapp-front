@@ -222,6 +222,7 @@ export function AnalyticsPage({
   return (
     <section className={styles.screen}>
       <HeaderWithBack
+        eyebrow="summa"
         title="Сводка"
         subtitle="Доходы и расходы по месяцам"
         action={

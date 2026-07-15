@@ -36,6 +36,7 @@ export function UploadPage({
   return (
     <section className={styles.screen}>
       <HeaderWithBack
+        eyebrow="summa"
         title="Загрузить операции"
         subtitle="Загрузили. Проверили. Готово."
         action={

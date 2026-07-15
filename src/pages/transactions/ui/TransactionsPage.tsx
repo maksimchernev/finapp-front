@@ -116,6 +116,7 @@ export function TransactionsPage({
   return (
     <section className={styles.screen}>
       <HeaderWithBack
+        eyebrow="summa"
         title="Операции"
         subtitle="Все сохраненные доходы и расходы"
       />

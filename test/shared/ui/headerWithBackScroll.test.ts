@@ -35,6 +35,19 @@ describe("HeaderWithBack scroll behavior", () => {
     expect(secondaryHeader).toContain('aria-label="Назад"');
   });
 
+  it("renders an optional eyebrow above the page title", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(HeaderWithBack, {
+        eyebrow: "summa",
+        title: "Аналитика",
+        subtitle: "Сводка",
+      }),
+    );
+
+    expect(html).toContain(">summa<");
+    expect(html.indexOf("summa")).toBeLessThan(html.indexOf("Аналитика"));
+  });
+
   it("keeps the shared back header in normal document flow", () => {
     const source = readFileSync(
       join(process.cwd(), "src/shared/ui/HeaderWithBack.module.scss"),

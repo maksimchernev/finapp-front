@@ -10,5 +10,6 @@ describe("first-level page headers", () => {
     const source = readFileSync(join(process.cwd(), relativePath), "utf8");
 
     expect(source).not.toContain("onBack");
+    expect(source).toContain('eyebrow="summa"');
   });
 });
