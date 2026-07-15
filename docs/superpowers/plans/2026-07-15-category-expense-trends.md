@@ -877,3 +877,17 @@ git commit -m "feat: move category trends to monthly summary"
 - [ ] Run the focused test and verify GREEN.
 - [ ] Run `npm run build`, `npm test -- --runInBand`, and `git diff --check`.
 - [ ] Commit with `git commit -m "feat: move monthly summary action beside tabs"`.
+
+### Task 5: Hide the monthly-summary action for a single month
+
+**Files:**
+- Modify: `test/pages/analytics/categoryExpenseTrendPage.test.ts`
+- Modify: `src/pages/analytics/ui/AnalyticsPage.tsx`
+
+**Behavior:** Render the `monthsLink` button only when `monthTabs.length > 1`; keep the tab row unchanged when only one month exists.
+
+- [ ] Add a failing source regression requiring `monthTabs.length > 1` around the monthly-summary action.
+- [ ] Run the focused test and verify RED.
+- [ ] Add the minimal conditional rendering in `AnalyticsPage.tsx`.
+- [ ] Run the focused test, build, and full Jest suite; verify GREEN.
+- [ ] Commit with `git commit -m "fix: hide monthly summary action for one month"`.
