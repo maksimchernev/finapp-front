@@ -18,6 +18,13 @@ export interface AnalyticsBar {
   total: number;
 }
 
+export interface AnalyticsCategorySeries {
+  key: string;
+  label: string;
+  color: string;
+  values: number[];
+}
+
 export interface AnalyticsCategoryStat {
   category: Category;
   currency: string;
@@ -122,6 +129,51 @@ export function buildAnalyticsAmountBars(
   }
 
   return buckets.map(({ key, label, total }) => ({ key, label, total }));
+}
+
+export function buildAnalyticsWeekCategorySeries(
+  transactions: readonly Transaction[],
+  {
+    currency,
+    kind,
+    monthKey,
+    weekStartDay,
+  }: {
+    currency?: string;
+    kind: AnalyticsChartKind;
+    monthKey: string;
+    weekStartDay: number;
+  },
+): AnalyticsCategorySeries[] {
+  const buckets = buildWeekDayBuckets(monthKey, weekStartDay);
+  const series = new Map<string, AnalyticsCategorySeries>();
+
+  for (const transaction of transactions) {
+    if (!matchesKind(transaction, kind)) continue;
+    if (currency && transaction.currency !== currency) continue;
+    if (getTransactionMonthKey(transaction) !== monthKey) continue;
+
+    const dayIndex = buckets.findIndex(
+      (bucket) => getTransactionDay(transaction) === bucket.start,
+    );
+    if (dayIndex < 0) continue;
+
+    const category = transaction.category;
+    const key = category?.id ?? "uncategorized";
+    const current =
+      series.get(key) ??
+      {
+        key,
+        label: category?.nameRu ?? "Без категории",
+        color: category?.color ?? "#9aa19c",
+        values: buckets.map(() => 0),
+      };
+
+    current.values[dayIndex] += Math.abs(transaction.amountMinor);
+    series.set(key, current);
+  }
+
+  return Array.from(series.values());
 }
 
 export function getMonthWeekStartDay(day: number) {

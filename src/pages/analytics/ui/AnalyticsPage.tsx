@@ -12,6 +12,7 @@ import {
   type AnalyticsWeekRange,
   buildAnalyticsAmountBars,
   buildAnalyticsMonthTabs,
+  buildAnalyticsWeekCategorySeries,
   buildMonthCategoryStats,
   buildMonthCurrencyTotals,
   filterTransactionsByMonth,
@@ -135,6 +136,25 @@ export function AnalyticsPage({
         monthKey: activeMonthKey,
         weekStartDay: selectedWeekStartDay,
       }),
+    [
+      activeMonthKey,
+      chartKind,
+      chartMode,
+      monthTransactions,
+      selectedChartCurrency,
+      selectedWeekStartDay,
+    ],
+  );
+  const chartCategorySeries = useMemo(
+    () =>
+      chartMode === "week"
+        ? buildAnalyticsWeekCategorySeries(monthTransactions, {
+            currency: selectedChartCurrency,
+            kind: chartKind,
+            monthKey: activeMonthKey,
+            weekStartDay: selectedWeekStartDay,
+          })
+        : undefined,
     [
       activeMonthKey,
       chartKind,
@@ -344,6 +364,7 @@ export function AnalyticsPage({
         <div className={styles.chartCanvas}>
           <AnalyticsBarChart
             bars={chartBars}
+            categorySeries={chartCategorySeries}
             currency={selectedChartCurrency}
             highlightedRange={chartMode === "month" ? hoveredWeekRange : null}
             kind={chartKind}

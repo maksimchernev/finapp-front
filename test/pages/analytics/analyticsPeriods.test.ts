@@ -1,6 +1,7 @@
 import {
   buildAnalyticsAmountBars,
   buildAnalyticsMonthTabs,
+  buildAnalyticsWeekCategorySeries,
   buildCategoryExpenseTrend,
   filterTransactionsByMonth,
   filterTransactionsByWeek,
@@ -156,6 +157,51 @@ describe("analytics periods", () => {
       ["12", 0],
       ["13", 0],
       ["14", 0],
+    ]);
+  });
+
+  it("builds category-colored series for the selected week", () => {
+    const groceries = createCategory("groceries", "Продукты");
+    groceries.color = "#ef8354";
+    const transport = createCategory("transport", "Транспорт");
+    transport.color = "#4f8f64";
+
+    const series = buildAnalyticsWeekCategorySeries(
+      [
+        createTransaction(-1000, "2026-07-08T10:00:00.000Z", "RUB", groceries),
+        createTransaction(-2500, "2026-07-08T12:00:00.000Z", "RUB", transport),
+        createTransaction(-3000, "2026-07-09T10:00:00.000Z", "RUB", groceries),
+        createTransaction(-4000, "2026-07-10T10:00:00.000Z", "USD", groceries),
+        createTransaction(5000, "2026-07-11T10:00:00.000Z", "RUB", groceries),
+        createTransaction(-6000, "2026-07-12T10:00:00.000Z", "RUB"),
+      ],
+      {
+        currency: "RUB",
+        kind: "expense",
+        monthKey: "2026-07",
+        weekStartDay: 8,
+      },
+    );
+
+    expect(series).toEqual([
+      {
+        color: "#ef8354",
+        key: "groceries",
+        label: "Продукты",
+        values: [1000, 3000, 0, 0, 0, 0, 0],
+      },
+      {
+        color: "#4f8f64",
+        key: "transport",
+        label: "Транспорт",
+        values: [2500, 0, 0, 0, 0, 0, 0],
+      },
+      {
+        color: "#9aa19c",
+        key: "uncategorized",
+        label: "Без категории",
+        values: [0, 0, 0, 0, 6000, 0, 0],
+      },
     ]);
   });
 

@@ -13,6 +13,7 @@ import {
 import { formatMoney } from "@/entities/transaction/lib/format";
 import type {
   AnalyticsBar,
+  AnalyticsCategorySeries,
   AnalyticsChartKind,
   AnalyticsWeekRange,
 } from "@/pages/analytics/lib/analyticsPeriods";
@@ -21,6 +22,7 @@ Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
 
 export function AnalyticsBarChart({
   bars,
+  categorySeries,
   currency,
   highlightedRange,
   kind,
@@ -29,6 +31,7 @@ export function AnalyticsBarChart({
   showTooltip = true,
 }: {
   bars: AnalyticsBar[];
+  categorySeries?: AnalyticsCategorySeries[];
   currency: string;
   highlightedRange?: AnalyticsWeekRange | null;
   kind: AnalyticsChartKind;
@@ -62,16 +65,25 @@ export function AnalyticsBarChart({
 
     const color = kind === "income" ? "#4f8f64" : "#e9856d";
     const hoverColor = kind === "income" ? "#3d7b53" : "#d66f57";
+    const hasCategorySeries = Boolean(categorySeries?.length);
     const data: ChartData<"bar", number[], string> = {
       labels: bars.map((bar) => bar.label),
-      datasets: [
-        {
-          data: bars.map((bar) => bar.total),
-          backgroundColor: color,
-          borderRadius: 6,
-          hoverBackgroundColor: hoverColor,
-        },
-      ],
+      datasets: hasCategorySeries
+        ? categorySeries!.map((series) => ({
+            label: series.label,
+            data: series.values,
+            backgroundColor: series.color,
+            borderRadius: 6,
+            stack: "categories",
+          }))
+        : [
+            {
+              data: bars.map((bar) => bar.total),
+              backgroundColor: color,
+              borderRadius: 6,
+              hoverBackgroundColor: hoverColor,
+            },
+          ],
     };
     const options: ChartOptions<"bar"> = {
       animation: false,
@@ -84,6 +96,7 @@ export function AnalyticsBarChart({
       responsive: true,
       scales: {
         x: {
+          stacked: hasCategorySeries,
           grid: {
             display: false,
           },
@@ -95,6 +108,7 @@ export function AnalyticsBarChart({
           },
         },
         y: {
+          stacked: hasCategorySeries,
           beginAtZero: true,
           border: {
             display: false,
@@ -117,7 +131,12 @@ export function AnalyticsBarChart({
         },
         tooltip: {
           callbacks: {
-            label: (context) => formatMoney(Number(context.parsed.y), currency),
+            label: (context) => {
+              const amount = formatMoney(Number(context.parsed.y), currency);
+              return hasCategorySeries && context.dataset.label
+                ? `${context.dataset.label}: ${amount}`
+                : amount;
+            },
           },
           displayColors: false,
           enabled: showTooltip,
@@ -190,7 +209,7 @@ export function AnalyticsBarChart({
       chartRef.current = null;
       chart.destroy();
     };
-  }, [bars, currency, kind, showTooltip]);
+  }, [bars, categorySeries, currency, kind, showTooltip]);
 
   return (
     <canvas
