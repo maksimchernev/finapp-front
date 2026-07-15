@@ -140,6 +140,12 @@
 }
 
 @media (max-width: 440px) {
+  .manualGrid {
+    input[type="date"] {
+      padding-inline: 0;
+    }
+  }
+
   .backdrop {
     padding: 0;
   }
