@@ -1,7 +1,13 @@
 import { LoaderCircle } from "lucide-react";
 import clsx from "clsx";
 import { useState } from "react";
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { transactionApi } from "@/entities/transaction/api/transactionApi";
 import type { CreateTransactionRequest } from "@/entities/transaction/api/transactionApi";
 import { useFinanceData } from "@/features/load-finance-data/model/useFinanceData";
@@ -29,6 +35,7 @@ import { SettingsPage } from "@/pages/settings/ui/SettingsPage";
 import { TransactionsPage } from "@/pages/transactions/ui/TransactionsPage";
 import { UploadPage } from "@/pages/upload/ui/UploadPage";
 import { resetUploadSession } from "@/pages/workspace/lib/uploadSession";
+import { getReferenceReturnTo } from "@/pages/workspace/lib/referenceNavigation";
 import styles from "@/pages/workspace/ui/WorkspacePage.module.scss";
 
 export function WorkspacePage({
@@ -41,6 +48,7 @@ export function WorkspacePage({
   onUnauthorized: (message: string) => void;
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeReviewJobId, setActiveReviewJobId] = useState<string | null>(
     null,
   );
@@ -261,6 +269,7 @@ export function WorkspacePage({
               onCreateCategory={finance.createCategory}
               onDeleteCategory={finance.deleteCategory}
               onUpdateCategory={finance.updateCategory}
+              onBack={() => navigate(getReferenceReturnTo(location.state))}
             />
           }
         />
@@ -271,6 +280,7 @@ export function WorkspacePage({
               banks={finance.banks}
               onCreateBank={finance.createBank}
               onUpdateBank={finance.updateBank}
+              onBack={() => navigate(getReferenceReturnTo(location.state))}
             />
           }
         />

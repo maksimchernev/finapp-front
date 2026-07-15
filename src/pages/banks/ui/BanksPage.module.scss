@@ -4,6 +4,25 @@
   min-width: 0;
 }
 
+.leading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.backButton {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--accent-a);
+  background: var(--surface);
+}
+
 .topbar {
   display: flex;
   align-items: center;

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Building2, Plus, X } from "lucide-react";
+import { ArrowLeft, Building2, Plus, X } from "lucide-react";
 import type { Bank } from "@/entities/bank/model/types";
 import { Dialog } from "@/shared/ui/Dialog";
 import styles from "@/pages/banks/ui/BanksPage.module.scss";
@@ -8,6 +8,7 @@ export function BanksPage({
   banks,
   onCreateBank,
   onUpdateBank,
+  onBack,
 }: {
   banks: Bank[];
   onCreateBank: (name: string, keywords?: string[]) => Promise<Bank>;
@@ -16,6 +17,7 @@ export function BanksPage({
     name: string,
     keywords?: string[],
   ) => Promise<Bank>;
+  onBack?: () => void;
 }) {
   const [bankName, setBankName] = useState("");
   const [bankKeywords, setBankKeywords] = useState("");
@@ -103,12 +105,24 @@ export function BanksPage({
   return (
     <section className={styles.screen}>
       <header className={styles.topbar}>
-        <div>
-          <span className={styles.eyebrow}>источники операций</span>
-          <h2>Банки</h2>
-          <span className={styles.eyebrow}>
-            Добавьте банки, чтобы отмечать источник каждой операции
-          </span>
+        <div className={styles.leading}>
+          {onBack ? (
+            <button
+              aria-label="Назад"
+              className={styles.backButton}
+              type="button"
+              onClick={onBack}
+            >
+              <ArrowLeft size={20} />
+            </button>
+          ) : null}
+          <div>
+            <span className={styles.eyebrow}>источники операций</span>
+            <h2>Банки</h2>
+            <span className={styles.eyebrow}>
+              Добавьте банки, чтобы отмечать источник каждой операции
+            </span>
+          </div>
         </div>
       </header>
 

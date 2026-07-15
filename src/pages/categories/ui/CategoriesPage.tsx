@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type KeyboardEvent } from "react";
-import { Plus, Trash2, X } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, X } from "lucide-react";
 import clsx from "clsx";
 import type { Category } from "@/entities/category/model/types";
 import { CategoryIcon } from "@/entities/category/ui/CategoryIcon";
@@ -25,11 +25,13 @@ export function CategoriesPage({
   onCreateCategory,
   onDeleteCategory,
   onUpdateCategory,
+  onBack,
 }: {
   categories: Category[];
   onCreateCategory: (category: CategoryPayload) => Promise<Category>;
   onDeleteCategory: (id: string) => Promise<void>;
   onUpdateCategory: (id: string, category: CategoryPayload) => Promise<Category>;
+  onBack?: () => void;
 }) {
   const [activeType, setActiveType] = useState<CategoryType>("expense");
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -157,10 +159,22 @@ export function CategoriesPage({
   return (
     <section className={styles.screen}>
       <header className={styles.topbar}>
-        <div>
-          <span className={styles.eyebrow}>автокатегоризация</span>
-          <h2>Категории</h2>
-          <span className={styles.eyebrow}>Правила распознавания операций</span>
+        <div className={styles.leading}>
+          {onBack ? (
+            <button
+              aria-label="Назад"
+              className={styles.iconButton}
+              type="button"
+              onClick={onBack}
+            >
+              <ArrowLeft size={20} />
+            </button>
+          ) : null}
+          <div>
+            <span className={styles.eyebrow}>автокатегоризация</span>
+            <h2>Категории</h2>
+            <span className={styles.eyebrow}>Правила распознавания операций</span>
+          </div>
         </div>
         <button
           aria-label="Добавить категорию"
