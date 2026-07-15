@@ -46,6 +46,7 @@ export function ReviewPage({
   const selectedCount = drafts.filter((draft) => draft.selected).length;
   const saveSummary = `Выбрано ${selectedCount} из ${drafts.length}`;
   const selectedBankId = getReviewBankId(drafts);
+  const isBankMissing = selectedCount > 0 && !selectedBankId;
   const hasInvalidSelectedDraft = drafts.some(
     (draft) => draft.selected && (!draft.date || !draft.categoryId),
   );
@@ -105,6 +106,8 @@ export function ReviewPage({
           </div>
           <select
             aria-labelledby="review-bank-label"
+            aria-invalid={isBankMissing}
+            className={clsx(isBankMissing && styles.fieldInvalid)}
             value={selectedBankId}
             onChange={(event) => handleReviewBankChange(event.target.value)}
           >
@@ -151,7 +154,7 @@ export function ReviewPage({
         <button
           className={clsx(styles.primaryAction, styles.compact)}
           onClick={onSave}
-          disabled={isSaving || hasInvalidSelectedDraft}
+          disabled={isSaving || hasInvalidSelectedDraft || isBankMissing}
         >
           {isSaving ? "Сохраняю..." : saveLabel}
         </button>

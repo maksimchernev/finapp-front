@@ -131,6 +131,30 @@ describe("ReviewPage", () => {
     expect(html).not.toContain("disabled");
   });
 
+  it("requires a bank when at least one transaction is selected", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(ReviewPage, {
+        drafts: [
+          {
+            ...unselectedDraft,
+            bankId: "",
+            categoryId: "category-1",
+            selected: true,
+          },
+        ],
+        banks: [bank],
+        categories: [],
+        isSaving: false,
+        onBack: () => undefined,
+        onSave: () => undefined,
+        onUpdate: () => undefined,
+      }),
+    );
+
+    expect(html).toContain('aria-invalid="true"');
+    expect(html).toContain('disabled=""');
+  });
+
   it("shows review progress when it is provided", () => {
     const html = renderToStaticMarkup(
       React.createElement(ReviewPage, {
