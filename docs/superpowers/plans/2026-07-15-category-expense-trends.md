@@ -858,3 +858,22 @@ Expected: build succeeds, all Jest tests pass, and no whitespace errors are repo
 git add src/shared/router/routes.ts src/pages/workspace/ui/WorkspacePage.tsx src/pages/analytics/ui/AnalyticsPage.tsx src/pages/analytics/ui/AnalyticsPage.module.scss src/pages/analytics-months/ui/AnalyticsMonthsPage.tsx test/shared/router/appRoutes.test.ts test/pages/analytics/categoryExpenseTrendPage.test.ts
 git commit -m "feat: move category trends to monthly summary"
 ```
+
+### Task 4: Move the monthly-summary action beside the month tabs
+
+**Files:**
+- Modify: `test/pages/analytics/categoryExpenseTrendPage.test.ts`
+- Modify: `src/pages/analytics/ui/AnalyticsPage.tsx`
+- Modify: `src/pages/analytics/ui/AnalyticsPage.module.scss`
+
+**Interfaces:**
+- `HeaderWithBack.action` returns only the currency switcher when it is needed.
+- A new `periodNavigation` row contains a min-width-zero scrollable month-tab area and a fixed right-side `monthsLink` button.
+- The button keeps `onOpenMonths`, visible text `По месяцам`, a `BarChart3` icon, and `aria-label="Сводка по месяцам"`; below 380 px its text is visually hidden.
+
+- [ ] Write a failing source regression that requires `periodNavigation`, `monthTabsViewport`, `BarChart3`, and the accessible button label.
+- [ ] Run `npm test -- --runInBand test/pages/analytics/categoryExpenseTrendPage.test.ts` and verify RED.
+- [ ] Move the button out of `HeaderWithBack.action`, wrap the existing tabs and button in the new period-navigation row, and add the approved pill/mobile styles.
+- [ ] Run the focused test and verify GREEN.
+- [ ] Run `npm run build`, `npm test -- --runInBand`, and `git diff --check`.
+- [ ] Commit with `git commit -m "feat: move monthly summary action beside tabs"`.
