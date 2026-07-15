@@ -12,6 +12,7 @@ import {
   type AnalyticsWeekRange,
   buildAnalyticsAmountBars,
   buildAnalyticsMonthTabs,
+  buildCategoryExpenseTrend,
   buildMonthCategoryStats,
   buildMonthCurrencyTotals,
   filterTransactionsByMonth,
@@ -32,6 +33,7 @@ import { CurrencySwitcher } from "@/shared/ui/CurrencySwitcher";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
 import { AnalyticsBarChart } from "@/pages/analytics/ui/AnalyticsBarChart";
+import { CategoryExpenseTrendChart } from "@/pages/analytics/ui/CategoryExpenseTrendChart";
 import styles from "@/pages/analytics/ui/AnalyticsPage.module.scss";
 
 type ChartKind = "expense" | "income";
@@ -141,6 +143,10 @@ export function AnalyticsPage({
       selectedChartCurrency,
       selectedWeekStartDay,
     ],
+  );
+  const categoryTrendData = useMemo(
+    () => buildCategoryExpenseTrend(transactions, selectedChartCurrency),
+    [selectedChartCurrency, transactions],
   );
   const chartPeriodLabel =
     chartMode === "week"
@@ -332,6 +338,23 @@ export function AnalyticsPage({
             showTooltip={shouldShowAnalyticsTooltip(chartMode)}
           />
         </div>
+      </section>
+
+      <section className={styles.chartCard}>
+        <div className={styles.chartHead}>
+          <div>
+            <h3>Расходы по категориям</h3>
+            <small>Топ-5 за всю историю · {selectedChartCurrency}</small>
+          </div>
+        </div>
+        {categoryTrendData.series.length ? (
+          <CategoryExpenseTrendChart
+            data={categoryTrendData}
+            currency={selectedChartCurrency}
+          />
+        ) : (
+          <EmptyState text="Расходы по категориям появятся после сохранения операций." />
+        )}
       </section>
 
       <section className={styles.chartCard}>

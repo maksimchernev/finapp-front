@@ -182,6 +182,40 @@
   padding-top: 14px;
 }
 
+.categoryTrendViewport {
+  width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  padding-top: 14px;
+}
+
+.categoryTrendCanvas {
+  min-width: 100%;
+  height: 220px;
+}
+
+.categoryTrendLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  i {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 auto;
+    border-radius: 999px;
+  }
+}
+
 .categoryProgress {
   display: grid;
   gap: 11px;
