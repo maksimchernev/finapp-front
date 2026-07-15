@@ -31,14 +31,14 @@ describe("app routes", () => {
     expect(isPrivateRoute("/auth/callback")).toBe(false);
   });
 
-  it("keeps review grouped under the import bottom-nav item", () => {
+  it("maps workspace routes to their bottom-nav groups", () => {
     expect(getBottomNavActiveItem("/")).toBe("home");
-    expect(getBottomNavActiveItem("/analytics")).toBe("home");
-    expect(getBottomNavActiveItem("/transactions")).toBe("home");
-    expect(getBottomNavActiveItem("/categories")).toBe("categories");
+    expect(getBottomNavActiveItem("/analytics")).toBe("analytics");
+    expect(getBottomNavActiveItem("/transactions")).toBe("transactions");
+    expect(getBottomNavActiveItem("/categories")).toBe("settings");
     expect(getBottomNavActiveItem("/upload")).toBe("upload");
     expect(getBottomNavActiveItem("/review")).toBe("upload");
-    expect(getBottomNavActiveItem("/banks")).toBe("banks");
+    expect(getBottomNavActiveItem("/banks")).toBe("settings");
     expect(getBottomNavActiveItem("/settings")).toBe("settings");
   });
 });

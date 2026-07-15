@@ -1,4 +1,10 @@
-import { Building2, Home, Settings, Tags, Wallet } from "lucide-react";
+import {
+  ChartNoAxesCombined,
+  Home,
+  ReceiptText,
+  Settings,
+  Wallet,
+} from "lucide-react";
 import { appRoutes } from "@/shared/router/routes";
 
 export const bottomNavItems = [
@@ -9,10 +15,10 @@ export const bottomNavItems = [
     route: appRoutes.dashboard,
   },
   {
-    id: "categories",
-    icon: Tags,
-    label: "Катег.",
-    route: appRoutes.categories,
+    id: "analytics",
+    icon: ChartNoAxesCombined,
+    label: "Аналитика",
+    route: appRoutes.analytics,
   },
   {
     id: "upload",
@@ -21,10 +27,10 @@ export const bottomNavItems = [
     route: appRoutes.upload,
   },
   {
-    id: "banks",
-    icon: Building2,
-    label: "Банки",
-    route: appRoutes.banks,
+    id: "transactions",
+    icon: ReceiptText,
+    label: "Операции",
+    route: appRoutes.transactions,
   },
   {
     id: "settings",
