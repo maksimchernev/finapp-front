@@ -2,8 +2,20 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 describe("analytics category expense trend", () => {
-  const pageSource = readFileSync(
+  const analyticsSource = readFileSync(
     join(process.cwd(), "src/pages/analytics/ui/AnalyticsPage.tsx"),
+    "utf8",
+  );
+  const monthsSource = readFileSync(
+    join(process.cwd(), "src/pages/analytics-months/ui/AnalyticsMonthsPage.tsx"),
+    "utf8",
+  );
+  const workspaceSource = readFileSync(
+    join(process.cwd(), "src/pages/workspace/ui/WorkspacePage.tsx"),
+    "utf8",
+  );
+  const routesSource = readFileSync(
+    join(process.cwd(), "src/shared/router/routes.ts"),
     "utf8",
   );
   const chartSource = readFileSync(
@@ -11,23 +23,28 @@ describe("analytics category expense trend", () => {
     "utf8",
   );
 
-  it("builds the trend from all transactions and the selected currency", () => {
-    expect(pageSource).toContain(
-      "buildCategoryExpenseTrend(transactions, selectedChartCurrency)",
-    );
-    expect(pageSource).toContain("<CategoryExpenseTrendChart");
-    expect(pageSource).toContain("currency={selectedChartCurrency}");
-    expect(pageSource).not.toContain(
-      "buildCategoryExpenseTrend(monthTransactions",
+  it("keeps the monthly summary separate from the all-months trend", () => {
+    expect(analyticsSource).not.toContain("<CategoryExpenseTrendChart");
+    expect(analyticsSource).toContain("onOpenMonths");
+    expect(analyticsSource).toContain("По месяцам");
+    expect(monthsSource).toContain("<CategoryExpenseTrendChart");
+    expect(monthsSource).toContain(
+      "buildCategoryExpenseTrend(transactions, selectedCurrency)",
     );
   });
 
-  it("renders the dedicated card and existing empty state", () => {
-    expect(pageSource).toContain("Расходы по категориям");
-    expect(pageSource).toContain("categoryTrendData.series.length");
-    expect(pageSource).toContain(
+  it("renders the monthly trends screen with back navigation and empty state", () => {
+    expect(monthsSource).toContain('title="Сводка по месяцам"');
+    expect(monthsSource).toContain("onBack={onBack}");
+    expect(monthsSource).toContain("Расходы по категориям");
+    expect(monthsSource).toContain(
       'EmptyState text="Расходы по категориям появятся после сохранения операций."',
     );
+  });
+
+  it("registers the nested private analytics route", () => {
+    expect(workspaceSource).toContain('path="analytics/months"');
+    expect(routesSource).toContain('analyticsMonths: "/analytics/months"');
   });
 
   it("keeps twelve months visible and scrolls the chart to the newest history", () => {

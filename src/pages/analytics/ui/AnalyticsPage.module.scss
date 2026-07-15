@@ -3,6 +3,24 @@
   gap: 18px;
 }
 
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.monthsLink {
+  min-height: 34px;
+  padding: 6px 11px;
+  border: 1px solid rgba(36, 76, 56, 0.14);
+  border-radius: 999px;
+  color: var(--accent-a);
+  background: rgba(36, 76, 56, 0.08);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .metricsGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

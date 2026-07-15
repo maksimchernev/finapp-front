@@ -5,6 +5,7 @@ export const appRoutes = {
   upload: "/upload",
   review: "/review",
   analytics: "/analytics",
+  analyticsMonths: "/analytics/months",
   transactions: "/transactions",
   categories: "/categories",
   banks: "/banks",
@@ -23,6 +24,7 @@ const privateRoutes = new Set<string>([
   appRoutes.upload,
   appRoutes.review,
   appRoutes.analytics,
+  appRoutes.analyticsMonths,
   appRoutes.transactions,
   appRoutes.categories,
   appRoutes.banks,
@@ -36,7 +38,10 @@ export function isPrivateRoute(pathname: string) {
 export function getBottomNavActiveItem(pathname: string): BottomNavItem {
   const normalizedPath = normalizePath(pathname);
 
-  if (normalizedPath === appRoutes.analytics) {
+  if (
+    normalizedPath === appRoutes.analytics ||
+    normalizedPath === appRoutes.analyticsMonths
+  ) {
     return "analytics";
   }
 
