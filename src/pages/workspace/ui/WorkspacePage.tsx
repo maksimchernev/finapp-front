@@ -59,7 +59,7 @@ export function WorkspacePage({
       upload.resetJobs();
       setActiveReviewJobId(null);
       await finance.reload();
-      navigate(appRoutes.upload);
+      navigate(appRoutes.dashboard);
     },
   });
   const upload = useScreenshotImport({
@@ -146,7 +146,6 @@ export function WorkspacePage({
     const nextReviewJob = getNextDoneUploadJob(upload.jobs, activeReviewJobId);
     if (nextReviewJob) {
       setActiveReviewJobId(nextReviewJob.id);
-      window.scrollTo(0, 0);
       return;
     }
 
@@ -216,6 +215,7 @@ export function WorkspacePage({
           path="review"
           element={
             <ReviewPage
+              key={activeReviewJobId}
               drafts={activeReviewJob?.drafts ?? []}
               banks={finance.banks}
               categories={finance.categories}

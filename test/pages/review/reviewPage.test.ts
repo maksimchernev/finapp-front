@@ -81,6 +81,19 @@ const bank: Bank = {
 };
 
 describe("ReviewPage", () => {
+  it("remounts review content at the top and opens the dashboard after final save", () => {
+    const workspaceSource = readFileSync(
+      join(process.cwd(), "src/pages/workspace/ui/WorkspacePage.tsx"),
+      "utf8",
+    );
+
+    expect(workspaceSource).toMatch(
+      /<ReviewPage\s+key=\{activeReviewJobId\}/,
+    );
+    expect(workspaceSource).not.toContain("window.scrollTo(0, 0)");
+    expect(workspaceSource).toContain("navigate(appRoutes.dashboard)");
+  });
+
   it("exposes bank and category reference actions", () => {
     const reviewSource = readFileSync(
       join(process.cwd(), "src/pages/review/ui/ReviewPage.tsx"),
