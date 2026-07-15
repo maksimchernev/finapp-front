@@ -54,23 +54,27 @@
     opacity: 0;
     pointer-events: none;
   }
-
 }
 
-.selectionDeleteButton {
-  width: 40px;
-  min-height: 40px;
+.floatingDeleteButton {
+  position: fixed;
+  z-index: 6;
+  right: 50%;
+  transform: translateX(50%);
+  bottom: calc(max(10px, env(safe-area-inset-bottom)) + 93px);
+  width: 58px;
+  height: 58px;
   padding: 0;
   border: 1px solid rgba(184, 64, 49, 0.2);
-  border-radius: 8px;
+  border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
   color: var(--red);
-  background: rgba(184, 64, 49, 0.07);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 24px rgba(36, 76, 56, 0.16);
+  backdrop-filter: blur(14px);
   font: inherit;
-  font-weight: 800;
 
   &:disabled {
     cursor: not-allowed;
@@ -398,5 +402,4 @@
       grid-column: 3;
     }
   }
-
 }

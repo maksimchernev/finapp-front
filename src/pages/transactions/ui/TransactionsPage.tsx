@@ -206,16 +206,7 @@ export function TransactionsPage({
               <span>Выбрать все</span>
             </label>
             <button
-              aria-label={`Удалить выбранные (${selectedIds.size})`}
-              className={styles.selectionDeleteButton}
-              disabled={selectedIds.size === 0}
-              type="button"
-              onClick={() => setIsBulkDeleteOpen(true)}
-            >
-              <Trash2 size={17} />
-            </button>
-            <button
-                  className={styles.editModeButton}
+              className={styles.editModeButton}
               type="button"
               onClick={toggleSelectionMode}
             >
@@ -227,6 +218,18 @@ export function TransactionsPage({
 
       {bulkDeleteError && (
         <p className={styles.bulkErrorText}>{bulkDeleteError}</p>
+      )}
+
+      {isSelectionMode && (
+        <button
+          aria-label={`Удалить выбранные (${selectedIds.size})`}
+          className={styles.floatingDeleteButton}
+          disabled={selectedIds.size === 0}
+          type="button"
+          onClick={() => setIsBulkDeleteOpen(true)}
+        >
+          <Trash2 size={20} />
+        </button>
       )}
 
       <section className={styles.transactionList}>
