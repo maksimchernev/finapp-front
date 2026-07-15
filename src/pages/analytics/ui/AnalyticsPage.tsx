@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import clsx from "clsx";
-import { Minimize2, Maximize2 } from "lucide-react";
+import { BarChart3, Minimize2, Maximize2 } from "lucide-react";
 import { formatCurrencyTotal } from "@/entities/transaction/lib/currencyTotals";
 import { formatMoney } from "@/entities/transaction/lib/format";
 import type {
@@ -228,38 +228,45 @@ export function AnalyticsPage({
         title={`Сводка за ${activeMonthLabel.toLowerCase()}`}
         subtitle="Доходы и расходы по месяцам"
         action={
-          <div className={styles.headerActions}>
-            {showCurrencySwitcher ? (
-              <CurrencySwitcher
-                currencies={availableCurrencies}
-                value={selectedChartCurrency}
-                label="Валюта"
-                onChange={setChartCurrency}
-              />
-            ) : null}
-            <button
-              className={styles.monthsLink}
-              type="button"
-              onClick={onOpenMonths}
-            >
-              По месяцам
-            </button>
-          </div>
+          showCurrencySwitcher ? (
+            <CurrencySwitcher
+              currencies={availableCurrencies}
+              value={selectedChartCurrency}
+              label="Валюта"
+              onChange={setChartCurrency}
+            />
+          ) : undefined
         }
       />
-      <div className={styles.monthTabs} aria-label="Месяц аналитики">
-        {monthTabs.map((month) => (
-          <button
-            key={month.key}
-            className={
-              month.key === activeMonthKey ? styles.selectedMonth : undefined
-            }
-            type="button"
-            onClick={() => selectMonth(month.key)}
-          >
-            {month.label}
-          </button>
-        ))}
+      <div className={styles.periodNavigation}>
+        <div className={styles.monthTabsViewport}>
+          <div className={styles.monthTabs} aria-label="Месяц аналитики">
+            {monthTabs.map((month) => (
+              <button
+                key={month.key}
+                className={
+                  month.key === activeMonthKey
+                    ? styles.selectedMonth
+                    : undefined
+                }
+                type="button"
+                onClick={() => selectMonth(month.key)}
+              >
+                {month.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <button
+          className={styles.monthsLink}
+          type="button"
+          aria-label="Сводка по месяцам"
+          title="Сводка по месяцам"
+          onClick={onOpenMonths}
+        >
+          <BarChart3 size={16} aria-hidden="true" />
+          <span>По месяцам</span>
+        </button>
       </div>
       <div className={styles.metricsGrid}>
         <div className={clsx(styles.metric, styles.blue)}>

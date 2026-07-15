@@ -33,6 +33,13 @@ describe("analytics category expense trend", () => {
     );
   });
 
+  it("keeps the all-months action fixed beside the scrollable month tabs", () => {
+    expect(analyticsSource).toContain("styles.periodNavigation");
+    expect(analyticsSource).toContain("styles.monthTabsViewport");
+    expect(analyticsSource).toContain("<BarChart3");
+    expect(analyticsSource).toContain('aria-label="Сводка по месяцам"');
+  });
+
   it("renders the monthly trends screen with back navigation and empty state", () => {
     expect(monthsSource).toContain('title="Сводка по месяцам"');
     expect(monthsSource).toContain("onBack={onBack}");

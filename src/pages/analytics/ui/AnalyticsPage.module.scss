@@ -3,22 +3,30 @@
   gap: 18px;
 }
 
-.headerActions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 6px;
+.periodNavigation {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.monthTabsViewport {
+  min-width: 0;
 }
 
 .monthsLink {
-  min-height: 34px;
-  padding: 6px 11px;
-  border: 1px solid rgba(36, 76, 56, 0.14);
+  min-height: 35px;
+  padding: 7px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(36, 76, 56, 0.24);
   border-radius: 999px;
   color: var(--accent-a);
-  background: rgba(36, 76, 56, 0.08);
+  background: rgba(36, 76, 56, 0.1);
   font-size: 12px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .metricsGrid {
@@ -278,6 +286,21 @@
 }
 
 @media (max-width: 380px) {
+  .monthsLink {
+    width: 35px;
+    padding-inline: 0;
+    justify-content: center;
+
+    span {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+  }
+
   .metricsGrid {
     grid-template-columns: 1fr;
   }
