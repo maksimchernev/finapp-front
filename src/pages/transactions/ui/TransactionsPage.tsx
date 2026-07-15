@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Trash2, X } from "lucide-react";
+import { Check, Trash2, X } from "lucide-react";
 import clsx from "clsx";
 import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
@@ -12,6 +12,12 @@ import {
   toTransactionUpdatePayload,
   type TransactionEditForm,
 } from "@/pages/transactions/lib/transactionEditor";
+import {
+  areAllIdsSelected,
+  deleteSelectedTransactions,
+  toggleAllSelectedIds,
+  toggleSelectedId,
+} from "@/pages/transactions/lib/transactionSelection";
 import { Dialog } from "@/shared/ui/Dialog";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
@@ -40,7 +46,14 @@ export function TransactionsPage({
   const [form, setForm] = useState<TransactionEditForm | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const transactionIds = transactions.map((transaction) => transaction.id);
+  const areAllSelected = areAllIdsSelected(selectedIds, transactionIds);
 
   const filteredCategories = categories.filter((category) =>
     form?.kind === "income"
@@ -115,13 +128,76 @@ export function TransactionsPage({
     }
   }
 
+  function toggleSelectionMode() {
+    setIsSelectionMode((current) => !current);
+    setSelectedIds(new Set());
+    setIsBulkDeleteOpen(false);
+    setBulkDeleteError(null);
+  }
+
+  async function handleBulkDelete() {
+    if (selectedIds.size === 0) return;
+
+    setIsBulkDeleting(true);
+    setBulkDeleteError(null);
+    const { failedIds } = await deleteSelectedTransactions(
+      [...selectedIds],
+      onDeleteTransaction,
+    );
+    setIsBulkDeleting(false);
+
+    if (failedIds.length === 0) {
+      setSelectedIds(new Set());
+      setIsBulkDeleteOpen(false);
+      setIsSelectionMode(false);
+      return;
+    }
+
+    setSelectedIds(new Set(failedIds));
+    setBulkDeleteError(
+      failedIds.length === 1
+        ? "Не удалось удалить 1 транзакцию. Попробуйте еще раз."
+        : `Не удалось удалить транзакции: ${failedIds.length}. Попробуйте еще раз.`,
+    );
+  }
+
   return (
     <section className={styles.screen}>
       <HeaderWithBack
         title="Операции"
         subtitle="Все сохраненные доходы и расходы"
         onBack={onBack}
+        action={
+          transactions.length > 0 ? (
+            <button
+              className={styles.editModeButton}
+              type="button"
+              onClick={toggleSelectionMode}
+            >
+              {isSelectionMode ? "Готово" : "Изменить"}
+            </button>
+          ) : null
+        }
       />
+
+      {isSelectionMode && (
+        <label className={styles.selectAllRow}>
+          <input
+            checked={areAllSelected}
+            type="checkbox"
+            onChange={() =>
+              setSelectedIds((current) =>
+                toggleAllSelectedIds(current, transactionIds),
+              )
+            }
+          />
+          <span className={styles.checkboxVisual} aria-hidden="true">
+            {areAllSelected && <Check size={15} strokeWidth={3} />}
+          </span>
+          <span>Выбрать все</span>
+          <small>{selectedIds.size > 0 ? `Выбрано: ${selectedIds.size}` : ""}</small>
+        </label>
+      )}
 
       <section className={styles.transactionList}>
         {transactions.length === 0 ? (
@@ -130,13 +206,77 @@ export function TransactionsPage({
           transactions.map((transaction) => (
             <TransactionCard
               categories={categories}
+              isSelectionMode={isSelectionMode}
+              isSelected={selectedIds.has(transaction.id)}
               key={transaction.id}
               transaction={transaction}
-              onClick={() => openDialog(transaction)}
+              onClick={() =>
+                isSelectionMode
+                  ? setSelectedIds((current) =>
+                      toggleSelectedId(current, transaction.id),
+                    )
+                  : openDialog(transaction)
+              }
             />
           ))
         )}
       </section>
+
+      {isSelectionMode && (
+        <div className={styles.bulkActionBar}>
+          {bulkDeleteError && (
+            <p className={styles.bulkErrorText}>{bulkDeleteError}</p>
+          )}
+          <button
+            disabled={selectedIds.size === 0}
+            type="button"
+            onClick={() => setIsBulkDeleteOpen(true)}
+          >
+            <Trash2 size={18} />
+            Удалить ({selectedIds.size})
+          </button>
+        </div>
+      )}
+
+      {isBulkDeleteOpen && (
+        <Dialog
+          ariaLabelledBy="bulk-delete-title"
+          backdropClassName={styles.backdrop}
+          className={clsx(styles.dialog, styles.confirmDialog)}
+          onClose={() => {
+            if (!isBulkDeleting) setIsBulkDeleteOpen(false);
+          }}
+        >
+          <header className={styles.dialogHeader}>
+            <div>
+              <span>подтверждение</span>
+              <h3 id="bulk-delete-title">
+                Удалить {selectedIds.size} транзакций?
+              </h3>
+            </div>
+          </header>
+          <p className={styles.confirmText}>Это действие нельзя отменить.</p>
+          {bulkDeleteError && <p className={styles.errorText}>{bulkDeleteError}</p>}
+          <div className={styles.dialogActions}>
+            <button
+              className={styles.secondaryButton}
+              disabled={isBulkDeleting}
+              type="button"
+              onClick={() => setIsBulkDeleteOpen(false)}
+            >
+              Отмена
+            </button>
+            <button
+              className={styles.confirmDeleteButton}
+              disabled={isBulkDeleting}
+              type="button"
+              onClick={handleBulkDelete}
+            >
+              {isBulkDeleting ? "Удаляем…" : "Удалить"}
+            </button>
+          </div>
+        </Dialog>
+      )}
 
       {editingTransaction && form && (
         <Dialog
@@ -292,10 +432,14 @@ export function TransactionsPage({
 
 function TransactionCard({
   categories,
+  isSelected,
+  isSelectionMode,
   onClick,
   transaction,
 }: {
   categories: Category[];
+  isSelected: boolean;
+  isSelectionMode: boolean;
   onClick: () => void;
   transaction: Transaction;
 }) {
@@ -311,7 +455,21 @@ function TransactionCard({
     .join(" • ");
 
   return (
-    <button className={styles.transactionCard} type="button" onClick={onClick}>
+    <button
+      aria-pressed={isSelectionMode ? isSelected : undefined}
+      className={clsx(
+        styles.transactionCard,
+        isSelectionMode && styles.selectionTransactionCard,
+        isSelected && styles.selectedTransactionCard,
+      )}
+      type="button"
+      onClick={onClick}
+    >
+      {isSelectionMode && (
+        <span className={styles.checkboxVisual} aria-hidden="true">
+          {isSelected && <Check size={15} strokeWidth={3} />}
+        </span>
+      )}
       <span
         className={styles.categoryAvatar}
         style={{
