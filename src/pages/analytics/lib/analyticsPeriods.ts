@@ -25,6 +25,22 @@ export interface AnalyticsCategoryStat {
   count: number;
 }
 
+export interface AnalyticsCategoryTrendMonth {
+  key: string;
+  label: string;
+}
+
+export interface AnalyticsCategoryTrendSeries {
+  category: Category;
+  totalMinor: number;
+  values: number[];
+}
+
+export interface AnalyticsCategoryTrendData {
+  months: AnalyticsCategoryTrendMonth[];
+  series: AnalyticsCategoryTrendSeries[];
+}
+
 export interface AnalyticsWeekRange {
   startDay: number;
   endDay: number;
@@ -222,6 +238,61 @@ export function buildMonthCategoryStats(
   );
 }
 
+export function buildCategoryExpenseTrend(
+  transactions: readonly Transaction[],
+  currency: string,
+  today = new Date(),
+): AnalyticsCategoryTrendData {
+  const transactionMonthKeys = transactions
+    .map(getTransactionMonthKey)
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
+  const months = transactionMonthKeys.length
+    ? buildContinuousMonthKeys(
+        transactionMonthKeys[0],
+        transactionMonthKeys[transactionMonthKeys.length - 1],
+      ).map((key) => ({ key, label: formatMonthTabLabel(key, today) }))
+    : [];
+  const totals = new Map<
+    string,
+    { category: Category; totalMinor: number; byMonth: Map<string, number> }
+  >();
+
+  for (const transaction of transactions) {
+    if (transaction.currency !== currency) continue;
+    if (transaction.amountMinor >= 0) continue;
+    if (!transaction.category || transaction.category.type !== "expense") continue;
+
+    const current = totals.get(transaction.category.id) ?? {
+      category: transaction.category,
+      totalMinor: 0,
+      byMonth: new Map<string, number>(),
+    };
+    const amount = Math.abs(transaction.amountMinor);
+    const monthKey = getTransactionMonthKey(transaction);
+
+    current.totalMinor += amount;
+    current.byMonth.set(monthKey, (current.byMonth.get(monthKey) ?? 0) + amount);
+    totals.set(transaction.category.id, current);
+  }
+
+  const series = Array.from(totals.values())
+    .sort(
+      (a, b) =>
+        b.totalMinor - a.totalMinor ||
+        a.category.nameRu.localeCompare(b.category.nameRu, "ru") ||
+        a.category.id.localeCompare(b.category.id),
+    )
+    .slice(0, 5)
+    .map(({ category, totalMinor, byMonth }) => ({
+      category,
+      totalMinor,
+      values: months.map((month) => byMonth.get(month.key) ?? 0),
+    }));
+
+  return { months, series };
+}
+
 function buildWeekDayBuckets(monthKey: string, weekStartDay: number) {
   const daysInMonth = getDaysInMonth(monthKey);
   const start = Math.min(Math.max(weekStartDay, 1), daysInMonth);
@@ -273,6 +344,21 @@ function getTransactionDay(transaction: Transaction) {
 
 function getMonthKey(date: Date) {
   return date.toISOString().slice(0, 7);
+}
+
+function buildContinuousMonthKeys(startKey: string, endKey: string) {
+  const [startYear, startMonth] = startKey.split("-").map(Number);
+  const [endYear, endMonth] = endKey.split("-").map(Number);
+  const cursor = new Date(Date.UTC(startYear, startMonth - 1, 1));
+  const end = new Date(Date.UTC(endYear, endMonth - 1, 1));
+  const keys: string[] = [];
+
+  while (cursor <= end) {
+    keys.push(getMonthKey(cursor));
+    cursor.setUTCMonth(cursor.getUTCMonth() + 1);
+  }
+
+  return keys;
 }
 
 function getDateDay(date: Date) {
