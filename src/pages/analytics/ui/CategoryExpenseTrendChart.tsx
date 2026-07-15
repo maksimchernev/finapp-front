@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   CategoryScale,
   Chart,
@@ -34,6 +34,13 @@ export function CategoryExpenseTrendChart({
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const scrollViewportRef = useRef<HTMLDivElement | null>(null);
+  const [mode, setMode] = useState<"categories" | "total">("categories");
+
+  const toggleMode = () => {
+    setMode((currentMode) =>
+      currentMode === "categories" ? "total" : "categories",
+    );
+  };
 
   useEffect(() => {
     const viewport = scrollViewportRef.current;
@@ -46,16 +53,30 @@ export function CategoryExpenseTrendChart({
 
     const chartData: ChartData<"line", number[], string> = {
       labels: data.months.map((month) => month.label),
-      datasets: data.series.map(({ category, values }) => ({
-        label: category.nameRu,
-        data: values,
-        borderColor: category.color,
-        backgroundColor: category.color,
-        borderWidth: 2,
-        pointRadius: 3,
-        pointHoverRadius: 5,
-        tension: 0.25,
-      })),
+      datasets:
+        mode === "total"
+          ? [
+              {
+                label: "Всего",
+                data: data.totalValues,
+                borderColor: "#244c38",
+                backgroundColor: "#244c38",
+                borderWidth: 4,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                tension: 0.25,
+              },
+            ]
+          : data.series.map(({ category, values }) => ({
+              label: category.nameRu,
+              data: values,
+              borderColor: category.color,
+              backgroundColor: category.color,
+              borderWidth: 2,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              tension: 0.25,
+            })),
     };
     const options: ChartOptions<"line"> = {
       animation: false,
@@ -98,7 +119,7 @@ export function CategoryExpenseTrendChart({
     });
 
     return () => chart.destroy();
-  }, [currency, data]);
+  }, [currency, data, mode]);
 
   const chartWidthPercent = Math.max(
     100,
@@ -115,18 +136,30 @@ export function CategoryExpenseTrendChart({
           <canvas
             ref={canvasRef}
             aria-label="Расходы по категориям по месяцам"
+            onClick={toggleMode}
             role="img"
           />
         </div>
       </div>
-      <div className={styles.categoryTrendLegend} aria-label="Категории расходов">
-        {data.series.map(({ category }) => (
-          <span key={category.id}>
-            <i style={{ background: category.color }} aria-hidden="true" />
-            {category.nameRu}
+      <div className={styles.categoryTrendLegend} aria-label="Легенда расходов">
+        {mode === "total" ? (
+          <span>
+            <i style={{ background: "#244c38" }} aria-hidden="true" />
+            Всего
           </span>
-        ))}
+        ) : (
+          data.series.map(({ category }) => (
+            <span key={category.id}>
+              <i style={{ background: category.color }} aria-hidden="true" />
+              {category.nameRu}
+            </span>
+          ))
+        )}
       </div>
+      <p className={styles.categoryTrendHint}>
+        Нажмите на график, чтобы показать{" "}
+        {mode === "categories" ? "всего" : "категории"}
+      </p>
     </>
   );
 }

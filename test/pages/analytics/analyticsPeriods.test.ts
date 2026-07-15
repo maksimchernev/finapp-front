@@ -272,6 +272,7 @@ describe("category expense trends", () => {
     expect(result.series.map((item) => item.totalMinor)).toEqual([
       6000, 5000, 4000, 3000, 2000,
     ]);
+    expect(result.totalValues).toEqual([1000, 2000, 3000, 4000, 5000, 6000]);
   });
 
   it("excludes income, non-expense categories, other currencies, and uncategorized operations", () => {

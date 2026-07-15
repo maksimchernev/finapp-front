@@ -242,6 +242,12 @@
   }
 }
 
+.categoryTrendHint {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
 .categoryProgress {
   display: grid;
   gap: 11px;

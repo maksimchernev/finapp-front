@@ -46,6 +46,7 @@ export interface AnalyticsCategoryTrendSeries {
 export interface AnalyticsCategoryTrendData {
   months: AnalyticsCategoryTrendMonth[];
   series: AnalyticsCategoryTrendSeries[];
+  totalValues: number[];
 }
 
 export interface AnalyticsWeekRange {
@@ -318,6 +319,7 @@ export function buildCategoryExpenseTrend(
     string,
     { category: Category; totalMinor: number; byMonth: Map<string, number> }
   >();
+  const totalsByMonth = new Map<string, number>();
 
   for (const transaction of transactions) {
     if (transaction.currency !== currency) continue;
@@ -334,6 +336,7 @@ export function buildCategoryExpenseTrend(
 
     current.totalMinor += amount;
     current.byMonth.set(monthKey, (current.byMonth.get(monthKey) ?? 0) + amount);
+    totalsByMonth.set(monthKey, (totalsByMonth.get(monthKey) ?? 0) + amount);
     totals.set(transaction.category.id, current);
   }
 
@@ -351,7 +354,11 @@ export function buildCategoryExpenseTrend(
       values: months.map((month) => byMonth.get(month.key) ?? 0),
     }));
 
-  return { months, series };
+  return {
+    months,
+    series,
+    totalValues: months.map((month) => totalsByMonth.get(month.key) ?? 0),
+  };
 }
 
 function buildWeekDayBuckets(monthKey: string, weekStartDay: number) {

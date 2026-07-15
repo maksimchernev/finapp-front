@@ -66,4 +66,14 @@ describe("analytics category expense trend", () => {
       'aria-label="Расходы по категориям по месяцам"',
     );
   });
+
+  it("toggles between the top categories and the thicker total line on tap", () => {
+    expect(chartSource).toContain(
+      'useState<"categories" | "total">("categories")',
+    );
+    expect(chartSource).toContain('label: "Всего"');
+    expect(chartSource).toContain("data: data.totalValues");
+    expect(chartSource).toContain("borderWidth: 4");
+    expect(chartSource).toContain("onClick={toggleMode}");
+  });
 });
