@@ -257,16 +257,18 @@ export function AnalyticsPage({
             ))}
           </div>
         </div>
-        <button
-          className={styles.monthsLink}
-          type="button"
-          aria-label="Сводка по месяцам"
-          title="Сводка по месяцам"
-          onClick={onOpenMonths}
-        >
-          <BarChart3 size={16} aria-hidden="true" />
-          <span>По месяцам</span>
-        </button>
+        {monthTabs.length > 1 ? (
+          <button
+            className={styles.monthsLink}
+            type="button"
+            aria-label="Сводка по месяцам"
+            title="Сводка по месяцам"
+            onClick={onOpenMonths}
+          >
+            <BarChart3 size={16} aria-hidden="true" />
+            <span>По месяцам</span>
+          </button>
+        ) : null}
       </div>
       <div className={styles.metricsGrid}>
         <div className={clsx(styles.metric, styles.blue)}>

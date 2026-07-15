@@ -40,6 +40,10 @@ describe("analytics category expense trend", () => {
     expect(analyticsSource).toContain('aria-label="Сводка по месяцам"');
   });
 
+  it("shows the all-months action only when several months are available", () => {
+    expect(analyticsSource).toContain("monthTabs.length > 1 ? (");
+  });
+
   it("renders the monthly trends screen with back navigation and empty state", () => {
     expect(monthsSource).toContain('title="Сводка по месяцам"');
     expect(monthsSource).toContain("onBack={onBack}");
