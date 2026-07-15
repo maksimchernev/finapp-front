@@ -171,6 +171,7 @@ export function TransactionsPage({
         >
           <HeaderWithBack
             eyebrow="summa"
+            isSticky={true}
             title="Операции"
             subtitle="Все сохраненные доходы и расходы"
             action={

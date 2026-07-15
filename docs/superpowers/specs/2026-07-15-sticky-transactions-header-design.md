@@ -14,7 +14,7 @@ Add an optional `isSticky?: boolean` prop to `HeaderWithBack`. Its default behav
 
 Apply a dedicated sticky class to the `HeaderWithBack` root when `isSticky` is true. The class uses `position: sticky`, `top: 0`, and a z-index above transaction cards. It supplies a surface background and compensated vertical padding/margins so list content cannot show through and the header keeps its current initial spacing.
 
-Do not make `headerSlot` or the shared workspace shell sticky. The behavior is owned by `HeaderWithBack` and activated only by its prop.
+Keep the shared workspace shell non-sticky. Because `HeaderWithBack` is nested inside the short transaction `headerSlot`, make that local slot sticky as well so it does not constrain the header to its own height and so the selection overlay follows the same sticky area. The behavior is still activated only on the transactions page.
 
 ## Verification
 

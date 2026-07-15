@@ -6,13 +6,15 @@ import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
 
 jest.mock(
   "@/shared/ui/HeaderWithBack.module.scss",
-  () =>
-    new Proxy(
-      {},
-      {
-        get: (_, key) => String(key),
-      },
-    ),
+  () => ({
+    action: "action",
+    compactTopbar: "compactTopbar",
+    eyebrow: "eyebrow",
+    iconButton: "iconButton",
+    leading: "leading",
+    sticky: "sticky",
+    topbar: "topbar",
+  }),
 );
 
 describe("HeaderWithBack scroll behavior", () => {
@@ -48,13 +50,31 @@ describe("HeaderWithBack scroll behavior", () => {
     expect(html.indexOf("summa")).toBeLessThan(html.indexOf("Аналитика"));
   });
 
-  it("keeps the shared back header in normal document flow", () => {
+  it("pins only headers that opt into sticky behavior", () => {
+    const normal = renderToStaticMarkup(
+      React.createElement(HeaderWithBack, {
+        title: "Аналитика",
+        subtitle: "Сводка",
+      }),
+    );
+    const sticky = renderToStaticMarkup(
+      React.createElement(HeaderWithBack, {
+        isSticky: true,
+        title: "Операции",
+        subtitle: "Все операции",
+      }),
+    );
     const source = readFileSync(
       join(process.cwd(), "src/shared/ui/HeaderWithBack.module.scss"),
       "utf8",
     );
 
-    expect(source).not.toMatch(/position:\s*(sticky|fixed)/);
+    expect(normal).not.toContain("sticky");
+    expect(sticky).toContain("sticky");
+    expect(source).toContain("position: sticky");
+    expect(source).toContain("top: 0");
+    expect(source).toContain("z-index: 4");
+    expect(source).toContain("background: var(--surface)");
   });
 
   it("does not pin workspace top chrome while the screen scrolls", () => {

@@ -17,7 +17,10 @@
 }
 
 .headerSlot {
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--surface);
 }
 
 .headerBase {

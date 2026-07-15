@@ -12,8 +12,8 @@ describe("analytics details period", () => {
   });
 
   it("renders a weekly details heading from the selected week range", () => {
-    expect(source).toContain(
-      "getMonthWeekRange(activeMonthKey, selectedWeekStartDay)",
+    expect(source).toMatch(
+      /getMonthWeekRange\(\s*activeMonthKey,\s*selectedWeekStartDay,\s*\)/,
     );
     expect(source).toContain("Подробнее {detailsPeriodLabel}");
   });

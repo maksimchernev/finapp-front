@@ -12,7 +12,7 @@ describe("analytics weekly layout", () => {
   );
 
   it("replaces month navigation with a week range and zoom-out action", () => {
-    expect(source).toContain('chartMode === "month" ? (');
+    expect(source).toContain('chartMode === "month" && (');
     expect(source).toContain("styles.weekNavigation");
     expect(source).toContain("formatAnalyticsWeekPeriodLabel(");
     expect(source).toContain("onClick={zoomOutToMonth}");

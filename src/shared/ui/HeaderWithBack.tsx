@@ -9,15 +9,23 @@ export function HeaderWithBack({
   subtitle,
   onBack,
   action,
+  isSticky = false,
 }: {
   eyebrow?: string;
   title: string;
   subtitle: string;
   onBack?: () => void;
   action?: ReactNode;
+  isSticky?: boolean;
 }) {
   return (
-    <header className={clsx(styles.topbar, styles.compactTopbar)}>
+    <header
+      className={clsx(
+        styles.topbar,
+        styles.compactTopbar,
+        isSticky && styles.sticky,
+      )}
+    >
       <div className={styles.leading}>
         {onBack ? (
           <button
