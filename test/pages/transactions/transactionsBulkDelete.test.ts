@@ -39,9 +39,10 @@ describe("TransactionsPage bulk delete UI", () => {
     expect(styles).toContain("width: 103px");
   });
 
-  test("floats the icon-only delete action above the right edge of bottom navigation", () => {
+  test("floats the icon-only delete action above the center of bottom navigation", () => {
     expect(source).toContain("styles.floatingDeleteButton");
-    expect(styles).toContain("right: max(10px, calc(50% - 210px))");
-    expect(styles).toContain("+ 83px");
+    expect(styles).toContain("right: 50%");
+    expect(styles).toContain("transform: translateX(50%)");
+    expect(styles).toContain("+ 93px");
   });
 });

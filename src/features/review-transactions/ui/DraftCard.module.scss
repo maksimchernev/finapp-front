@@ -165,6 +165,10 @@
 
 @media (max-width: 440px) {
   .editGrid {
+    input[type="date"] {
+      padding-inline: 0;
+    }
+
     label:nth-child(1) {
       grid-column: 1 / -1;
     }

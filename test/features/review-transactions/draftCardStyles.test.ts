@@ -20,4 +20,18 @@ describe("DraftCard mobile field layout", () => {
     expect(source).toContain("grid-row: 2");
     expect(source).toContain("grid-row: 3");
   });
+
+  it("removes inline padding from the mobile date input to avoid WebKit overflow", () => {
+    const source = readFileSync(
+      join(
+        process.cwd(),
+        "src/features/review-transactions/ui/DraftCard.module.scss",
+      ),
+      "utf8",
+    );
+
+    expect(source).toMatch(
+      /@media \(max-width: 440px\)[\s\S]*input\[type="date"\]\s*\{\s*padding-inline:\s*0;/,
+    );
+  });
 });
