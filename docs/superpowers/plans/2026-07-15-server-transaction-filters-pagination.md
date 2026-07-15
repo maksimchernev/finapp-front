@@ -57,7 +57,7 @@ Expected: FAIL for reversed ranges and the current limit ceiling.
 
 - [ ] **Step 6: Implement validator and controller wiring**
 
-Set defaults to `limit=20`, `offset=0`, cap limit at 100, validate both timestamps with `isISO8601({ strict: true })`, reject non-increasing boundaries in a custom query validator, pass `bankId` into `listUserTransactions`, and use the validated numeric query values.
+Set defaults to `limit=20`, `offset=0`, preserve the existing limit cap of 500 for shared dashboard and analytics loading, validate both timestamps with `isISO8601({ strict: true })`, reject non-increasing boundaries in a custom query validator, pass `bankId` into `listUserTransactions`, and use the validated numeric query values.
 
 - [ ] **Step 7: Verify backend**
 

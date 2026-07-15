@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Check, Trash2, X } from "lucide-react";
 import clsx from "clsx";
 import type { Bank } from "@/entities/bank/model/types";
@@ -18,6 +18,12 @@ import {
   toggleAllSelectedIds,
   toggleSelectedId,
 } from "@/pages/transactions/lib/transactionSelection";
+import {
+  emptyTransactionFilters,
+  type TransactionFilters,
+} from "@/pages/transactions/lib/transactionFilters";
+import { groupTransactionsByLocalDate } from "@/pages/transactions/lib/transactionGroups";
+import { usePaginatedTransactions } from "@/pages/transactions/model/usePaginatedTransactions";
 import { Dialog } from "@/shared/ui/Dialog";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
@@ -26,19 +32,31 @@ import styles from "@/pages/transactions/ui/TransactionsPage.module.scss";
 export function TransactionsPage({
   banks,
   categories,
-  transactions,
   onDeleteTransaction,
   onUpdateTransaction,
 }: {
   banks: Bank[];
   categories: Category[];
-  transactions: Transaction[];
   onDeleteTransaction: (id: string) => Promise<void>;
   onUpdateTransaction: (
     id: string,
     transaction: UpdateTransactionRequest,
   ) => Promise<Transaction>;
 }) {
+  const [filters, setFilters] = useState<TransactionFilters>(emptyTransactionFilters);
+  const {
+    transactions,
+    hasMore,
+    isInitialLoading,
+    isLoadingMore,
+    error: listError,
+    loadMoreError,
+    loadMore,
+    reload,
+    retryLoadMore,
+  } = usePaginatedTransactions(filters);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const groups = useMemo(() => groupTransactionsByLocalDate(transactions), [transactions]);
   const [editingTransaction, setEditingTransaction] =
     useState<Transaction | null>(null);
   const [form, setForm] = useState<TransactionEditForm | null>(null);
@@ -52,6 +70,24 @@ export function TransactionsPage({
   const [error, setError] = useState<string | null>(null);
   const transactionIds = transactions.map((transaction) => transaction.id);
   const areAllSelected = areAllIdsSelected(selectedIds, transactionIds);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || isInitialLoading || isLoadingMore || loadMoreError || !hasMore) {
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting) void loadMore();
+    }, { rootMargin: "240px 0px" });
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, isInitialLoading, isLoadingMore, loadMore, loadMoreError]);
+
+  function updateFilter(key: keyof TransactionFilters, value: string) {
+    setFilters((current) => ({ ...current, [key]: value }));
+    setSelectedIds(new Set());
+    setIsSelectionMode(false);
+  }
 
   const filteredCategories = categories.filter((category) =>
     form?.kind === "income"
@@ -90,6 +126,7 @@ export function TransactionsPage({
         editingTransaction.id,
         toTransactionUpdatePayload(form),
       );
+      await reload();
       closeDialog();
     } catch (saveError) {
       setError(
@@ -114,6 +151,7 @@ export function TransactionsPage({
     setError(null);
     try {
       await onDeleteTransaction(editingTransaction.id);
+      await reload();
       closeDialog();
     } catch (deleteError) {
       setError(
@@ -142,6 +180,7 @@ export function TransactionsPage({
       [...selectedIds],
       onDeleteTransaction,
     );
+    await reload();
     setIsBulkDeleting(false);
 
     if (failedIds.length === 0) {
@@ -221,6 +260,38 @@ export function TransactionsPage({
         <p className={styles.bulkErrorText}>{bulkDeleteError}</p>
       )}
 
+      {!isSelectionMode && (
+        <section className={styles.filters} aria-label="Фильтры операций">
+          <label>
+            С
+            <input type="date" value={filters.startDate} onChange={(event) => updateFilter("startDate", event.target.value)} />
+          </label>
+          <label>
+            По
+            <input type="date" value={filters.endDate} onChange={(event) => updateFilter("endDate", event.target.value)} />
+          </label>
+          <label>
+            Банк
+            <select value={filters.bankId} onChange={(event) => updateFilter("bankId", event.target.value)}>
+              <option value="">Все банки</option>
+              {banks.map((bank) => <option key={bank.id} value={bank.id}>{bank.name}</option>)}
+            </select>
+          </label>
+          <label>
+            Категория
+            <select value={filters.categoryId} onChange={(event) => updateFilter("categoryId", event.target.value)}>
+              <option value="">Все категории</option>
+              {categories.map((category) => <option key={category.id} value={category.id}>{category.nameRu}</option>)}
+            </select>
+          </label>
+          {Object.values(filters).some(Boolean) && (
+            <button className={styles.resetFilters} type="button" onClick={() => setFilters(emptyTransactionFilters)}>
+              Сбросить
+            </button>
+          )}
+        </section>
+      )}
+
       {isSelectionMode && (
         <button
           aria-label={`Удалить выбранные (${selectedIds.size})`}
@@ -234,25 +305,45 @@ export function TransactionsPage({
       )}
 
       <section className={styles.transactionList}>
-        {transactions.length === 0 ? (
+        {listError ? (
+          <div className={styles.listStatus} role="alert">
+            <p>{listError}</p>
+            {!filters.startDate || !filters.endDate || filters.startDate <= filters.endDate ? (
+              <button type="button" onClick={() => void reload()}>Повторить</button>
+            ) : null}
+          </div>
+        ) : isInitialLoading ? (
+          <p className={styles.listStatus}>Загружаем операции…</p>
+        ) : transactions.length === 0 ? (
           <EmptyState text="Пока нет сохраненных операций." />
         ) : (
-          transactions.map((transaction) => (
-            <TransactionCard
-              categories={categories}
-              isSelectionMode={isSelectionMode}
-              isSelected={selectedIds.has(transaction.id)}
-              key={transaction.id}
-              transaction={transaction}
-              onClick={() =>
-                isSelectionMode
-                  ? setSelectedIds((current) =>
-                      toggleSelectedId(current, transaction.id),
-                    )
-                  : openDialog(transaction)
-              }
-            />
+          groups.map((group) => (
+            <section className={styles.dateGroup} key={group.key}>
+              <h2>{group.label}</h2>
+              <div className={styles.dateGroupList}>
+                {group.transactions.map((transaction) => (
+                  <TransactionCard
+                    categories={categories}
+                    isSelectionMode={isSelectionMode}
+                    isSelected={selectedIds.has(transaction.id)}
+                    key={transaction.id}
+                    transaction={transaction}
+                    onClick={() => isSelectionMode
+                      ? setSelectedIds((current) => toggleSelectedId(current, transaction.id))
+                      : openDialog(transaction)}
+                  />
+                ))}
+              </div>
+            </section>
           ))
+        )}
+        <div aria-hidden="true" className={styles.loadSentinel} ref={sentinelRef} />
+        {isLoadingMore && <p className={styles.listStatus}>Загружаем ещё…</p>}
+        {loadMoreError && (
+          <div className={styles.listStatus} role="alert">
+            <p>{loadMoreError}</p>
+            <button type="button" onClick={retryLoadMore}>Повторить</button>
+          </div>
         )}
       </section>
 

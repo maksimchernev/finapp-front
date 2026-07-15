@@ -16,7 +16,7 @@ The feature spans the `bend` and `front` repositories. It changes only the trans
 - `endDate`: ISO 8601 timestamp for the exclusive upper boundary.
 - `bankId`: one non-empty bank identifier.
 - `categoryId`: one non-empty category identifier.
-- `limit`: integer from 1 through 100; default 20.
+- `limit`: integer from 1 through 500; default 20. The existing shared finance loader may continue requesting 200 rows for dashboard and analytics compatibility.
 - `offset`: non-negative integer; default 0.
 
 All supplied filters are combined with AND and the query is always scoped by the authenticated `userId`.
