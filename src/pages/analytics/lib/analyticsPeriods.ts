@@ -228,6 +228,15 @@ export function getAnalyticsBarDay(bar: AnalyticsBar) {
   return Number(bar.key.slice(8, 10));
 }
 
+export function getAnalyticsBarTooltipTitle(bar: AnalyticsBar) {
+  const [year, month, day] = bar.key.split("-").map(Number);
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "long",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, month - 1, day)));
+}
+
 export function shouldShowAnalyticsTooltip(mode: AnalyticsChartMode) {
   return mode === "week";
 }

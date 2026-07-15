@@ -17,6 +17,7 @@ import type {
   AnalyticsChartKind,
   AnalyticsWeekRange,
 } from "@/pages/analytics/lib/analyticsPeriods";
+import { getAnalyticsBarTooltipTitle } from "@/pages/analytics/lib/analyticsPeriods";
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
 
@@ -131,6 +132,10 @@ export function AnalyticsBarChart({
         },
         tooltip: {
           callbacks: {
+            title: (contexts) => {
+              const bar = bars[contexts[0]?.dataIndex];
+              return bar ? getAnalyticsBarTooltipTitle(bar) : "";
+            },
             label: (context) => {
               const amount = formatMoney(Number(context.parsed.y), currency);
               return hasCategorySeries && context.dataset.label

@@ -6,6 +6,7 @@ import {
   filterTransactionsByMonth,
   filterTransactionsByWeek,
   getAnalyticsBarDay,
+  getAnalyticsBarTooltipTitle,
   getLastStartedWeekStartDay,
   getMonthWeekRange,
   getMonthWeekStartDay,
@@ -99,6 +100,16 @@ describe("analytics periods", () => {
     expect(getMonthWeekStartDay(7)).toBe(1);
     expect(getMonthWeekStartDay(8)).toBe(8);
     expect(getMonthWeekStartDay(31)).toBe(29);
+  });
+
+  it("formats a weekly tooltip title as day and month", () => {
+    expect(
+      getAnalyticsBarTooltipTitle({
+        key: "2026-06-25",
+        label: "25",
+        total: 1000,
+      }),
+    ).toBe("25 июня");
   });
 
   it("builds the highlighted week range for a month bar", () => {
