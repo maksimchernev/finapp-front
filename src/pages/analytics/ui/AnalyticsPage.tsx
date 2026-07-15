@@ -66,10 +66,6 @@ export function AnalyticsPage({
     () => filterTransactionsByMonth(transactions, activeMonthKey),
     [activeMonthKey, transactions],
   );
-  const categoryStats = useMemo(
-    () => buildMonthCategoryStats(monthTransactions),
-    [monthTransactions],
-  );
   const periodTransactions = useMemo(
     () =>
       chartMode === "week"
@@ -80,6 +76,10 @@ export function AnalyticsPage({
           )
         : monthTransactions,
     [activeMonthKey, chartMode, monthTransactions, selectedWeekStartDay],
+  );
+  const categoryStats = useMemo(
+    () => buildMonthCategoryStats(periodTransactions),
+    [periodTransactions],
   );
   const currencyTotals = buildMonthCurrencyTotals(periodTransactions);
   const displayedTotals = currencyTotals.length
@@ -170,6 +170,11 @@ export function AnalyticsPage({
           chartBars[chartBars.length - 1]?.label ?? selectedWeekStartDay,
         )}`
       : activeMonthLabel;
+  const selectedWeekRange = getMonthWeekRange(activeMonthKey, selectedWeekStartDay);
+  const detailsPeriodLabel =
+    chartMode === "week"
+      ? `с ${selectedWeekRange.startDay} по ${selectedWeekRange.endDay} ${activeMonthLabel.toLowerCase()}`
+      : `за ${activeMonthLabel.toLowerCase()}`;
 
   function selectMonth(monthKey: string) {
     setSelectedMonthKey(monthKey);
@@ -376,9 +381,7 @@ export function AnalyticsPage({
       </section>
 
       <section className={styles.chartCard}>
-        <h3 style={{ marginBottom: 4 }}>
-          Подробнее за {activeMonthLabel.toLowerCase()}
-        </h3>
+        <h3 style={{ marginBottom: 4 }}>Подробнее {detailsPeriodLabel}</h3>
         {selectedCategoryStats.length ? (
           <div className={styles.categoryProgress}>
             {selectedCategoryStats.map(({ category, currency, totalMinor }) => (
