@@ -8,6 +8,8 @@
 
 **Tech Stack:** React 19, TypeScript 5.9, Chart.js 4.5, SCSS Modules, Jest 30 with ts-jest
 
+> **Revision:** The approved design now requires a separate `/analytics/months` screen. Task 1 and the Chart.js component portion of Task 2 remain valid. Task 3 below supersedes Task 2's original instruction to render the chart directly inside `AnalyticsPage`.
+
 ## Global Constraints
 
 - The graph uses all available transaction history and initially exposes the newest 12 months.
@@ -645,3 +647,214 @@ git commit -m "feat: show category expense trends in analytics"
 - [ ] Run `git diff --check HEAD~2..HEAD` and expect no whitespace errors.
 - [ ] Run `git status --short` and confirm only the pre-existing `.superpowers/` visual-companion directory remains untracked.
 - [ ] Confirm both implementation commits contain only files listed in this plan and no unrelated workspace changes.
+
+### Task 3: Move the trend chart to `/analytics/months`
+
+**Files:**
+- Modify: `src/shared/router/routes.ts`
+- Modify: `src/pages/workspace/ui/WorkspacePage.tsx`
+- Modify: `src/pages/analytics/ui/AnalyticsPage.tsx`
+- Modify: `src/pages/analytics/ui/AnalyticsPage.module.scss`
+- Create: `src/pages/analytics-months/ui/AnalyticsMonthsPage.tsx`
+- Modify: `test/shared/router/appRoutes.test.ts`
+- Modify: `test/pages/analytics/categoryExpenseTrendPage.test.ts`
+
+**Interfaces:**
+- Adds `appRoutes.analyticsMonths: "/analytics/months"` as a private analytics route.
+- Changes `AnalyticsPage` to consume `onOpenMonths: () => void` and render the header button `По месяцам` without rendering `CategoryExpenseTrendChart`.
+- Produces `AnalyticsMonthsPage({ transactions, onBack })`, which owns all-history currency selection and renders `CategoryExpenseTrendChart` or `EmptyState`.
+- `WorkspacePage` wires `onOpenMonths={() => navigate(appRoutes.analyticsMonths)}` and `onBack={() => navigate(appRoutes.analytics)}`.
+
+- [ ] **Step 1: Rewrite the page regression and add failing route assertions**
+
+In `test/pages/analytics/categoryExpenseTrendPage.test.ts`, read `AnalyticsMonthsPage.tsx`, `WorkspacePage.tsx`, and `routes.ts`. Assert:
+
+```ts
+expect(analyticsSource).not.toContain("<CategoryExpenseTrendChart");
+expect(analyticsSource).toContain("onOpenMonths");
+expect(analyticsSource).toContain("По месяцам");
+expect(monthsSource).toContain("<CategoryExpenseTrendChart");
+expect(monthsSource).toContain("buildCategoryExpenseTrend(transactions, selectedCurrency)");
+expect(monthsSource).toContain('title="Сводка по месяцам"');
+expect(monthsSource).toContain("onBack={onBack}");
+expect(workspaceSource).toContain('path="analytics/months"');
+expect(routesSource).toContain('analyticsMonths: "/analytics/months"');
+```
+
+In `test/shared/router/appRoutes.test.ts`, add:
+
+```ts
+expect(isPrivateRoute("/analytics/months")).toBe(true);
+expect(getBottomNavActiveItem("/analytics/months")).toBe("analytics");
+```
+
+- [ ] **Step 2: Run the two focused tests and verify RED**
+
+Run:
+
+```bash
+npm test -- --runInBand test/pages/analytics/categoryExpenseTrendPage.test.ts test/shared/router/appRoutes.test.ts
+```
+
+Expected: FAIL because `AnalyticsMonthsPage.tsx`, `appRoutes.analyticsMonths`, and the separate route do not exist, while `AnalyticsPage` still renders the chart.
+
+- [ ] **Step 3: Add the nested analytics route contract**
+
+Add to `appRoutes`:
+
+```ts
+analyticsMonths: "/analytics/months",
+```
+
+Add `appRoutes.analyticsMonths` to `privateRoutes`, and update the analytics active-state condition:
+
+```ts
+if (
+  normalizedPath === appRoutes.analytics ||
+  normalizedPath === appRoutes.analyticsMonths
+) {
+  return "analytics";
+}
+```
+
+- [ ] **Step 4: Create `AnalyticsMonthsPage`**
+
+Create `src/pages/analytics-months/ui/AnalyticsMonthsPage.tsx` with:
+
+```tsx
+import { useMemo, useState } from "react";
+import type { Transaction } from "@/entities/transaction/model/types";
+import { buildCategoryExpenseTrend } from "@/pages/analytics/lib/analyticsPeriods";
+import { CategoryExpenseTrendChart } from "@/pages/analytics/ui/CategoryExpenseTrendChart";
+import {
+  getCurrencySwitcherMode,
+  getSelectedCurrency,
+} from "@/shared/lib/currencySwitcher";
+import { CurrencySwitcher } from "@/shared/ui/CurrencySwitcher";
+import { EmptyState } from "@/shared/ui/EmptyState";
+import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
+import styles from "@/pages/analytics/ui/AnalyticsPage.module.scss";
+
+export function AnalyticsMonthsPage({
+  transactions,
+  onBack,
+}: {
+  transactions: Transaction[];
+  onBack: () => void;
+}) {
+  const availableCurrencies = Array.from(
+    new Set(transactions.map((transaction) => transaction.currency)),
+  );
+  const currencies = availableCurrencies.length ? availableCurrencies : ["RUB"];
+  const [currency, setCurrency] = useState(currencies[0]);
+  const selectedCurrency = getSelectedCurrency(currencies, currency);
+  const trendData = useMemo(
+    () => buildCategoryExpenseTrend(transactions, selectedCurrency),
+    [selectedCurrency, transactions],
+  );
+
+  return (
+    <section className={styles.screen}>
+      <HeaderWithBack
+        title="Сводка по месяцам"
+        subtitle="Топ-5 категорий расходов"
+        onBack={onBack}
+        action={
+          getCurrencySwitcherMode(currencies) !== "hidden" ? (
+            <CurrencySwitcher
+              currencies={currencies}
+              value={selectedCurrency}
+              label="Валюта"
+              onChange={setCurrency}
+            />
+          ) : undefined
+        }
+      />
+      <section className={styles.chartCard}>
+        <h3>Расходы по категориям</h3>
+        {trendData.series.length ? (
+          <CategoryExpenseTrendChart data={trendData} currency={selectedCurrency} />
+        ) : (
+          <EmptyState text="Расходы по категориям появятся после сохранения операций." />
+        )}
+      </section>
+    </section>
+  );
+}
+```
+
+- [ ] **Step 5: Replace the embedded graph with the header transition**
+
+Remove `buildCategoryExpenseTrend`, `CategoryExpenseTrendChart`, `categoryTrendData`, and the trend card from `AnalyticsPage.tsx`. Add the prop:
+
+```ts
+onOpenMonths: () => void;
+```
+
+Change the header title and combine the existing currency control with the new action:
+
+```tsx
+title={`Сводка за ${activeMonthLabel.toLowerCase()}`}
+action={
+  <div className={styles.headerActions}>
+    {showCurrencySwitcher ? (
+      <CurrencySwitcher
+        currencies={availableCurrencies}
+        value={selectedChartCurrency}
+        label="Валюта"
+        onChange={setChartCurrency}
+      />
+    ) : null}
+    <button className={styles.monthsLink} type="button" onClick={onOpenMonths}>
+      По месяцам
+    </button>
+  </div>
+}
+```
+
+Add compact `.headerActions` and `.monthsLink` styles in `AnalyticsPage.module.scss`, allowing the action row to wrap at narrow widths.
+
+- [ ] **Step 6: Wire both routes in `WorkspacePage`**
+
+Import `AnalyticsMonthsPage`, pass the forward callback to `AnalyticsPage`, and add:
+
+```tsx
+<Route
+  path="analytics/months"
+  element={
+    <AnalyticsMonthsPage
+      transactions={finance.transactions}
+      onBack={() => navigate(appRoutes.analytics)}
+    />
+  }
+/>
+```
+
+- [ ] **Step 7: Run focused tests and verify GREEN**
+
+Run:
+
+```bash
+npm test -- --runInBand test/pages/analytics/categoryExpenseTrendPage.test.ts test/shared/router/appRoutes.test.ts test/pages/analytics/analyticsPeriods.test.ts
+```
+
+Expected: PASS for the route, page separation, header transitions, and trend calculation tests.
+
+- [ ] **Step 8: Run production verification**
+
+Run:
+
+```bash
+npm run build
+npm test -- --runInBand
+git diff --check
+```
+
+Expected: build succeeds, all Jest tests pass, and no whitespace errors are reported.
+
+- [ ] **Step 9: Commit the corrected screen split**
+
+```bash
+git add src/shared/router/routes.ts src/pages/workspace/ui/WorkspacePage.tsx src/pages/analytics/ui/AnalyticsPage.tsx src/pages/analytics/ui/AnalyticsPage.module.scss src/pages/analytics-months/ui/AnalyticsMonthsPage.tsx test/shared/router/appRoutes.test.ts test/pages/analytics/categoryExpenseTrendPage.test.ts
+git commit -m "feat: move category trends to monthly summary"
+```
