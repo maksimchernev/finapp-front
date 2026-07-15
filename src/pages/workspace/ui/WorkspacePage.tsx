@@ -1,7 +1,13 @@
 import { LoaderCircle } from "lucide-react";
 import clsx from "clsx";
 import { useState } from "react";
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { transactionApi } from "@/entities/transaction/api/transactionApi";
 import type { CreateTransactionRequest } from "@/entities/transaction/api/transactionApi";
 import { useFinanceData } from "@/features/load-finance-data/model/useFinanceData";
@@ -29,6 +35,7 @@ import { SettingsPage } from "@/pages/settings/ui/SettingsPage";
 import { TransactionsPage } from "@/pages/transactions/ui/TransactionsPage";
 import { UploadPage } from "@/pages/upload/ui/UploadPage";
 import { resetUploadSession } from "@/pages/workspace/lib/uploadSession";
+import { getReferenceReturnTo } from "@/pages/workspace/lib/referenceNavigation";
 import styles from "@/pages/workspace/ui/WorkspacePage.module.scss";
 
 export function WorkspacePage({
@@ -41,6 +48,7 @@ export function WorkspacePage({
   onUnauthorized: (message: string) => void;
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeReviewJobId, setActiveReviewJobId] = useState<string | null>(
     null,
   );
@@ -196,7 +204,6 @@ export function WorkspacePage({
               banks={finance.banks}
               categories={finance.categories}
               jobs={upload.jobs}
-              onBack={() => navigate(appRoutes.dashboard)}
               onCreateManualTransaction={handleCreateManualTransaction}
               onFiles={upload.handleFiles}
               onResetRecent={handleResetUploadSession}
@@ -221,6 +228,16 @@ export function WorkspacePage({
                   upload.removeDraft(activeReviewJobId, localId);
                 }
               }}
+              onOpenBanks={() =>
+                navigate(appRoutes.banks, {
+                  state: { returnTo: appRoutes.review },
+                })
+              }
+              onOpenCategories={() =>
+                navigate(appRoutes.categories, {
+                  state: { returnTo: appRoutes.review },
+                })
+              }
               onSave={handleContinueReview}
               onUpdate={(localId, patch) => {
                 if (activeReviewJobId) {
@@ -236,7 +253,6 @@ export function WorkspacePage({
             <AnalyticsPage
               statistics={finance.statistics}
               transactions={finance.transactions}
-              onBack={() => navigate(appRoutes.dashboard)}
             />
           }
         />
@@ -247,7 +263,6 @@ export function WorkspacePage({
               banks={finance.banks}
               categories={finance.categories}
               transactions={finance.transactions}
-              onBack={() => navigate(appRoutes.dashboard)}
               onDeleteTransaction={finance.deleteTransaction}
               onUpdateTransaction={finance.updateTransaction}
             />
@@ -261,6 +276,7 @@ export function WorkspacePage({
               onCreateCategory={finance.createCategory}
               onDeleteCategory={finance.deleteCategory}
               onUpdateCategory={finance.updateCategory}
+              onBack={() => navigate(getReferenceReturnTo(location.state))}
             />
           }
         />
@@ -271,6 +287,7 @@ export function WorkspacePage({
               banks={finance.banks}
               onCreateBank={finance.createBank}
               onUpdateBank={finance.updateBank}
+              onBack={() => navigate(getReferenceReturnTo(location.state))}
             />
           }
         />
@@ -280,6 +297,16 @@ export function WorkspacePage({
             <SettingsPage
               user={finance.user}
               onLogout={handleLogout}
+              onOpenBanks={() =>
+                navigate(appRoutes.banks, {
+                  state: { returnTo: appRoutes.settings },
+                })
+              }
+              onOpenCategories={() =>
+                navigate(appRoutes.categories, {
+                  state: { returnTo: appRoutes.settings },
+                })
+              }
               onUpdateUserName={finance.updateUserName}
             />
           }

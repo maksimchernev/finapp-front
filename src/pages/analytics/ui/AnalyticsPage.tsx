@@ -39,11 +39,9 @@ type ChartKind = "expense" | "income";
 export function AnalyticsPage({
   statistics: _statistics,
   transactions,
-  onBack,
 }: {
   statistics: Statistics | null;
   transactions: Transaction[];
-  onBack: () => void;
 }) {
   const [chartKind, setChartKind] = useState<ChartKind>("expense");
   const [chartMode, setChartMode] = useState<AnalyticsChartMode>("month");
@@ -224,9 +222,9 @@ export function AnalyticsPage({
   return (
     <section className={styles.screen}>
       <HeaderWithBack
+        eyebrow="summa"
         title="Сводка"
         subtitle="Доходы и расходы по месяцам"
-        onBack={onBack}
         action={
           showCurrencySwitcher ? (
             <CurrencySwitcher

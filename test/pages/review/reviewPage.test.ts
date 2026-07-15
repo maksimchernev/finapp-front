@@ -1,5 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { Bank } from "@/entities/bank/model/types";
 import {
   applyReviewBankToDrafts,
@@ -79,6 +81,26 @@ const bank: Bank = {
 };
 
 describe("ReviewPage", () => {
+  it("exposes bank and category reference actions", () => {
+    const reviewSource = readFileSync(
+      join(process.cwd(), "src/pages/review/ui/ReviewPage.tsx"),
+      "utf8",
+    );
+    const draftCardSource = readFileSync(
+      join(
+        process.cwd(),
+        "src/features/review-transactions/ui/DraftCard.tsx",
+      ),
+      "utf8",
+    );
+
+    expect(reviewSource).toContain("Управлять банками");
+    expect(reviewSource).toContain("onClick={onOpenBanks}");
+    expect(reviewSource).toContain("onOpenCategories={onOpenCategories}");
+    expect(draftCardSource).toContain("Настроить категории");
+    expect(draftCardSource).toContain("onClick={onOpenCategories}");
+  });
+
   it("allows saving when no transactions are selected", () => {
     const html = renderToStaticMarkup(
       React.createElement(ReviewPage, {

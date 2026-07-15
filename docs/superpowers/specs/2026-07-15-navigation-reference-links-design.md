@@ -16,6 +16,14 @@ The bottom navigation contains five items in this order:
 
 Use a chart icon for Analytics and a transaction-list icon for Operations. The active-item mapping follows these routes. Banks and Categories are no longer independent bottom-navigation items; both routes highlight `Еще`.
 
+## Page hierarchy and headers
+
+Pages directly represented in bottom navigation are first-level pages: Dashboard, Analytics, Upload, Transactions, and Settings. Their page headers do not show a back arrow.
+
+Every first-level page header shows the `summa` eyebrow above its title. Analytics, Upload, and Transactions pass this value through the shared header; Dashboard and Settings retain their existing local eyebrow markup.
+
+Pages opened from those destinations are second-level pages. Review, Banks, and Categories show a back arrow. The shared header renders its back control only when an `onBack` callback is supplied, so the hierarchy is explicit in each page API without duplicating header markup.
+
 ## Settings reference section
 
 Add a `Справочники` section to Settings with two full-width navigation rows:
@@ -43,6 +51,7 @@ Review drafts and the active upload job remain owned by `WorkspacePage`, so rout
 ## Component changes
 
 - Update the plain bottom-navigation items model and router active-item mapping.
+- Make the shared header back action optional and omit it from Analytics, Upload, and Transactions.
 - Give `SettingsPage` navigation callbacks for Categories and Banks.
 - Give `ReviewPage` and `DraftCard` callbacks for their reference shortcuts.
 - Give Categories and Banks a route-aware back callback supplied by `WorkspacePage`.

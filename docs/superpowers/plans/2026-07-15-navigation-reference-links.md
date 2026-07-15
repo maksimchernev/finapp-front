@@ -184,3 +184,39 @@ Expected: TypeScript and Vite build complete successfully.
 Run: `git status --short && git diff HEAD~4 --check && git diff HEAD~4 --stat`
 
 Expected: no whitespace errors and only scoped navigation, Settings, Review, reference-page, test, spec, and plan changes.
+
+### Task 6: First-level page headers
+
+**Files:**
+- Modify: `test/shared/ui/headerWithBackScroll.test.ts`
+- Create: `test/pages/workspace/firstLevelHeaders.test.ts`
+- Modify: `src/shared/ui/HeaderWithBack.tsx`
+- Modify: `src/pages/analytics/ui/AnalyticsPage.tsx`
+- Modify: `src/pages/upload/ui/UploadPage.tsx`
+- Modify: `src/pages/transactions/ui/TransactionsPage.tsx`
+- Modify: `src/pages/workspace/ui/WorkspacePage.tsx`
+
+**Interfaces:**
+- Produces: optional `onBack?: () => void` on `HeaderWithBack`; no back callback props on first-level page components.
+
+- [ ] **Step 1: Write failing header hierarchy tests**
+
+Assert the shared header renders no `Назад` button without `onBack` and still renders one with `onBack`. Assert Analytics, Upload, and Transactions no longer declare or pass an `onBack` prop.
+
+- [ ] **Step 2: Verify RED**
+
+Run: `npm test -- --runInBand test/shared/ui/headerWithBackScroll.test.ts test/pages/workspace/firstLevelHeaders.test.ts`
+
+Expected: FAIL because `HeaderWithBack` requires and always renders the callback, while first-level pages still expose it.
+
+- [ ] **Step 3: Implement optional back behavior**
+
+Make the shared callback optional and conditionally render its button. Remove `onBack` from Analytics, Upload, and Transactions component props and their `WorkspacePage` call sites. Keep Review, Banks, and Categories back behavior unchanged.
+
+- [ ] **Step 4: Verify GREEN**
+
+Run the Step 2 command and `npm run build`. Expected: tests PASS and build completes.
+
+- [ ] **Step 5: Commit**
+
+Run: `git add docs/superpowers src/shared/ui/HeaderWithBack.tsx src/pages/analytics/ui/AnalyticsPage.tsx src/pages/upload/ui/UploadPage.tsx src/pages/transactions/ui/TransactionsPage.tsx src/pages/workspace/ui/WorkspacePage.tsx test/shared/ui/headerWithBackScroll.test.ts test/pages/workspace/firstLevelHeaders.test.ts && git commit -m "fix: hide back action on primary pages"`

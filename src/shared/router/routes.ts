@@ -13,9 +13,9 @@ export const appRoutes = {
 
 export type BottomNavItem =
   | "home"
-  | "categories"
+  | "analytics"
   | "upload"
-  | "banks"
+  | "transactions"
   | "settings";
 
 const privateRoutes = new Set<string>([
@@ -36,8 +36,12 @@ export function isPrivateRoute(pathname: string) {
 export function getBottomNavActiveItem(pathname: string): BottomNavItem {
   const normalizedPath = normalizePath(pathname);
 
-  if (normalizedPath === appRoutes.categories) {
-    return "categories";
+  if (normalizedPath === appRoutes.analytics) {
+    return "analytics";
+  }
+
+  if (normalizedPath === appRoutes.transactions) {
+    return "transactions";
   }
 
   if (
@@ -47,12 +51,12 @@ export function getBottomNavActiveItem(pathname: string): BottomNavItem {
     return "upload";
   }
 
-  if (normalizedPath === appRoutes.settings) {
+  if (
+    normalizedPath === appRoutes.settings ||
+    normalizedPath === appRoutes.categories ||
+    normalizedPath === appRoutes.banks
+  ) {
     return "settings";
-  }
-
-  if (normalizedPath === appRoutes.banks) {
-    return "banks";
   }
 
   return "home";

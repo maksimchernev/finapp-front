@@ -27,14 +27,12 @@ export function TransactionsPage({
   banks,
   categories,
   transactions,
-  onBack,
   onDeleteTransaction,
   onUpdateTransaction,
 }: {
   banks: Bank[];
   categories: Category[];
   transactions: Transaction[];
-  onBack: () => void;
   onDeleteTransaction: (id: string) => Promise<void>;
   onUpdateTransaction: (
     id: string,
@@ -164,9 +162,9 @@ export function TransactionsPage({
   return (
     <section className={styles.screen}>
       <HeaderWithBack
+        eyebrow="summa"
         title="Операции"
         subtitle="Все сохраненные доходы и расходы"
-        onBack={onBack}
         action={
           transactions.length > 0 ? (
             <button

@@ -21,6 +21,8 @@ export function ReviewPage({
   onBack,
   onAddDraft,
   onDeleteDraft,
+  onOpenBanks,
+  onOpenCategories,
   onSave,
   onUpdate,
 }: {
@@ -36,6 +38,8 @@ export function ReviewPage({
   onBack: () => void;
   onAddDraft?: () => void;
   onDeleteDraft?: (localId: string) => void;
+  onOpenBanks?: () => void;
+  onOpenCategories?: () => void;
   onSave: () => void;
   onUpdate: (localId: string, patch: Partial<ParsedTransaction>) => void;
 }) {
@@ -89,11 +93,18 @@ export function ReviewPage({
         }
       />
       {drafts.length > 0 ? (
-        <label
+        <div
           className={styles.reviewBankSelect}
           data-testid="review-bank-selector"
         >
+          <div className={styles.fieldLabel}>
+            <span id="review-bank-label">Банк</span>
+            <button type="button" onClick={onOpenBanks}>
+              Управлять банками
+            </button>
+          </div>
           <select
+            aria-labelledby="review-bank-label"
             value={selectedBankId}
             onChange={(event) => handleReviewBankChange(event.target.value)}
           >
@@ -104,7 +115,7 @@ export function ReviewPage({
               </option>
             ))}
           </select>
-        </label>
+        </div>
       ) : null}
 
       {drafts.length === 0 ? (
@@ -118,6 +129,7 @@ export function ReviewPage({
               draft={draft}
               categories={categories}
               isManual={isManualReviewDraft(draft)}
+              onOpenCategories={onOpenCategories}
               onDelete={
                 onDeleteDraft && isManualReviewDraft(draft)
                   ? onDeleteDraft
