@@ -197,6 +197,17 @@ export function getMonthWeekRange(
   };
 }
 
+export function formatAnalyticsWeekPeriodLabel(range: AnalyticsWeekRange) {
+  const [year, month, day] = range.endKey.split("-").map(Number);
+  const endLabel = new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "long",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, month - 1, day)));
+
+  return `с ${range.startDay} по ${endLabel}`;
+}
+
 export function isMonthWeekStarted(
   monthKey: string,
   weekStartDay: number,

@@ -5,6 +5,7 @@ import {
   buildCategoryExpenseTrend,
   filterTransactionsByMonth,
   filterTransactionsByWeek,
+  formatAnalyticsWeekPeriodLabel,
   getAnalyticsBarDay,
   getAnalyticsBarTooltipTitle,
   getLastStartedWeekStartDay,
@@ -119,6 +120,12 @@ describe("analytics periods", () => {
       startDay: 29,
       startKey: "2026-07-29",
     });
+  });
+
+  it("formats the selected week range for navigation", () => {
+    expect(
+      formatAnalyticsWeekPeriodLabel(getMonthWeekRange("2026-07", 1)),
+    ).toBe("с 1 по 7 июля");
   });
 
   it("detects whether a week has already started", () => {

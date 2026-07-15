@@ -4,10 +4,35 @@
 }
 
 .periodNavigation {
+  height: 36px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
+}
+
+.weekNavigation {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  strong {
+    font-size: 14px;
+  }
+}
+
+.analyticsContent {
+  display: grid;
+  gap: 18px;
+  margin: -14px;
+  padding: 14px;
+}
+
+.weekCloud {
+  border-radius: 16px;
+  background: rgba(36, 76, 56, 0.05);
 }
 
 .monthTabsViewport {
@@ -128,12 +153,12 @@
 
 .switchStack {
   display: flex;
+  min-width: 153px;
 }
 
-.zoomBtn {
+.zoomOutBtn {
   width: 34px;
   height: 34px;
-  margin-left: 4px;
   display: inline-grid;
   place-items: center;
   border: 1px solid rgba(36, 76, 56, 0.14);
@@ -316,10 +341,16 @@
   }
 
   .switchStack {
-    justify-items: stretch;
+    width: 100%;
   }
 
   .segmentedControl {
+    width: 100%;
+    flex-wrap: nowrap;
     justify-content: flex-start;
+
+    button {
+      flex: 1 1 0;
+    }
   }
 }
