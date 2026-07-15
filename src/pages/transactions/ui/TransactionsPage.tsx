@@ -21,14 +21,12 @@ export function TransactionsPage({
   banks,
   categories,
   transactions,
-  onBack,
   onDeleteTransaction,
   onUpdateTransaction,
 }: {
   banks: Bank[];
   categories: Category[];
   transactions: Transaction[];
-  onBack: () => void;
   onDeleteTransaction: (id: string) => Promise<void>;
   onUpdateTransaction: (
     id: string,
@@ -120,7 +118,6 @@ export function TransactionsPage({
       <HeaderWithBack
         title="Операции"
         subtitle="Все сохраненные доходы и расходы"
-        onBack={onBack}
       />
 
       <section className={styles.transactionList}>

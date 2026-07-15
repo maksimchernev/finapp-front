@@ -11,15 +11,21 @@ export function HeaderWithBack({
 }: {
   title: string;
   subtitle: string;
-  onBack: () => void;
+  onBack?: () => void;
   action?: ReactNode;
 }) {
   return (
     <header className={clsx(styles.topbar, styles.compactTopbar)}>
       <div className={styles.leading}>
-        <button className={styles.iconButton} onClick={onBack} aria-label="Назад">
-          <ArrowLeft size={20} />
-        </button>
+        {onBack ? (
+          <button
+            className={styles.iconButton}
+            onClick={onBack}
+            aria-label="Назад"
+          >
+            <ArrowLeft size={20} />
+          </button>
+        ) : null}
         <div>
           <h2>{title}</h2>
           <span className={styles.eyebrow}>{subtitle}</span>

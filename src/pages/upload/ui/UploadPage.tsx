@@ -15,7 +15,6 @@ export function UploadPage({
   banks,
   categories,
   jobs,
-  onBack,
   onCreateManualTransaction,
   onFiles,
   onResetRecent,
@@ -24,7 +23,6 @@ export function UploadPage({
   banks: Bank[];
   categories: Category[];
   jobs: UploadJob[];
-  onBack: () => void;
   onCreateManualTransaction: (
     transaction: CreateTransactionRequest,
   ) => Promise<void>;
@@ -40,7 +38,6 @@ export function UploadPage({
       <HeaderWithBack
         title="Загрузить операции"
         subtitle="Загрузили. Проверили. Готово."
-        onBack={onBack}
         action={
           <button
             type="button"

@@ -204,7 +204,6 @@ export function WorkspacePage({
               banks={finance.banks}
               categories={finance.categories}
               jobs={upload.jobs}
-              onBack={() => navigate(appRoutes.dashboard)}
               onCreateManualTransaction={handleCreateManualTransaction}
               onFiles={upload.handleFiles}
               onResetRecent={handleResetUploadSession}
@@ -254,7 +253,6 @@ export function WorkspacePage({
             <AnalyticsPage
               statistics={finance.statistics}
               transactions={finance.transactions}
-              onBack={() => navigate(appRoutes.dashboard)}
             />
           }
         />
@@ -265,7 +263,6 @@ export function WorkspacePage({
               banks={finance.banks}
               categories={finance.categories}
               transactions={finance.transactions}
-              onBack={() => navigate(appRoutes.dashboard)}
               onDeleteTransaction={finance.deleteTransaction}
               onUpdateTransaction={finance.updateTransaction}
             />
