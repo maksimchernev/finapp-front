@@ -96,6 +96,7 @@ export const HISTORY_CHROME_WORDS = [
 
 export const CATEGORY_HINTS = [
   "продукты",
+  "красота",
   "прочие расходы",
   "рестораны",
   "кафе",

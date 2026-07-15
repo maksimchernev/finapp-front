@@ -6,7 +6,10 @@ import {
   isCategoryOnlyLine,
   matchCategory,
 } from "@/features/upload-screenshots/lib/ocr/categories";
-import { HISTORY_CHROME_WORDS } from "@/features/upload-screenshots/lib/ocr/constants";
+import {
+  HISTORY_CHROME_WORDS,
+  POSITIVE_HINTS,
+} from "@/features/upload-screenshots/lib/ocr/constants";
 import { scoreHistoryRowConfidence } from "@/features/upload-screenshots/lib/ocr/confidence";
 import {
   extractDate,
@@ -48,6 +51,18 @@ export function parseBankHistoryRows(
       !date ||
       isHistoryChromeLine(line) ||
       isHistoryDetailLine(line)
+    ) {
+      return;
+    }
+
+    if (
+      isCashbackDetailLine(
+        line,
+        amountResult.amount,
+        amountResult.hasExplicitSign,
+        transactions[transactions.length - 1],
+        categories,
+      )
     ) {
       return;
     }
@@ -100,6 +115,25 @@ export function parseBankHistoryRows(
   });
 
   return transactions;
+}
+
+// Отличает кешбэк под покупкой от самостоятельной доходной операции.
+function isCashbackDetailLine(
+  line: string,
+  amount: number,
+  hasExplicitSign: boolean,
+  previousTransaction: ParsedTransaction | undefined,
+  categories: Category[],
+) {
+  const lower = line.toLowerCase();
+
+  return (
+    hasExplicitSign &&
+    amount > 0 &&
+    Boolean(previousTransaction && previousTransaction.amount < 0) &&
+    !POSITIVE_HINTS.some((hint) => lower.includes(hint)) &&
+    Boolean(extractCategoryHint(line, categories))
+  );
 }
 
 // Определяет навигационные строки банковского приложения, а не операции.

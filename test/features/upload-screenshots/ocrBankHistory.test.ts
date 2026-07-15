@@ -108,6 +108,14 @@ IP DEMOFOOD -2739,73 Р
 Главный Платежи & История Чаты
 `;
 
+const cashbackUnderPurchaseRawText = `История
+3 июня
+Золотое Яблоко -2 000 ₽
+Красота +20 ₽
+2 июня
+Мясная кухня -344 ₽
+ИК Продукты +3 ₽`;
+
 const digitalBankRawText = `15:27 94 RC HHA 297
 Операции
 Расходы Доходы
@@ -437,6 +445,22 @@ describe("OCR bank history parser", () => {
       "fast_food",
       "fast_food",
       "other_income",
+    ]);
+  });
+
+  it("does not create transactions from cashback shown below purchases", () => {
+    const result = parseTransactions(
+      cashbackUnderPurchaseRawText,
+      72,
+      "cashback-under-purchase.png",
+      categories,
+    );
+
+    expect(
+      result.map(({ merchant, amount }) => ({ merchant, amount })),
+    ).toEqual([
+      { merchant: "Золотое Яблоко", amount: -2000 },
+      { merchant: "Мясная кухня", amount: -344 },
     ]);
   });
 
