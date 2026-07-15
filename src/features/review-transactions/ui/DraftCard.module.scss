@@ -111,6 +111,22 @@
   }
 }
 
+.fieldLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  button {
+    border: 0;
+    padding: 0;
+    color: var(--accent-a);
+    background: transparent;
+    font: inherit;
+    font-weight: 800;
+  }
+}
+
 .confidenceLine {
   display: flex;
   justify-content: space-between;

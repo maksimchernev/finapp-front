@@ -229,6 +229,16 @@ export function WorkspacePage({
                   upload.removeDraft(activeReviewJobId, localId);
                 }
               }}
+              onOpenBanks={() =>
+                navigate(appRoutes.banks, {
+                  state: { returnTo: appRoutes.review },
+                })
+              }
+              onOpenCategories={() =>
+                navigate(appRoutes.categories, {
+                  state: { returnTo: appRoutes.review },
+                })
+              }
               onSave={handleContinueReview}
               onUpdate={(localId, patch) => {
                 if (activeReviewJobId) {

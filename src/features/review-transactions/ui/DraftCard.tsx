@@ -12,6 +12,7 @@ export function DraftCard({
   categories,
   isManual = false,
   onDelete,
+  onOpenCategories,
   onUpdate,
 }: {
   cardRef?: Ref<HTMLElement>;
@@ -19,6 +20,7 @@ export function DraftCard({
   categories: Category[];
   isManual?: boolean;
   onDelete?: (localId: string) => void;
+  onOpenCategories?: () => void;
   onUpdate: (localId: string, patch: Partial<ParsedTransaction>) => void;
 }) {
   const isDateMissing = !draft.date;
@@ -97,9 +99,15 @@ export function DraftCard({
         </label>
       </div>
 
-      <label className={styles.categorySelect}>
-        Категория
+      <div className={styles.categorySelect}>
+        <div className={styles.fieldLabel}>
+          <span id={`draft-category-${draft.localId}`}>Категория</span>
+          <button type="button" onClick={onOpenCategories}>
+            Настроить категории
+          </button>
+        </div>
         <select
+          aria-labelledby={`draft-category-${draft.localId}`}
           aria-invalid={isCategoryMissing}
           className={clsx(isCategoryMissing && styles.fieldInvalid)}
           value={draft.categoryId || ""}
@@ -112,7 +120,7 @@ export function DraftCard({
             </option>
           ))}
         </select>
-      </label>
+      </div>
 
       {!isManual ? (
         <div className={styles.confidenceLine}>

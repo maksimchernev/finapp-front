@@ -37,6 +37,22 @@
   }
 }
 
+.fieldLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  button {
+    border: 0;
+    padding: 0;
+    color: var(--accent-a);
+    background: transparent;
+    font: inherit;
+    font-weight: 800;
+  }
+}
+
 .iconButton {
   flex: 0 0 auto;
   align-items: center;
