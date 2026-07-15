@@ -1,9 +1,12 @@
 import { useEffect, useState, type FormEvent } from "react";
 import {
+  Building2,
   Camera,
+  ChevronRight,
   KeyRound,
   LogOut,
   ShieldCheck,
+  Tags,
   UserCircle,
   X,
 } from "lucide-react";
@@ -14,10 +17,14 @@ import styles from "@/pages/settings/ui/SettingsPage.module.scss";
 export function SettingsPage({
   user,
   onLogout,
+  onOpenBanks,
+  onOpenCategories,
   onUpdateUserName,
 }: {
   user: User | null;
   onLogout: () => void;
+  onOpenBanks: () => void;
+  onOpenCategories: () => void;
   onUpdateUserName: (name: string) => Promise<User>;
 }) {
   const [name, setName] = useState(user?.name ?? "");
@@ -95,6 +102,40 @@ export function SettingsPage({
           <p>{user?.email || "Аккаунт подключен"}</p>
         </div>
       </button>
+
+      <section className={styles.sectionBlock}>
+        <h3>Справочники</h3>
+        <div className={styles.settingsList}>
+          <button
+            className={styles.referenceRow}
+            type="button"
+            onClick={onOpenCategories}
+          >
+            <span className={styles.softIcon}>
+              <Tags size={20} />
+            </span>
+            <span className={styles.referenceMain}>
+              <b>Категории</b>
+              <span>Настройка категорий операций</span>
+            </span>
+            <ChevronRight size={18} />
+          </button>
+          <button
+            className={styles.referenceRow}
+            type="button"
+            onClick={onOpenBanks}
+          >
+            <span className={styles.softIcon}>
+              <Building2 size={20} />
+            </span>
+            <span className={styles.referenceMain}>
+              <b>Банки</b>
+              <span>Банки для импорта и операций</span>
+            </span>
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      </section>
 
       <section className={styles.sectionBlock}>
         <h3>Приватность</h3>

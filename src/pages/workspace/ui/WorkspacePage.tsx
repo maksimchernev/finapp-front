@@ -290,6 +290,16 @@ export function WorkspacePage({
             <SettingsPage
               user={finance.user}
               onLogout={handleLogout}
+              onOpenBanks={() =>
+                navigate(appRoutes.banks, {
+                  state: { returnTo: appRoutes.settings },
+                })
+              }
+              onOpenCategories={() =>
+                navigate(appRoutes.categories, {
+                  state: { returnTo: appRoutes.settings },
+                })
+              }
               onUpdateUserName={finance.updateUserName}
             />
           }
