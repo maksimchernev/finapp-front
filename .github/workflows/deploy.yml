@@ -37,4 +37,4 @@ jobs:
       - name: Restart frontend service
         run: |
           ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-            "cd ${{ secrets.DEPLOY_PATH }} && docker compose --env-file .env -f docker-compose.yml up -d --build front && docker image prune -f"
+            "cd ${{ secrets.DEPLOY_PATH }} && docker compose --env-file .env -f docker-compose.yml up -d --build --no-deps front && docker image prune -f"
