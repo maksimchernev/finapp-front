@@ -3,7 +3,7 @@ import {
   deleteSelectedTransactions,
   toggleAllSelectedIds,
   toggleSelectedId,
-} from "../../../src/pages/transactions/lib/transactionSelection";
+} from "@/pages/transactions/lib/transactionSelection";
 
 describe("transaction bulk selection", () => {
   test("toggles one transaction without mutating the current selection", () => {
