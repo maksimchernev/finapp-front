@@ -52,6 +52,7 @@ export function usePaginatedTransactions(filters: TransactionFilters) {
     setTransactions([]);
     setPagination(emptyPagination);
     setNextOffset(0);
+    setIsLoadingMore(false);
     setError(validationError);
     setLoadMoreError(null);
     if (validationError) {

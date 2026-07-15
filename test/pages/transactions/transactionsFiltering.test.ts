@@ -6,6 +6,10 @@ describe("TransactionsPage server filtering", () => {
     path.resolve(process.cwd(), "src/pages/transactions/ui/TransactionsPage.tsx"),
     "utf8",
   );
+  const hookSource = fs.readFileSync(
+    path.resolve(process.cwd(), "src/pages/transactions/model/usePaginatedTransactions.ts"),
+    "utf8",
+  );
 
   test("offers an inclusive period, one bank, one category, and reset", () => {
     expect(source).toContain('type="date"');
@@ -22,5 +26,13 @@ describe("TransactionsPage server filtering", () => {
     expect(source).toContain("observer.disconnect()");
     expect(source).toContain("loadSentinel");
     expect(source).toContain("retryLoadMore");
+  });
+
+  test("resets a stale next-page loading state when filters reload", () => {
+    const reloadBody = hookSource.slice(
+      hookSource.indexOf("const reload = useCallback"),
+      hookSource.indexOf("useEffect(() =>", hookSource.indexOf("const reload = useCallback")),
+    );
+    expect(reloadBody).toContain("setIsLoadingMore(false)");
   });
 });
