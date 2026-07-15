@@ -161,40 +161,72 @@ export function TransactionsPage({
 
   return (
     <section className={styles.screen}>
-      <HeaderWithBack
-        eyebrow="summa"
-        title="Операции"
-        subtitle="Все сохраненные доходы и расходы"
-        action={
-          transactions.length > 0 ? (
+      <div className={styles.headerSlot}>
+        <div
+          aria-hidden={isSelectionMode}
+          className={clsx(
+            styles.headerBase,
+            isSelectionMode && styles.headerBaseHidden,
+          )}
+        >
+          <HeaderWithBack
+            eyebrow="summa"
+            title="Операции"
+            subtitle="Все сохраненные доходы и расходы"
+            action={
+              transactions.length > 0 ? (
+                <button
+                  className={styles.editModeButton}
+                  tabIndex={isSelectionMode ? -1 : undefined}
+                  type="button"
+                  onClick={toggleSelectionMode}
+                >
+                  Изменить
+                </button>
+              ) : null
+            }
+          />
+        </div>
+
+        {isSelectionMode && (
+          <div className={styles.selectionHeader}>
+            <label className={styles.selectAllRow}>
+              <input
+                checked={areAllSelected}
+                type="checkbox"
+                onChange={() =>
+                  setSelectedIds((current) =>
+                    toggleAllSelectedIds(current, transactionIds),
+                  )
+                }
+              />
+              <span className={styles.checkboxVisual} aria-hidden="true">
+                {areAllSelected && <Check size={15} strokeWidth={3} />}
+              </span>
+              <span>Выбрать все</span>
+            </label>
             <button
-              className={styles.editModeButton}
+              aria-label={`Удалить выбранные (${selectedIds.size})`}
+              className={styles.selectionDeleteButton}
+              disabled={selectedIds.size === 0}
+              type="button"
+              onClick={() => setIsBulkDeleteOpen(true)}
+            >
+              <Trash2 size={17} />
+            </button>
+            <button
+                  className={styles.editModeButton}
               type="button"
               onClick={toggleSelectionMode}
             >
-              {isSelectionMode ? "Готово" : "Изменить"}
+              Готово
             </button>
-          ) : null
-        }
-      />
+          </div>
+        )}
+      </div>
 
-      {isSelectionMode && (
-        <label className={styles.selectAllRow}>
-          <input
-            checked={areAllSelected}
-            type="checkbox"
-            onChange={() =>
-              setSelectedIds((current) =>
-                toggleAllSelectedIds(current, transactionIds),
-              )
-            }
-          />
-          <span className={styles.checkboxVisual} aria-hidden="true">
-            {areAllSelected && <Check size={15} strokeWidth={3} />}
-          </span>
-          <span>Выбрать все</span>
-          <small>{selectedIds.size > 0 ? `Выбрано: ${selectedIds.size}` : ""}</small>
-        </label>
+      {bulkDeleteError && (
+        <p className={styles.bulkErrorText}>{bulkDeleteError}</p>
       )}
 
       <section className={styles.transactionList}>
@@ -219,22 +251,6 @@ export function TransactionsPage({
           ))
         )}
       </section>
-
-      {isSelectionMode && (
-        <div className={styles.bulkActionBar}>
-          {bulkDeleteError && (
-            <p className={styles.bulkErrorText}>{bulkDeleteError}</p>
-          )}
-          <button
-            disabled={selectedIds.size === 0}
-            type="button"
-            onClick={() => setIsBulkDeleteOpen(true)}
-          >
-            <Trash2 size={18} />
-            Удалить ({selectedIds.size})
-          </button>
-        </div>
-      )}
 
       {isBulkDeleteOpen && (
         <Dialog
