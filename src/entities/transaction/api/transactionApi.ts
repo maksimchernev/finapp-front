@@ -36,6 +36,11 @@ export type TransactionListResponse = {
   pagination: { total: number; limit: number; offset: number };
 };
 
+export type StatisticsQuery = Pick<
+  TransactionListQuery,
+  "startDate" | "endDate"
+>;
+
 export function buildTransactionListUrl(query: TransactionListQuery = {}) {
   const params = new URLSearchParams();
   for (const key of ["startDate", "endDate", "bankId", "categoryId"] as const) {
@@ -46,6 +51,14 @@ export function buildTransactionListUrl(query: TransactionListQuery = {}) {
   if (query.offset !== undefined) params.set("offset", String(query.offset));
   const queryString = params.toString();
   return `/api/transactions${queryString ? `?${queryString}` : ""}`;
+}
+
+export function buildStatisticsUrl(query: StatisticsQuery = {}) {
+  const params = new URLSearchParams();
+  if (query.startDate) params.set("startDate", query.startDate);
+  if (query.endDate) params.set("endDate", query.endDate);
+  const queryString = params.toString();
+  return `/api/transactions/statistics${queryString ? `?${queryString}` : ""}`;
 }
 
 export type CategoryPayload = {
@@ -78,7 +91,8 @@ export const categoryApi = {
 export const transactionApi = {
   transactions: (query: TransactionListQuery = { limit: 200 }) =>
     request<TransactionListResponse>(buildTransactionListUrl(query)),
-  statistics: () => request<Statistics>("/api/transactions/statistics"),
+  statistics: (query: StatisticsQuery = {}) =>
+    request<Statistics>(buildStatisticsUrl(query)),
   createTransaction: (transaction: CreateTransactionRequest) =>
     request<Transaction>("/api/transactions", {
       method: "POST",

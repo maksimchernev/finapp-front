@@ -14,8 +14,13 @@ import type {
   Statistics,
   Transaction,
 } from "@/entities/transaction/model/types";
+import { getCurrentMonthStatisticsQuery } from "@/features/load-finance-data/lib/currentMonthStatistics";
 import { userApi } from "@/entities/user/api/userApi";
 import type { User } from "@/entities/user/model/types";
+
+function loadCurrentMonthStatistics() {
+  return transactionApi.statistics(getCurrentMonthStatisticsQuery());
+}
 
 export function useFinanceData({
   token,
@@ -59,7 +64,7 @@ export function useFinanceData({
         categoryApi.categories(),
         bankApi.banks(),
         transactionApi.transactions(),
-        transactionApi.statistics(),
+        loadCurrentMonthStatistics(),
       ]);
       setUser(profile);
       setCategories(fetchedCategories);
@@ -148,14 +153,14 @@ export function useFinanceData({
         )
         .sort(compareTransactions),
     );
-    setStatistics(await transactionApi.statistics());
+    setStatistics(await loadCurrentMonthStatistics());
     return updatedTransaction;
   }
 
   async function deleteTransaction(id: string) {
     await transactionApi.deleteTransaction(id);
     setTransactions((current) => current.filter((item) => item.id !== id));
-    setStatistics(await transactionApi.statistics());
+    setStatistics(await loadCurrentMonthStatistics());
   }
 
   async function updateUserName(name: string) {
