@@ -59,7 +59,7 @@ After a transaction is updated or deleted, the page resets and reloads the curre
 
 ## Operations Page UI
 
-The operations page provides a compact text-style `Отфильтровать` trigger. It opens a small dialog containing:
+The operations page provides an absolutely positioned `Отфильтровать` trigger on the right side of the first date-heading row. Its typography matches the date heading. It opens a small dialog containing:
 
 - start and end date inputs;
 - a single bank selector with an `All banks` option;
@@ -74,6 +74,8 @@ The frontend prevents applying an invalid date range and displays a concise inli
 When the start date changes, the end date is set to the same date if it is empty or earlier than the new start date. A later or equal end date is preserved. The end-date input uses the selected start date as its minimum selectable value.
 
 Transactions are grouped by the user's local calendar date after each accumulated result is assembled. Groups retain the server's descending order. Each group renders a localized date heading followed by the existing transaction cards.
+
+Date headings are sticky below the operations header. While scrolling, the current date remains visible until the next date heading replaces it. The absolutely positioned filter trigger does not participate in the date-heading flow.
 
 An `IntersectionObserver` watches a sentinel below the groups. It requests the next offset only when:
 

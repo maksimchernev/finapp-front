@@ -104,9 +104,24 @@
 }
 
 .transactionList {
+  position: relative;
   display: grid;
   gap: 11px;
   min-width: 0;
+}
+
+.filterTrigger {
+  position: absolute;
+  z-index: 3;
+  top: 6px;
+  right: 2px;
+  border: 0;
+  padding: 0;
+  color: var(--text-muted);
+  background: var(--surface);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .filterTextButton {
@@ -188,8 +203,13 @@
   gap: 8px;
 
   h2 {
-    margin: 6px 2px 0;
+    position: sticky;
+    z-index: 2;
+    top: 82px;
+    margin: 0;
+    padding: 6px 2px;
     color: var(--text-muted);
+    background: var(--surface);
     font-size: 13px;
     font-weight: 800;
     text-transform: capitalize;

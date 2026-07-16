@@ -276,12 +276,6 @@ export function TransactionsPage({
         <p className={styles.bulkErrorText}>{bulkDeleteError}</p>
       )}
 
-      {!isSelectionMode && (
-        <button className={styles.filterTextButton} type="button" onClick={openFilterDialog}>
-          Отфильтровать{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""}
-        </button>
-      )}
-
       {isSelectionMode && (
         <button
           aria-label={`Удалить выбранные (${selectedIds.size})`}
@@ -295,6 +289,11 @@ export function TransactionsPage({
       )}
 
       <section className={styles.transactionList}>
+        {!isSelectionMode && (
+          <button className={styles.filterTrigger} type="button" onClick={openFilterDialog}>
+            Отфильтровать{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""}
+          </button>
+        )}
         {listError ? (
           <div className={styles.listStatus} role="alert">
             <p>{listError}</p>
