@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
 import { DraftCard } from "@/features/review-transactions/ui/DraftCard";
-import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
+import type { ReviewTransactionDraft } from "@/features/upload-screenshots/model/types";
 import { isManualReviewDraft } from "@/pages/review/lib/manualReviewDraft";
 import { shouldScrollToLatestDraft } from "@/pages/review/lib/reviewDraftScroll";
 import { EmptyState } from "@/shared/ui/EmptyState";
@@ -26,7 +26,7 @@ export function ReviewPage({
   onSave,
   onUpdate,
 }: {
-  drafts: ParsedTransaction[];
+  drafts: ReviewTransactionDraft[];
   banks: Bank[];
   categories: Category[];
   isSaving: boolean;
@@ -41,14 +41,20 @@ export function ReviewPage({
   onOpenBanks?: () => void;
   onOpenCategories?: () => void;
   onSave: () => void;
-  onUpdate: (localId: string, patch: Partial<ParsedTransaction>) => void;
+  onUpdate: (localId: string, patch: Partial<ReviewTransactionDraft>) => void;
 }) {
   const selectedCount = drafts.filter((draft) => draft.selected).length;
   const saveSummary = `Выбрано ${selectedCount} из ${drafts.length}`;
   const selectedBankId = getReviewBankId(drafts);
   const isBankMissing = selectedCount > 0 && !selectedBankId;
   const hasInvalidSelectedDraft = drafts.some(
-    (draft) => draft.selected && (!draft.date || !draft.categoryId),
+    (draft) =>
+      draft.selected &&
+      (!draft.date ||
+        !draft.categoryId ||
+        typeof draft.amount !== "number" ||
+        !Number.isFinite(draft.amount) ||
+        draft.amount === 0),
   );
   const latestDraftRef = useRef<HTMLElement | null>(null);
   const previousDraftCountRef = useRef(drafts.length);
@@ -164,15 +170,15 @@ export function ReviewPage({
   );
 }
 
-function getReviewBankId(drafts: ParsedTransaction[]) {
+function getReviewBankId(drafts: ReviewTransactionDraft[]) {
   const bankIds = new Set(drafts.map((draft) => draft.bankId || ""));
   return bankIds.size === 1 ? [...bankIds][0] : "";
 }
 
 export function applyReviewBankToDrafts(
-  drafts: ParsedTransaction[],
+  drafts: ReviewTransactionDraft[],
   bankId: string,
-  onUpdate: (localId: string, patch: Partial<ParsedTransaction>) => void,
+  onUpdate: (localId: string, patch: Partial<ReviewTransactionDraft>) => void,
 ) {
   drafts.forEach((draft) => {
     onUpdate(draft.localId, { bankId });

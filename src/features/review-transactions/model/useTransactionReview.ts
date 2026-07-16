@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { transactionApi } from "@/entities/transaction/api/transactionApi";
 import { amountToMinor } from "@/entities/transaction/lib/format";
-import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
+import type { ReviewTransactionDraft } from "@/features/upload-screenshots/model/types";
 
 export function useTransactionReview({ onSaved }: { onSaved: () => Promise<void> | void }) {
-  const [drafts, setDrafts] = useState<ParsedTransaction[]>([]);
+  const [drafts, setDrafts] = useState<ReviewTransactionDraft[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function replaceDrafts(nextDrafts: ParsedTransaction[]) {
+  function replaceDrafts(nextDrafts: ReviewTransactionDraft[]) {
     setDrafts(nextDrafts);
   }
 
-  function appendDrafts(nextDrafts: ParsedTransaction[]) {
+  function appendDrafts(nextDrafts: ReviewTransactionDraft[]) {
     setDrafts((current) => [...current, ...nextDrafts]);
   }
 
@@ -20,7 +20,7 @@ export function useTransactionReview({ onSaved }: { onSaved: () => Promise<void>
     setDrafts([]);
   }
 
-  function updateDraft(localId: string, patch: Partial<ParsedTransaction>) {
+  function updateDraft(localId: string, patch: Partial<ReviewTransactionDraft>) {
     setDrafts((current) => current.map((draft) => (draft.localId === localId ? { ...draft, ...patch } : draft)));
   }
 
@@ -32,12 +32,24 @@ export function useTransactionReview({ onSaved }: { onSaved: () => Promise<void>
       return;
     }
 
+    if (
+      selected.some(
+        (draft) =>
+          typeof draft.amount !== "number" ||
+          !Number.isFinite(draft.amount) ||
+          draft.amount === 0,
+      )
+    ) {
+      setError("Введите ненулевую сумму.");
+      return;
+    }
+
     setIsSaving(true);
     setError(null);
     try {
       await transactionApi.createTransactions(
         selected.map((draft) => ({
-          amountMinor: amountToMinor(draft.amount),
+          amountMinor: amountToMinor(draft.amount as number),
           currency: draft.currency,
           date: draft.date,
           merchant: draft.merchant,

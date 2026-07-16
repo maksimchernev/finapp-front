@@ -12,11 +12,15 @@ export interface ParsedTransaction {
   selected: boolean;
 }
 
+export type ReviewTransactionDraft = Omit<ParsedTransaction, "amount"> & {
+  amount: number | "";
+};
+
 export interface UploadJob {
   id: string;
   fileName: string;
   progress: number;
   status: "queued" | "processing" | "done" | "error";
   message: string;
-  drafts: ParsedTransaction[];
+  drafts: ReviewTransactionDraft[];
 }

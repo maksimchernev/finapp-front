@@ -1,4 +1,8 @@
-import type { ParsedTransaction, UploadJob } from "@/features/upload-screenshots/model/types";
+import type {
+  ParsedTransaction,
+  ReviewTransactionDraft,
+  UploadJob,
+} from "@/features/upload-screenshots/model/types";
 
 export function attachDraftsToUploadJob(
   jobs: UploadJob[],
@@ -11,7 +15,7 @@ export function attachDraftsToUploadJob(
 export function appendDraftToUploadJob(
   jobs: UploadJob[],
   jobId: string,
-  draft: ParsedTransaction,
+  draft: ReviewTransactionDraft,
 ) {
   return jobs.map((job) =>
     job.id === jobId ? { ...job, drafts: [...job.drafts, draft] } : job,
@@ -22,7 +26,7 @@ export function updateUploadJobDraft(
   jobs: UploadJob[],
   jobId: string,
   localId: string,
-  patch: Partial<ParsedTransaction>,
+  patch: Partial<ReviewTransactionDraft>,
 ) {
   return jobs.map((job) =>
     job.id === jobId
