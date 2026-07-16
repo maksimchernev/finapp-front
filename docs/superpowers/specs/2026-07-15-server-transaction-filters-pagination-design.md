@@ -75,6 +75,8 @@ When the start date changes, the end date is set to the same date if it is empty
 
 Transactions are grouped by the user's local calendar date after each accumulated result is assembled. Groups retain the server's descending order. Each group renders a localized date heading followed by the existing transaction cards.
 
+Transaction cards on the operations page do not repeat the transaction date in their detail line because the surrounding group heading already provides that context. The detail line keeps category and bank information.
+
 Date-heading rows are sticky below the operations header. While scrolling, the current row remains visible until the next date-heading row replaces it. The single filter trigger is absolutely positioned inside its own zero-height sticky overlay, so it follows the same scroll level without being duplicated per date group or participating in text flow.
 
 An `IntersectionObserver` watches a sentinel below the groups. It requests the next offset only when:

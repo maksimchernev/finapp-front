@@ -16,6 +16,7 @@ describe("TransactionsPage date groups", () => {
     expect(source).toContain("groups.map((group)");
     expect(source).toContain("group.label");
     expect(source).toContain("group.transactions.map");
+    expect(source).not.toContain("dateFormatter.format(new Date(transaction.date))");
   });
 
   test("keeps date headings sticky while the filter trigger is absolute", () => {

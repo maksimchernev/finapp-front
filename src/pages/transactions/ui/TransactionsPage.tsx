@@ -5,7 +5,7 @@ import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
 import { CategoryIcon } from "@/entities/category/ui/CategoryIcon";
 import type { UpdateTransactionRequest } from "@/entities/transaction/api/transactionApi";
-import { dateFormatter, formatMoney } from "@/entities/transaction/lib/format";
+import { formatMoney } from "@/entities/transaction/lib/format";
 import type { Transaction } from "@/entities/transaction/model/types";
 import {
   createTransactionEditForm,
@@ -611,7 +611,6 @@ function TransactionCard({
     transaction.category ||
     categories.find((item) => item.id === transaction.categoryId);
   const details = [
-    dateFormatter.format(new Date(transaction.date)),
     category?.nameRu,
     transaction.bank?.name,
   ]
