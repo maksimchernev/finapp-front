@@ -1,8 +1,16 @@
 .emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   padding: 18px;
   border-radius: 8px;
   color: var(--text-muted);
   background: #eef3ee;
   font-size: 13px;
   line-height: 1.45;
+}
+
+.action {
+  flex: none;
 }

@@ -296,20 +296,6 @@ export function TransactionsPage({
                 </button>
               </div>
             )}
-            {!isSelectionMode && !isInitialLoading && !listError && groups.length === 0 && activeFilterCount > 0 && (
-              <div className={styles.filterEmptyRow}>
-                <button
-                  className={styles.filterTextButton}
-                  type="button"
-                  onClick={() => {
-                    setFilters(emptyTransactionFilters);
-                    setDraftFilters(emptyTransactionFilters);
-                  }}
-                >
-                  Сбросить фильтры
-                </button>
-              </div>
-            )}
         <section className={styles.transactionList}>
         {listError ? (
           <div className={styles.listStatus} role="alert">
@@ -322,6 +308,18 @@ export function TransactionsPage({
           <p className={styles.listStatus}>Загружаем операции…</p>
         ) : transactions.length === 0 ? (
             <EmptyState
+              action={activeFilterCount > 0 ? (
+                <button
+                  className={styles.filterTextButton}
+                  type="button"
+                  onClick={() => {
+                    setFilters(emptyTransactionFilters);
+                    setDraftFilters(emptyTransactionFilters);
+                  }}
+                >
+                  Сбросить фильтры
+                </button>
+              ) : undefined}
               text={activeFilterCount > 0
                 ? "По выбранным фильтрам ничего не найдено."
                 : "Пока нет сохраненных операций."}
