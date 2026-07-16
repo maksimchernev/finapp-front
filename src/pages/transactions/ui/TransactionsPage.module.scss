@@ -103,10 +103,175 @@
   background: var(--accent-a);
 }
 
+.transactionListShell {
+  min-width: 0;
+}
+
 .transactionList {
   display: grid;
   gap: 11px;
   min-width: 0;
+}
+
+.filterTrigger {
+  position: absolute;
+  z-index: 3;
+  top: 6px;
+  right: 2px;
+  border: 0;
+  padding: 0;
+  color: var(--text-muted);
+  background: var(--surface);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.filterSticky {
+  position: sticky;
+  z-index: 3;
+  top: 82px;
+  height: 0;
+}
+
+.filterTextButton {
+  justify-self: end;
+  border: 0;
+  padding: 0;
+  color: var(--accent-a);
+  background: transparent;
+  font: inherit;
+  font-weight: 800;
+}
+
+.filterDialog {
+  max-width: 420px;
+}
+
+.filterDialogHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  span {
+    display: block;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  h3 {
+    margin: 4px 0 0;
+    font-size: 20px;
+    line-height: 1.2;
+  }
+}
+
+.filterHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filterForm {
+  display: grid;
+  gap: 16px;
+
+  > button {
+    width: 100%;
+  }
+}
+
+.filterApplyButton {
+  min-height: 48px;
+  padding: 14px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.filterFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+
+  label {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  input,
+  select {
+    min-width: 0;
+    width: 100%;
+    height: 42px;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    background: var(--surface);
+    font: inherit;
+  }
+}
+
+.dateGroup {
+  display: grid;
+  gap: 8px;
+
+  h2 {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: capitalize;
+  }
+}
+
+.dateHeading {
+  position: sticky;
+  z-index: 2;
+  top: 82px;
+  min-height: 28px;
+  padding: 6px 2px;
+  background: var(--surface);
+}
+
+.dateGroupList {
+  display: grid;
+  gap: 8px;
+}
+
+.loadSentinel {
+  height: 1px;
+}
+
+.listStatus {
+  margin: 0;
+  padding: 14px;
+  color: var(--text-muted);
+  text-align: center;
+
+  p {
+    margin: 0 0 10px;
+  }
+
+  button {
+    min-height: 38px;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--accent-a);
+    background: var(--surface);
+    font: inherit;
+    font-weight: 800;
+  }
 }
 
 .transactionCard {

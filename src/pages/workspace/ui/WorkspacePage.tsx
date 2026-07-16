@@ -273,7 +273,6 @@ export function WorkspacePage({
             <TransactionsPage
               banks={finance.banks}
               categories={finance.categories}
-              transactions={finance.transactions}
               onDeleteTransaction={finance.deleteTransaction}
               onUpdateTransaction={finance.updateTransaction}
             />

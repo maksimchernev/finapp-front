@@ -1,11 +1,11 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Check, Trash2, X } from "lucide-react";
 import clsx from "clsx";
 import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
 import { CategoryIcon } from "@/entities/category/ui/CategoryIcon";
 import type { UpdateTransactionRequest } from "@/entities/transaction/api/transactionApi";
-import { dateFormatter, formatMoney } from "@/entities/transaction/lib/format";
+import { formatMoney } from "@/entities/transaction/lib/format";
 import type { Transaction } from "@/entities/transaction/model/types";
 import {
   createTransactionEditForm,
@@ -18,6 +18,14 @@ import {
   toggleAllSelectedIds,
   toggleSelectedId,
 } from "@/pages/transactions/lib/transactionSelection";
+import {
+  countActiveTransactionFilters,
+  emptyTransactionFilters,
+  setTransactionStartDate,
+  type TransactionFilters,
+} from "@/pages/transactions/lib/transactionFilters";
+import { groupTransactionsByLocalDate } from "@/pages/transactions/lib/transactionGroups";
+import { usePaginatedTransactions } from "@/pages/transactions/model/usePaginatedTransactions";
 import { Dialog } from "@/shared/ui/Dialog";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
@@ -26,19 +34,33 @@ import styles from "@/pages/transactions/ui/TransactionsPage.module.scss";
 export function TransactionsPage({
   banks,
   categories,
-  transactions,
   onDeleteTransaction,
   onUpdateTransaction,
 }: {
   banks: Bank[];
   categories: Category[];
-  transactions: Transaction[];
   onDeleteTransaction: (id: string) => Promise<void>;
   onUpdateTransaction: (
     id: string,
     transaction: UpdateTransactionRequest,
   ) => Promise<Transaction>;
 }) {
+  const [filters, setFilters] = useState<TransactionFilters>(emptyTransactionFilters);
+  const [draftFilters, setDraftFilters] = useState<TransactionFilters>(emptyTransactionFilters);
+  const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
+  const {
+    transactions,
+    hasMore,
+    isInitialLoading,
+    isLoadingMore,
+    error: listError,
+    loadMoreError,
+    loadMore,
+    reload,
+    retryLoadMore,
+  } = usePaginatedTransactions(filters);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const groups = useMemo(() => groupTransactionsByLocalDate(transactions), [transactions]);
   const [editingTransaction, setEditingTransaction] =
     useState<Transaction | null>(null);
   const [form, setForm] = useState<TransactionEditForm | null>(null);
@@ -52,6 +74,36 @@ export function TransactionsPage({
   const [error, setError] = useState<string | null>(null);
   const transactionIds = transactions.map((transaction) => transaction.id);
   const areAllSelected = areAllIdsSelected(selectedIds, transactionIds);
+  const activeFilterCount = countActiveTransactionFilters(filters);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || isInitialLoading || isLoadingMore || loadMoreError || !hasMore) {
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting) void loadMore();
+    }, { rootMargin: "240px 0px" });
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, isInitialLoading, isLoadingMore, loadMore, loadMoreError]);
+
+  function updateFilter(key: keyof TransactionFilters, value: string) {
+    setDraftFilters((current) => ({ ...current, [key]: value }));
+  }
+
+  function openFilterDialog() {
+    setDraftFilters(filters);
+    setIsFilterDialogOpen(true);
+  }
+
+  function applyFilters(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFilters(draftFilters);
+    setIsFilterDialogOpen(false);
+    setSelectedIds(new Set());
+    setIsSelectionMode(false);
+  }
 
   const filteredCategories = categories.filter((category) =>
     form?.kind === "income"
@@ -90,6 +142,7 @@ export function TransactionsPage({
         editingTransaction.id,
         toTransactionUpdatePayload(form),
       );
+      await reload();
       closeDialog();
     } catch (saveError) {
       setError(
@@ -114,6 +167,7 @@ export function TransactionsPage({
     setError(null);
     try {
       await onDeleteTransaction(editingTransaction.id);
+      await reload();
       closeDialog();
     } catch (deleteError) {
       setError(
@@ -142,6 +196,7 @@ export function TransactionsPage({
       [...selectedIds],
       onDeleteTransaction,
     );
+    await reload();
     setIsBulkDeleting(false);
 
     if (failedIds.length === 0) {
@@ -233,28 +288,131 @@ export function TransactionsPage({
         </button>
       )}
 
-      <section className={styles.transactionList}>
-        {transactions.length === 0 ? (
+      <section className={styles.transactionListShell}>
+        {!isSelectionMode && (
+          <div className={styles.filterSticky}>
+            <button className={styles.filterTrigger} type="button" onClick={openFilterDialog}>
+              Отфильтровать{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""}
+            </button>
+          </div>
+        )}
+        <section className={styles.transactionList}>
+        {listError ? (
+          <div className={styles.listStatus} role="alert">
+            <p>{listError}</p>
+            {!filters.startDate || !filters.endDate || filters.startDate <= filters.endDate ? (
+              <button type="button" onClick={() => void reload()}>Повторить</button>
+            ) : null}
+          </div>
+        ) : isInitialLoading ? (
+          <p className={styles.listStatus}>Загружаем операции…</p>
+        ) : transactions.length === 0 ? (
           <EmptyState text="Пока нет сохраненных операций." />
         ) : (
-          transactions.map((transaction) => (
-            <TransactionCard
-              categories={categories}
-              isSelectionMode={isSelectionMode}
-              isSelected={selectedIds.has(transaction.id)}
-              key={transaction.id}
-              transaction={transaction}
-              onClick={() =>
-                isSelectionMode
-                  ? setSelectedIds((current) =>
-                      toggleSelectedId(current, transaction.id),
-                    )
-                  : openDialog(transaction)
-              }
-            />
+          groups.map((group) => (
+            <section className={styles.dateGroup} key={group.key}>
+              <div className={styles.dateHeading}>
+                <h2>{group.label}</h2>
+              </div>
+              <div className={styles.dateGroupList}>
+                {group.transactions.map((transaction) => (
+                  <TransactionCard
+                    categories={categories}
+                    isSelectionMode={isSelectionMode}
+                    isSelected={selectedIds.has(transaction.id)}
+                    key={transaction.id}
+                    transaction={transaction}
+                    onClick={() => isSelectionMode
+                      ? setSelectedIds((current) => toggleSelectedId(current, transaction.id))
+                      : openDialog(transaction)}
+                  />
+                ))}
+              </div>
+            </section>
           ))
         )}
+        <div aria-hidden="true" className={styles.loadSentinel} ref={sentinelRef} />
+        {isLoadingMore && <p className={styles.listStatus}>Загружаем ещё…</p>}
+        {loadMoreError && (
+          <div className={styles.listStatus} role="alert">
+            <p>{loadMoreError}</p>
+            <button type="button" onClick={retryLoadMore}>Повторить</button>
+          </div>
+        )}
+        </section>
       </section>
+
+      {isFilterDialogOpen && (
+        <Dialog
+          ariaLabelledBy="transaction-filter-title"
+          backdropClassName={styles.backdrop}
+          className={clsx(styles.dialog, styles.filterDialog)}
+          onClose={() => setIsFilterDialogOpen(false)}
+        >
+          <header className={styles.filterDialogHeader}>
+            <div>
+              <span>операции</span>
+              <h3 id="transaction-filter-title">Фильтры</h3>
+            </div>
+            <div className={styles.filterHeaderActions}>
+              <button
+                className={styles.filterTextButton}
+                type="button"
+                onClick={() => setDraftFilters(emptyTransactionFilters)}
+              >
+                Сбросить
+              </button>
+              <button
+                aria-label="Закрыть фильтры"
+                className={styles.closeButton}
+                type="button"
+                onClick={() => setIsFilterDialogOpen(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+          </header>
+          <form className={styles.filterForm} onSubmit={applyFilters}>
+            <div className={styles.filterFields}>
+              <label>
+                С
+                <input
+                  type="date"
+                  value={draftFilters.startDate}
+                  onChange={(event) => setDraftFilters((current) =>
+                    setTransactionStartDate(current, event.target.value))}
+                />
+              </label>
+              <label>
+                По
+                <input
+                  min={draftFilters.startDate || undefined}
+                  type="date"
+                  value={draftFilters.endDate}
+                  onChange={(event) => updateFilter("endDate", event.target.value)}
+                />
+              </label>
+              <label>
+                Банк
+                <select value={draftFilters.bankId} onChange={(event) => updateFilter("bankId", event.target.value)}>
+                  <option value="">Все банки</option>
+                  {banks.map((bank) => <option key={bank.id} value={bank.id}>{bank.name}</option>)}
+                </select>
+              </label>
+              <label>
+                Категория
+                <select value={draftFilters.categoryId} onChange={(event) => updateFilter("categoryId", event.target.value)}>
+                  <option value="">Все категории</option>
+                  {categories.map((category) => <option key={category.id} value={category.id}>{category.nameRu}</option>)}
+                </select>
+              </label>
+            </div>
+            <button className={clsx(styles.primaryButton, styles.filterApplyButton)} type="submit">
+              Применить
+            </button>
+          </form>
+        </Dialog>
+      )}
 
       {isBulkDeleteOpen && (
         <Dialog
@@ -466,7 +624,6 @@ function TransactionCard({
     transaction.category ||
     categories.find((item) => item.id === transaction.categoryId);
   const details = [
-    dateFormatter.format(new Date(transaction.date)),
     category?.nameRu,
     transaction.bank?.name,
   ]
