@@ -77,6 +77,10 @@ textarea {
     box-shadow 160ms ease;
 }
 
+input[type="date"] {
+  min-width: 0;
+}
+
 input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
 input:not([type="checkbox"]):not([type="radio"]):not(
     [type="file"]
@@ -102,4 +106,10 @@ a,
 [role="button"] {
   cursor: pointer;
   user-select: none;
+}
+
+@media (max-width: 440px) {
+  input[type="date"] {
+    padding-inline: 0;
+  }
 }
