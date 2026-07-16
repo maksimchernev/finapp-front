@@ -10,6 +10,10 @@ describe("TransactionsPage server filtering", () => {
     path.resolve(process.cwd(), "src/pages/transactions/model/usePaginatedTransactions.ts"),
     "utf8",
   );
+  const styles = fs.readFileSync(
+    path.resolve(process.cwd(), "src/pages/transactions/ui/TransactionsPage.module.scss"),
+    "utf8",
+  );
 
   test("opens draft filters in a compact dialog", () => {
     expect(source).toContain('type="date"');
@@ -23,6 +27,8 @@ describe("TransactionsPage server filtering", () => {
     expect(source).toContain("Все категории");
     expect(source).toContain("Сбросить");
     expect(source).toContain("Применить");
+    expect(source).toContain("styles.filterApplyButton");
+    expect(styles).toMatch(/\.filterApplyButton\s*\{[^}]*min-height:\s*48px;[^}]*padding:\s*14px 18px;[^}]*border-radius:\s*8px;/s);
     expect(source).toContain("setFilters(draftFilters)");
     expect(source).toContain("usePaginatedTransactions(filters)");
   });

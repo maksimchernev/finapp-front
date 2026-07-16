@@ -397,7 +397,9 @@ export function TransactionsPage({
                 </select>
               </label>
             </div>
-            <button className={styles.primaryButton} type="submit">Применить</button>
+            <button className={clsx(styles.primaryButton, styles.filterApplyButton)} type="submit">
+              Применить
+            </button>
           </form>
         </Dialog>
       )}
