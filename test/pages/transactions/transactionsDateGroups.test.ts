@@ -20,8 +20,9 @@ describe("TransactionsPage date groups", () => {
 
   test("keeps date headings sticky while the filter trigger is absolute", () => {
     expect(source).toContain("styles.filterTrigger");
+    expect(source).toContain("styles.dateHeading");
     expect(styles).toMatch(/\.filterTrigger\s*\{[^}]*position:\s*absolute;/s);
-    expect(styles).toMatch(/\.dateGroup\s*\{[\s\S]*h2\s*\{[^}]*position:\s*sticky;/s);
+    expect(styles).toMatch(/\.dateHeading\s*\{[^}]*position:\s*sticky;/s);
     expect(styles).toContain("font-size: 13px");
     expect(styles).toContain("color: var(--text-muted)");
   });

@@ -289,11 +289,6 @@ export function TransactionsPage({
       )}
 
       <section className={styles.transactionList}>
-        {!isSelectionMode && (
-          <button className={styles.filterTrigger} type="button" onClick={openFilterDialog}>
-            Отфильтровать{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""}
-          </button>
-        )}
         {listError ? (
           <div className={styles.listStatus} role="alert">
             <p>{listError}</p>
@@ -308,7 +303,14 @@ export function TransactionsPage({
         ) : (
           groups.map((group) => (
             <section className={styles.dateGroup} key={group.key}>
-              <h2>{group.label}</h2>
+              <div className={styles.dateHeading}>
+                <h2>{group.label}</h2>
+                {!isSelectionMode && (
+                  <button className={styles.filterTrigger} type="button" onClick={openFilterDialog}>
+                    Отфильтровать{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""}
+                  </button>
+                )}
+              </div>
               <div className={styles.dateGroupList}>
                 {group.transactions.map((transaction) => (
                   <TransactionCard
