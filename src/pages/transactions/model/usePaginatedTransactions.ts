@@ -119,6 +119,13 @@ export function usePaginatedTransactions(filters: TransactionFilters) {
 
   const loadMore = useCallback(() => requestNextPage(false), [requestNextPage]);
   const retryLoadMore = useCallback(() => requestNextPage(true), [requestNextPage]);
+  const replaceTransaction = useCallback((updatedTransaction: Transaction) => {
+    const next = transactionsRef.current.map((transaction) =>
+      transaction.id === updatedTransaction.id ? updatedTransaction : transaction,
+    );
+    transactionsRef.current = next;
+    setTransactions(next);
+  }, []);
 
   return {
     transactions,
@@ -130,6 +137,7 @@ export function usePaginatedTransactions(filters: TransactionFilters) {
     loadMoreError,
     loadMore,
     reload,
+    replaceTransaction,
     retryLoadMore,
   };
 }

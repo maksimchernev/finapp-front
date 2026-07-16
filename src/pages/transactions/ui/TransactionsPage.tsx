@@ -57,6 +57,7 @@ export function TransactionsPage({
     loadMoreError,
     loadMore,
     reload,
+    replaceTransaction,
     retryLoadMore,
   } = usePaginatedTransactions(filters);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -138,11 +139,11 @@ export function TransactionsPage({
     setIsSaving(true);
     setError(null);
     try {
-      await onUpdateTransaction(
+      const updatedTransaction = await onUpdateTransaction(
         editingTransaction.id,
         toTransactionUpdatePayload(form),
       );
-      await reload();
+      replaceTransaction(updatedTransaction);
       closeDialog();
     } catch (saveError) {
       setError(

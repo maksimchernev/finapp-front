@@ -49,4 +49,16 @@ describe("TransactionsPage server filtering", () => {
     );
     expect(reloadBody).toContain("setIsLoadingMore(false)");
   });
+
+  test("updates an edited transaction without clearing the loaded list", () => {
+    expect(hookSource).toContain("const replaceTransaction = useCallback");
+    expect(hookSource).toContain("replaceTransaction,");
+    expect(source).toContain("replaceTransaction(updatedTransaction)");
+
+    const submitBody = source.slice(
+      source.indexOf("async function handleSubmit"),
+      source.indexOf("async function handleDelete"),
+    );
+    expect(submitBody).not.toContain("await reload()");
+  });
 });
