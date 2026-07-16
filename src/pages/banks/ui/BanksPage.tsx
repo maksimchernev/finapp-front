@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
-import { ArrowLeft, Building2, Plus, X } from "lucide-react";
+import { Building2, Plus, X } from "lucide-react";
 import type { Bank } from "@/entities/bank/model/types";
 import { Dialog } from "@/shared/ui/Dialog";
+import { PageHeader } from "@/shared/ui/PageHeader";
 import styles from "@/pages/banks/ui/BanksPage.module.scss";
 
 export function BanksPage({
@@ -104,27 +105,13 @@ export function BanksPage({
 
   return (
     <section className={styles.screen}>
-      <header className={styles.topbar}>
-        <div className={styles.leading}>
-          {onBack ? (
-            <button
-              aria-label="Назад"
-              className={styles.backButton}
-              type="button"
-              onClick={onBack}
-            >
-              <ArrowLeft size={20} />
-            </button>
-          ) : null}
-          <div>
-            <span className={styles.eyebrow}>источники операций</span>
-            <h2>Банки</h2>
-            <span className={styles.eyebrow}>
-              Добавьте банки, чтобы отмечать источник каждой операции
-            </span>
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        eyebrow="источники операций"
+        title="Банки"
+        subtitle="Добавьте банки, чтобы отмечать источник каждой операции"
+        onBack={onBack}
+        withBack
+      />
 
       <section className={styles.heroCard}>
         <span className={styles.heroIcon}>

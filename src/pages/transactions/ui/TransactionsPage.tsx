@@ -28,7 +28,7 @@ import { groupTransactionsByLocalDate } from "@/pages/transactions/lib/transacti
 import { usePaginatedTransactions } from "@/pages/transactions/model/usePaginatedTransactions";
 import { Dialog } from "@/shared/ui/Dialog";
 import { EmptyState } from "@/shared/ui/EmptyState";
-import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
+import { PageHeader } from "@/shared/ui/PageHeader";
 import styles from "@/pages/transactions/ui/TransactionsPage.module.scss";
 
 export function TransactionsPage({
@@ -225,7 +225,7 @@ export function TransactionsPage({
             isSelectionMode && styles.headerBaseHidden,
           )}
         >
-          <HeaderWithBack
+          <PageHeader
             eyebrow="summa"
             isSticky={true}
             title="Операции"

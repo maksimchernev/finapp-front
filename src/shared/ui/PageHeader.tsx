@@ -1,15 +1,16 @@
 import type { ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
 import clsx from "clsx";
-import styles from "@/shared/ui/HeaderWithBack.module.scss";
+import styles from "@/shared/ui/PageHeader.module.scss";
 
-export function HeaderWithBack({
+export function PageHeader({
   eyebrow,
   title,
   subtitle,
   onBack,
   action,
   isSticky = false,
+  withBack = false,
 }: {
   eyebrow?: string;
   title: string;
@@ -17,6 +18,7 @@ export function HeaderWithBack({
   onBack?: () => void;
   action?: ReactNode;
   isSticky?: boolean;
+  withBack?: boolean;
 }) {
   return (
     <header
@@ -27,7 +29,7 @@ export function HeaderWithBack({
       )}
     >
       <div className={styles.leading}>
-        {onBack ? (
+        {withBack ? (
           <button
             className={styles.iconButton}
             onClick={onBack}

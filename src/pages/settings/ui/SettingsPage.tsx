@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import type { User } from "@/entities/user/model/types";
 import { Dialog } from "@/shared/ui/Dialog";
+import { PageHeader } from "@/shared/ui/PageHeader";
 import styles from "@/pages/settings/ui/SettingsPage.module.scss";
 
 export function SettingsPage({
@@ -76,13 +77,11 @@ export function SettingsPage({
 
   return (
     <section className={styles.screen}>
-      <header className={styles.topbar}>
-        <div>
-          <span className={styles.eyebrow}>summa</span>
-          <h2>Настройки</h2>
-          <span className={styles.eyebrow}>Аккаунт, приватность и выход</span>
-        </div>
-      </header>
+      <PageHeader
+        eyebrow="summa"
+        title="Настройки"
+        subtitle="Аккаунт, приватность и выход"
+      />
 
       <button
         className={styles.profileCard}

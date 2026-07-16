@@ -8,7 +8,7 @@ import type { ParsedTransaction } from "@/features/upload-screenshots/model/type
 import { isManualReviewDraft } from "@/pages/review/lib/manualReviewDraft";
 import { shouldScrollToLatestDraft } from "@/pages/review/lib/reviewDraftScroll";
 import { EmptyState } from "@/shared/ui/EmptyState";
-import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
+import { PageHeader } from "@/shared/ui/PageHeader";
 import styles from "@/pages/review/ui/ReviewPage.module.scss";
 
 export function ReviewPage({
@@ -75,10 +75,11 @@ export function ReviewPage({
 
   return (
     <section className={styles.screen}>
-      <HeaderWithBack
+      <PageHeader
         title={title}
         subtitle={subtitle}
         onBack={onBack}
+        withBack
         action={
           onAddDraft ? (
             <button

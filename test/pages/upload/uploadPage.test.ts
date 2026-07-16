@@ -30,8 +30,8 @@ jest.mock("@/shared/ui/EmptyState", () => ({
   EmptyState: ({ text }: { text: string }) => React.createElement("div", null, text),
 }));
 
-jest.mock("@/shared/ui/HeaderWithBack", () => ({
-  HeaderWithBack: ({
+jest.mock("@/shared/ui/PageHeader", () => ({
+  PageHeader: ({
     title,
     action,
   }: {

@@ -4,32 +4,6 @@
   min-width: 0;
 }
 
-.leading {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-
-  h2 {
-    margin: 4px 0 0;
-    font-size: 21px;
-    line-height: 1.2;
-  }
-}
-
-.eyebrow {
-  display: block;
-  color: var(--text-muted);
-  font-size: 13px;
-}
-
 .iconButton {
   width: 42px;
   height: 42px;

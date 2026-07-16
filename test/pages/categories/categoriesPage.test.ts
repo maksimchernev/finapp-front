@@ -12,6 +12,15 @@ jest.mock("@/pages/categories/ui/CategoriesPage.module.scss", () =>
   ),
 );
 
+jest.mock("@/shared/ui/PageHeader.module.scss", () =>
+  new Proxy(
+    {},
+    {
+      get: (_, key) => String(key),
+    },
+  ),
+);
+
 jest.mock("@/entities/category/ui/CategoryIcon", () => ({
   CategoryIcon: ({ icon }: { icon: string }) =>
     React.createElement("span", null, icon),

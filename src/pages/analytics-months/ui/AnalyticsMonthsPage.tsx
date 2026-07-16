@@ -8,7 +8,7 @@ import {
 } from "@/shared/lib/currencySwitcher";
 import { CurrencySwitcher } from "@/shared/ui/CurrencySwitcher";
 import { EmptyState } from "@/shared/ui/EmptyState";
-import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
+import { PageHeader } from "@/shared/ui/PageHeader";
 import styles from "@/pages/analytics/ui/AnalyticsPage.module.scss";
 
 export function AnalyticsMonthsPage({
@@ -31,10 +31,11 @@ export function AnalyticsMonthsPage({
 
   return (
     <section className={styles.screen}>
-      <HeaderWithBack
+      <PageHeader
         title="Сводка по месяцам"
         subtitle="Топ-5 категорий расходов"
         onBack={onBack}
+        withBack
         action={
           getCurrencySwitcherMode(currencies) !== "hidden" ? (
             <CurrencySwitcher

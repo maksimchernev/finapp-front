@@ -31,7 +31,7 @@ import {
 } from "@/shared/lib/currencySwitcher";
 import { CurrencySwitcher } from "@/shared/ui/CurrencySwitcher";
 import { EmptyState } from "@/shared/ui/EmptyState";
-import { HeaderWithBack } from "@/shared/ui/HeaderWithBack";
+import { PageHeader } from "@/shared/ui/PageHeader";
 import { AnalyticsBarChart } from "@/pages/analytics/ui/AnalyticsBarChart";
 import styles from "@/pages/analytics/ui/AnalyticsPage.module.scss";
 
@@ -230,7 +230,7 @@ export function AnalyticsPage({
 
   return (
     <section className={styles.screen}>
-      <HeaderWithBack
+      <PageHeader
         eyebrow="summa"
         title={`Сводка за ${activeMonthLabel.toLowerCase()}`}
         subtitle="Доходы и расходы по месяцам"

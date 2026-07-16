@@ -3,24 +3,6 @@
   gap: 18px;
 }
 
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  h2 {
-    margin: 4px 0 0;
-    font-size: 21px;
-    line-height: 1.2;
-  }
-}
-
-.eyebrow {
-  display: block;
-  color: var(--text-muted);
-  font-size: 13px;
-}
-
 .profileCard {
   width: 100%;
   display: flex;

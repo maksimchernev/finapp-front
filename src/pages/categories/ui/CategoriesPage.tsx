@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type KeyboardEvent } from "react";
-import { ArrowLeft, Plus, Trash2, X } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 import clsx from "clsx";
 import type { Category } from "@/entities/category/model/types";
 import { CategoryIcon } from "@/entities/category/ui/CategoryIcon";
@@ -16,6 +16,7 @@ import {
 } from "@/pages/categories/lib/categoryForm";
 import { Dialog } from "@/shared/ui/Dialog";
 import { EmptyState } from "@/shared/ui/EmptyState";
+import { PageHeader } from "@/shared/ui/PageHeader";
 import styles from "@/pages/categories/ui/CategoriesPage.module.scss";
 
 type CategoryType = "expense" | "income";
@@ -30,7 +31,10 @@ export function CategoriesPage({
   categories: Category[];
   onCreateCategory: (category: CategoryPayload) => Promise<Category>;
   onDeleteCategory: (id: string) => Promise<void>;
-  onUpdateCategory: (id: string, category: CategoryPayload) => Promise<Category>;
+  onUpdateCategory: (
+    id: string,
+    category: CategoryPayload,
+  ) => Promise<Category>;
   onBack?: () => void;
 }) {
   const [activeType, setActiveType] = useState<CategoryType>("expense");
@@ -158,44 +162,39 @@ export function CategoriesPage({
 
   return (
     <section className={styles.screen}>
-      <header className={styles.topbar}>
-        <div className={styles.leading}>
-          {onBack ? (
-            <button
-              aria-label="Назад"
-              className={styles.iconButton}
-              type="button"
-              onClick={onBack}
-            >
-              <ArrowLeft size={20} />
-            </button>
-          ) : null}
-          <div>
-            <span className={styles.eyebrow}>автокатегоризация</span>
-            <h2>Категории</h2>
-            <span className={styles.eyebrow}>Правила распознавания операций</span>
-          </div>
-        </div>
-        <button
-          aria-label="Добавить категорию"
-          className={styles.iconButton}
-          type="button"
-          onClick={openCreateDialog}
-        >
-          <Plus size={20} />
-        </button>
-      </header>
+      <PageHeader
+        eyebrow="автокатегоризация"
+        title="Категории"
+        subtitle="Правила распознавания операций"
+        onBack={onBack}
+        withBack
+        isSticky
+        action={
+          <button
+            aria-label="Добавить категорию"
+            className={styles.iconButton}
+            type="button"
+            onClick={openCreateDialog}
+          >
+            <Plus size={20} />
+          </button>
+        }
+      />
 
       <div className={styles.segmented}>
         <button
-          className={activeType === "expense" ? styles.selectedSegment : undefined}
+          className={
+            activeType === "expense" ? styles.selectedSegment : undefined
+          }
           type="button"
           onClick={() => setActiveType("expense")}
         >
           Расход
         </button>
         <button
-          className={activeType === "income" ? styles.selectedSegment : undefined}
+          className={
+            activeType === "income" ? styles.selectedSegment : undefined
+          }
           type="button"
           onClick={() => setActiveType("income")}
         >
@@ -224,7 +223,9 @@ export function CategoriesPage({
                 <span className={styles.categoryTitleRow}>
                   <b>{category.nameRu}</b>
                   <small>
-                    {category.isDefault === false ? "Можно удалить" : "Системная"}
+                    {category.isDefault === false
+                      ? "Можно удалить"
+                      : "Системная"}
                   </small>
                 </span>
                 <span className={styles.categoryMeta}>
@@ -250,176 +251,182 @@ export function CategoriesPage({
           className={styles.dialog}
           onClose={closeDialog}
         >
-            <header className={styles.dialogHeader}>
-              <div>
-                <span>{editingCategory ? "категория" : "новая категория"}</span>
-                <h3 id="category-edit-title">
-                  {isEditable
-                    ? editingCategory
-                      ? "Редактировать"
-                      : "Создать категорию"
-                    : "Системная категория"}
-                </h3>
-              </div>
+          <header className={styles.dialogHeader}>
+            <div>
+              <span>{editingCategory ? "категория" : "новая категория"}</span>
+              <h3 id="category-edit-title">
+                {isEditable
+                  ? editingCategory
+                    ? "Редактировать"
+                    : "Создать категорию"
+                  : "Системная категория"}
+              </h3>
+            </div>
+            <button
+              aria-label="Закрыть"
+              className={styles.closeButton}
+              type="button"
+              onClick={closeDialog}
+            >
+              <X size={20} />
+            </button>
+          </header>
+
+          <form className={styles.categoryForm} onSubmit={handleSubmit}>
+            {!isEditable && (
+              <p className={styles.readOnlyText}>
+                Системные категории нельзя изменять. Создайте свою категорию,
+                если нужны другие правила.
+              </p>
+            )}
+
+            <label>
+              Название
+              <input
+                disabled={!isEditable}
+                maxLength={80}
+                placeholder="Например, Питомец"
+                value={form.nameRu}
+                onChange={(event) => updateForm({ nameRu: event.target.value })}
+              />
+            </label>
+
+            <div className={styles.segmented}>
               <button
-                aria-label="Закрыть"
-                className={styles.closeButton}
+                className={
+                  form.type === "expense" ? styles.selectedSegment : undefined
+                }
+                disabled={!isEditable}
                 type="button"
-                onClick={closeDialog}
+                onClick={() => updateForm({ type: "expense" })}
               >
-                <X size={20} />
+                Расход
               </button>
-            </header>
+              <button
+                className={
+                  form.type === "income" ? styles.selectedSegment : undefined
+                }
+                disabled={!isEditable}
+                type="button"
+                onClick={() => updateForm({ type: "income" })}
+              >
+                Доход
+              </button>
+            </div>
 
-            <form className={styles.categoryForm} onSubmit={handleSubmit}>
-              {!isEditable && (
-                <p className={styles.readOnlyText}>
-                  Системные категории нельзя изменять. Создайте свою категорию,
-                  если нужны другие правила.
-                </p>
-              )}
-
-              <label>
-                Название
-                <input
-                  disabled={!isEditable}
-                  maxLength={80}
-                  placeholder="Например, Питомец"
-                  value={form.nameRu}
-                  onChange={(event) => updateForm({ nameRu: event.target.value })}
-                />
-              </label>
-
-              <div className={styles.segmented}>
-                <button
-                  className={form.type === "expense" ? styles.selectedSegment : undefined}
-                  disabled={!isEditable}
-                  type="button"
-                  onClick={() => updateForm({ type: "expense" })}
-                >
-                  Расход
-                </button>
-                <button
-                  className={form.type === "income" ? styles.selectedSegment : undefined}
-                  disabled={!isEditable}
-                  type="button"
-                  onClick={() => updateForm({ type: "income" })}
-                >
-                  Доход
-                </button>
-              </div>
-
-              <fieldset>
-                <legend>Иконка</legend>
-                <div className={styles.iconGrid}>
-                  {categoryIconOptions.map((icon) => (
-                    <button
-                      aria-label={icon}
-                      className={clsx(
-                        styles.optionButton,
-                        form.icon === icon && styles.selectedOption,
-                      )}
-                      disabled={!isEditable}
-                      key={icon}
-                      type="button"
-                      onClick={() => updateForm({ icon })}
-                    >
-                      <CategoryIcon icon={icon} />
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-
-              <fieldset>
-                <legend>Цвет</legend>
-                <div className={styles.colorGrid}>
-                  {categoryColorOptions.map((option) => (
-                    <button
-                      aria-label={option.label}
-                      className={clsx(
-                        styles.colorButton,
-                        form.color === option.color && styles.selectedColor,
-                      )}
-                      disabled={!isEditable}
-                      key={option.color}
-                      style={{ background: option.bgColor, color: option.color }}
-                      type="button"
-                      onClick={() =>
-                        updateForm({
-                          bgColor: option.bgColor,
-                          color: option.color,
-                        })
-                      }
-                    >
-                      <span />
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-
-              <fieldset>
-                <legend>Ключевые слова</legend>
-                <div className={styles.keywordChips}>
-                  {form.keywords.map((keyword) => (
-                    <button
-                      className={styles.keywordChip}
-                      disabled={!isEditable}
-                      key={keyword}
-                      type="button"
-                      onClick={() => setForm(removeCategoryKeyword(form, keyword))}
-                    >
-                      {keyword}
-                      <X size={14} />
-                    </button>
-                  ))}
-                  {isAddingKeyword ? (
-                    <input
-                      autoFocus
-                      className={styles.keywordInput}
-                      disabled={!isEditable}
-                      maxLength={80}
-                      value={keywordDraft}
-                      onBlur={commitKeywordDraft}
-                      onChange={(event) => setKeywordDraft(event.target.value)}
-                      onKeyDown={handleKeywordKeyDown}
-                    />
-                  ) : (
-                    <button
-                      aria-label="Добавить ключевое слово"
-                      className={styles.addKeyword}
-                      disabled={!isEditable}
-                      type="button"
-                      onClick={() => setIsAddingKeyword(true)}
-                    >
-                      <Plus size={16} />
-                    </button>
-                  )}
-                </div>
-              </fieldset>
-
-              {error && <p className={styles.errorText}>{error}</p>}
-
-              <div className={styles.dialogActions}>
-                {editingCategory && editingCategory.isDefault === false && (
+            <fieldset>
+              <legend>Иконка</legend>
+              <div className={styles.iconGrid}>
+                {categoryIconOptions.map((icon) => (
                   <button
-                    className={styles.deleteButton}
-                    disabled={isSaving}
+                    aria-label={icon}
+                    className={clsx(
+                      styles.optionButton,
+                      form.icon === icon && styles.selectedOption,
+                    )}
+                    disabled={!isEditable}
+                    key={icon}
                     type="button"
-                    onClick={handleDelete}
+                    onClick={() => updateForm({ icon })}
                   >
-                    <Trash2 size={17} />
-                    {isConfirmingDelete ? "Подтвердить удаление" : "Удалить"}
+                    <CategoryIcon icon={icon} />
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Цвет</legend>
+              <div className={styles.colorGrid}>
+                {categoryColorOptions.map((option) => (
+                  <button
+                    aria-label={option.label}
+                    className={clsx(
+                      styles.colorButton,
+                      form.color === option.color && styles.selectedColor,
+                    )}
+                    disabled={!isEditable}
+                    key={option.color}
+                    style={{ background: option.bgColor, color: option.color }}
+                    type="button"
+                    onClick={() =>
+                      updateForm({
+                        bgColor: option.bgColor,
+                        color: option.color,
+                      })
+                    }
+                  >
+                    <span />
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Ключевые слова</legend>
+              <div className={styles.keywordChips}>
+                {form.keywords.map((keyword) => (
+                  <button
+                    className={styles.keywordChip}
+                    disabled={!isEditable}
+                    key={keyword}
+                    type="button"
+                    onClick={() =>
+                      setForm(removeCategoryKeyword(form, keyword))
+                    }
+                  >
+                    {keyword}
+                    <X size={14} />
+                  </button>
+                ))}
+                {isAddingKeyword ? (
+                  <input
+                    autoFocus
+                    className={styles.keywordInput}
+                    disabled={!isEditable}
+                    maxLength={80}
+                    value={keywordDraft}
+                    onBlur={commitKeywordDraft}
+                    onChange={(event) => setKeywordDraft(event.target.value)}
+                    onKeyDown={handleKeywordKeyDown}
+                  />
+                ) : (
+                  <button
+                    aria-label="Добавить ключевое слово"
+                    className={styles.addKeyword}
+                    disabled={!isEditable}
+                    type="button"
+                    onClick={() => setIsAddingKeyword(true)}
+                  >
+                    <Plus size={16} />
                   </button>
                 )}
-                <button
-                  className={styles.saveButton}
-                  disabled={isSaving || !isEditable}
-                  type="submit"
-                >
-                  {isSaving ? "Сохраняю" : "Сохранить"}
-                </button>
               </div>
-            </form>
+            </fieldset>
+
+            {error && <p className={styles.errorText}>{error}</p>}
+
+            <div className={styles.dialogActions}>
+              {editingCategory && editingCategory.isDefault === false && (
+                <button
+                  className={styles.deleteButton}
+                  disabled={isSaving}
+                  type="button"
+                  onClick={handleDelete}
+                >
+                  <Trash2 size={17} />
+                  {isConfirmingDelete ? "Подтвердить удаление" : "Удалить"}
+                </button>
+              )}
+              <button
+                className={styles.saveButton}
+                disabled={isSaving || !isEditable}
+                type="submit"
+              >
+                {isSaving ? "Сохраняю" : "Сохранить"}
+              </button>
+            </div>
+          </form>
         </Dialog>
       )}
     </section>

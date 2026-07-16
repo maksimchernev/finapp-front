@@ -41,8 +41,8 @@ jest.mock("@/features/review-transactions/ui/DraftCard", () => ({
     ),
 }));
 
-jest.mock("@/shared/ui/HeaderWithBack", () => ({
-  HeaderWithBack: ({
+jest.mock("@/shared/ui/PageHeader", () => ({
+  PageHeader: ({
     action,
     title,
     subtitle,

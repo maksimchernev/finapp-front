@@ -18,6 +18,7 @@ import { formatDashboardMoney } from "@/pages/dashboard/lib/moneyVisibility";
 import { getSelectedCurrency } from "@/shared/lib/currencySwitcher";
 import { CurrencySwitcher } from "@/shared/ui/CurrencySwitcher";
 import { EmptyState } from "@/shared/ui/EmptyState";
+import { PageHeader } from "@/shared/ui/PageHeader";
 import { CategoryRow } from "@/widgets/category-summary/ui/CategoryRow";
 import { TransactionRow } from "@/widgets/transaction-list/ui/TransactionRow";
 import styles from "@/pages/dashboard/ui/DashboardPage.module.scss";
@@ -80,23 +81,23 @@ export function DashboardPage({
 
   return (
     <section className={styles.screen}>
-      <header className={styles.topbar}>
-        <div>
-          <span className={styles.eyebrow}>summa</span>
-          <h2>Всё на месте</h2>
-          <span className={styles.eyebrow}>
-            {user?.name
-              ? `${user.name}, доходы и расходы обновлены`
-              : "Доходы и расходы обновлены"}
-          </span>
-        </div>
-        <CurrencySwitcher
-          currencies={availableCurrencies}
-          value={selectedDashboardCurrency}
-          label="Валюта"
-          onChange={setDashboardCurrency}
-        />
-      </header>
+      <PageHeader
+        eyebrow="summa"
+        title="Всё на месте"
+        subtitle={
+          user?.name
+            ? `${user.name}, доходы и расходы обновлены`
+            : "Доходы и расходы обновлены"
+        }
+        action={
+          <CurrencySwitcher
+            currencies={availableCurrencies}
+            value={selectedDashboardCurrency}
+            label="Валюта"
+            onChange={setDashboardCurrency}
+          />
+        }
+      />
 
       <section className={styles.balanceCard}>
         <div className={styles.balanceRow}>
