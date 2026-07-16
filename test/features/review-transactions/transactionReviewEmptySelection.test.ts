@@ -23,6 +23,10 @@ const unselectedDraft: ParsedTransaction = {
 };
 
 describe("useTransactionReview", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it("treats saving with no selected transactions as discarding the job", async () => {
     const onSaved = jest.fn();
     let review!: ReturnType<typeof useTransactionReview>;
@@ -78,5 +82,28 @@ describe("useTransactionReview", () => {
       }),
     ]);
     expect(onSaved).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not submit a selected draft with an empty amount", async () => {
+    const onSaved = jest.fn();
+    let review!: ReturnType<typeof useTransactionReview>;
+
+    function Harness() {
+      review = useTransactionReview({ onSaved });
+      return null;
+    }
+
+    renderToStaticMarkup(React.createElement(Harness));
+
+    await review.saveDrafts([
+      {
+        ...unselectedDraft,
+        amount: "",
+        selected: true,
+      },
+    ]);
+
+    expect(transactionApi.createTransactions).not.toHaveBeenCalled();
+    expect(onSaved).not.toHaveBeenCalled();
   });
 });

@@ -7,7 +7,10 @@ import {
   applyReviewBankToDrafts,
   ReviewPage,
 } from "@/pages/review/ui/ReviewPage";
-import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
+import type {
+  ParsedTransaction,
+  ReviewTransactionDraft,
+} from "@/features/upload-screenshots/model/types";
 
 jest.mock(
   "@/pages/review/ui/ReviewPage.module.scss",
@@ -214,7 +217,7 @@ describe("ReviewPage", () => {
   });
 
   it("applies the selected bank to every draft in the current review", () => {
-    const updates: Array<[string, Partial<ParsedTransaction>]> = [];
+    const updates: Array<[string, Partial<ReviewTransactionDraft>]> = [];
     applyReviewBankToDrafts(
       [
         { ...unselectedDraft, localId: "draft-1" },
@@ -276,6 +279,31 @@ describe("ReviewPage", () => {
           },
         ],
         banks: [],
+        categories: [],
+        isSaving: false,
+        onBack: () => undefined,
+        onSave: () => undefined,
+        onUpdate: () => undefined,
+      }),
+    );
+
+    expect(html).toContain('disabled=""');
+  });
+
+  it.each(["", 0])("disables saving when a selected draft has amount %p", (amount) => {
+    const html = renderToStaticMarkup(
+      React.createElement(ReviewPage, {
+        drafts: [
+          {
+            ...unselectedDraft,
+            amount: amount as ReviewTransactionDraft["amount"],
+            bankId: "bank-1",
+            categoryId: "category-1",
+            date: "2026-07-02",
+            selected: true,
+          },
+        ],
+        banks: [bank],
         categories: [],
         isSaving: false,
         onBack: () => undefined,

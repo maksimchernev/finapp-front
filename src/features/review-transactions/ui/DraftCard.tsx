@@ -3,7 +3,7 @@ import clsx from "clsx";
 import type { Ref } from "react";
 import type { Category } from "@/entities/category/model/types";
 import { dateOnlyToIso, toDateInput } from "@/entities/transaction/lib/format";
-import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
+import type { ReviewTransactionDraft } from "@/features/upload-screenshots/model/types";
 import styles from "@/features/review-transactions/ui/DraftCard.module.scss";
 
 export function DraftCard({
@@ -16,12 +16,12 @@ export function DraftCard({
   onUpdate,
 }: {
   cardRef?: Ref<HTMLElement>;
-  draft: ParsedTransaction;
+  draft: ReviewTransactionDraft;
   categories: Category[];
   isManual?: boolean;
   onDelete?: (localId: string) => void;
   onOpenCategories?: () => void;
-  onUpdate: (localId: string, patch: Partial<ParsedTransaction>) => void;
+  onUpdate: (localId: string, patch: Partial<ReviewTransactionDraft>) => void;
 }) {
   const isDateMissing = !draft.date;
   const isCategoryMissing = draft.selected && !draft.categoryId;
@@ -71,7 +71,11 @@ export function DraftCard({
             type="number"
             step="0.01"
             value={draft.amount}
-            onChange={(event) => onUpdate(draft.localId, { amount: Number(event.target.value) })}
+            onChange={(event) =>
+              onUpdate(draft.localId, {
+                amount: event.target.value === "" ? "" : Number(event.target.value),
+              })
+            }
           />
         </label>
         <label>

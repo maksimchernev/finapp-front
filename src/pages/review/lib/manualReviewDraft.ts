@@ -1,4 +1,4 @@
-import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
+import type { ReviewTransactionDraft } from "@/features/upload-screenshots/model/types";
 
 export function createManualReviewDraft({
   bankId,
@@ -8,7 +8,7 @@ export function createManualReviewDraft({
   bankId?: string;
   localId?: string;
   sourceFile: string;
-}): ParsedTransaction {
+}): ReviewTransactionDraft {
   return {
     localId,
     amount: 0,
@@ -23,7 +23,7 @@ export function createManualReviewDraft({
   };
 }
 
-export function getReviewDraftBankId(drafts: ParsedTransaction[]) {
+export function getReviewDraftBankId(drafts: ReviewTransactionDraft[]) {
   const bankIds = new Set(drafts.map((draft) => draft.bankId || ""));
   if (bankIds.size !== 1) return undefined;
 
@@ -31,7 +31,7 @@ export function getReviewDraftBankId(drafts: ParsedTransaction[]) {
   return bankId || undefined;
 }
 
-export function isManualReviewDraft(draft: ParsedTransaction) {
+export function isManualReviewDraft(draft: ReviewTransactionDraft) {
   return draft.localId.startsWith("manual-");
 }
 

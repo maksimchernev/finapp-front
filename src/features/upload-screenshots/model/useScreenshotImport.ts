@@ -5,6 +5,7 @@ import type { Category } from "@/entities/category/model/types";
 import { recognizeTransactions } from "@/features/upload-screenshots/lib/ocr";
 import type {
   ParsedTransaction,
+  ReviewTransactionDraft,
   UploadJob,
 } from "@/features/upload-screenshots/model/types";
 import {
@@ -135,11 +136,11 @@ export function useScreenshotImport({
     );
   }
 
-  function updateDraft(jobId: string, localId: string, patch: Partial<ParsedTransaction>) {
+  function updateDraft(jobId: string, localId: string, patch: Partial<ReviewTransactionDraft>) {
     setJobs((current) => updateUploadJobDraft(current, jobId, localId, patch));
   }
 
-  function addDraft(jobId: string, draft: ParsedTransaction) {
+  function addDraft(jobId: string, draft: ReviewTransactionDraft) {
     setJobs((current) => appendDraftToUploadJob(current, jobId, draft));
   }
 
