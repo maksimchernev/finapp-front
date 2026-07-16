@@ -289,13 +289,27 @@ export function TransactionsPage({
       )}
 
       <section className={styles.transactionListShell}>
-        {!isSelectionMode && (
-          <div className={styles.filterSticky}>
-            <button className={styles.filterTrigger} type="button" onClick={openFilterDialog}>
-              Отфильтровать{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""}
-            </button>
-          </div>
-        )}
+            {!isSelectionMode && groups.length > 0 && (
+              <div className={styles.filterSticky}>
+                <button className={styles.filterTrigger} type="button" onClick={openFilterDialog}>
+                  Отфильтровать{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""}
+                </button>
+              </div>
+            )}
+            {!isSelectionMode && !isInitialLoading && !listError && groups.length === 0 && activeFilterCount > 0 && (
+              <div className={styles.filterEmptyRow}>
+                <button
+                  className={styles.filterTextButton}
+                  type="button"
+                  onClick={() => {
+                    setFilters(emptyTransactionFilters);
+                    setDraftFilters(emptyTransactionFilters);
+                  }}
+                >
+                  Сбросить фильтры
+                </button>
+              </div>
+            )}
         <section className={styles.transactionList}>
         {listError ? (
           <div className={styles.listStatus} role="alert">
@@ -307,7 +321,11 @@ export function TransactionsPage({
         ) : isInitialLoading ? (
           <p className={styles.listStatus}>Загружаем операции…</p>
         ) : transactions.length === 0 ? (
-          <EmptyState text="Пока нет сохраненных операций." />
+            <EmptyState
+              text={activeFilterCount > 0
+                ? "По выбранным фильтрам ничего не найдено."
+                : "Пока нет сохраненных операций."}
+            />
         ) : (
           groups.map((group) => (
             <section className={styles.dateGroup} key={group.key}>

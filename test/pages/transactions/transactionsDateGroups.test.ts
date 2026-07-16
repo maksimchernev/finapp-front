@@ -32,4 +32,13 @@ describe("TransactionsPage date groups", () => {
     expect(source.slice(source.indexOf("groups.map((group)"), source.indexOf("<div aria-hidden")))
       .not.toContain("styles.filterTrigger");
   });
+
+  test("shows a direct reset instead of the filter dialog trigger for empty filtered results", () => {
+    expect(source).toContain("groups.length > 0");
+    expect(source).toContain("activeFilterCount > 0");
+    expect(source).toContain("styles.filterEmptyRow");
+    expect(source).toContain("Сбросить фильтры");
+    expect(source).toContain("По выбранным фильтрам ничего не найдено.");
+    expect(styles).toMatch(/\.filterEmptyRow\s*\{[^}]*display:\s*flex;[^}]*justify-content:\s*flex-end;/s);
+  });
 });

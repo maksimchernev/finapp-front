@@ -114,10 +114,6 @@
 }
 
 .filterTrigger {
-  position: absolute;
-  z-index: 3;
-  top: 6px;
-  right: 2px;
   border: 0;
   padding: 0;
   color: var(--text-muted);
@@ -125,6 +121,21 @@
   font: inherit;
   font-size: 13px;
   font-weight: 800;
+}
+
+.filterTrigger {
+  position: absolute;
+  z-index: 3;
+  top: 6px;
+  right: 2px;
+}
+
+.filterEmptyRow {
+  display: flex;
+  justify-content: flex-end;
+  min-height: 28px;
+  margin-bottom: 11px;
+  padding: 6px 2px;
 }
 
 .filterSticky {
