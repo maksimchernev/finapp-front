@@ -1,4 +1,5 @@
 import {
+  countActiveTransactionFilters,
   setTransactionStartDate,
   toTransactionListQuery,
   validateTransactionFilters,
@@ -32,5 +33,14 @@ describe("transaction filters", () => {
       .toBe("2026-07-08");
     expect(setTransactionStartDate({ ...base, endDate: "2026-07-12" }, "2026-07-08").endDate)
       .toBe("2026-07-12");
+  });
+
+  test("counts active filter fields", () => {
+    expect(countActiveTransactionFilters({
+      startDate: "2026-07-08",
+      endDate: "2026-07-08",
+      bankId: "bank-a",
+      categoryId: "",
+    })).toBe(3);
   });
 });

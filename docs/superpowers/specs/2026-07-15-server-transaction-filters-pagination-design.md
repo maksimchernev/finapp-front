@@ -59,12 +59,15 @@ After a transaction is updated or deleted, the page resets and reloads the curre
 
 ## Operations Page UI
 
-The filter area provides:
+The operations page provides a compact text-style `Отфильтровать` trigger. It opens a small dialog containing:
 
 - start and end date inputs;
 - a single bank selector with an `All banks` option;
 - a single category selector with an `All categories` option;
-- a reset action when at least one filter is active.
+- a text-style `Сбросить` action at the top right;
+- a primary `Применить` action at the bottom.
+
+The trigger and reset actions match the Review page field-label action style: no border or padding, transparent background, accent text, inherited font, and 800 font weight. The apply action keeps the existing primary green button style. Dialog fields are drafts: closing the dialog discards edits, while applying commits all four filters, closes the dialog, resets pagination, and sends one server request. Reset clears only the draft until Apply is pressed. The trigger displays the active filter count when non-zero.
 
 The frontend prevents applying an invalid date range and displays a concise inline message. The backend remains the authoritative validator.
 

@@ -11,15 +11,19 @@ describe("TransactionsPage server filtering", () => {
     "utf8",
   );
 
-  test("offers an inclusive period, one bank, one category, and reset", () => {
+  test("opens draft filters in a compact dialog", () => {
     expect(source).toContain('type="date"');
-    expect(source).toContain("value={filters.startDate}");
-    expect(source).toContain("value={filters.endDate}");
-    expect(source).toContain("min={filters.startDate || undefined}");
+    expect(source).toContain("Отфильтровать");
+    expect(source).toContain("isFilterDialogOpen");
+    expect(source).toContain("value={draftFilters.startDate}");
+    expect(source).toContain("value={draftFilters.endDate}");
+    expect(source).toContain("min={draftFilters.startDate || undefined}");
     expect(source).toContain("setTransactionStartDate(current, event.target.value)");
     expect(source).toContain("Все банки");
     expect(source).toContain("Все категории");
     expect(source).toContain("Сбросить");
+    expect(source).toContain("Применить");
+    expect(source).toContain("setFilters(draftFilters)");
     expect(source).toContain("usePaginatedTransactions(filters)");
   });
 

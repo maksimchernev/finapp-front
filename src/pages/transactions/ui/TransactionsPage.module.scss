@@ -109,14 +109,56 @@
   min-width: 0;
 }
 
-.filters {
+.filterTextButton {
+  justify-self: end;
+  border: 0;
+  padding: 0;
+  color: var(--accent-a);
+  background: transparent;
+  font: inherit;
+  font-weight: 800;
+}
+
+.filterDialog {
+  max-width: 420px;
+}
+
+.filterDialogHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  span {
+    display: block;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  h3 {
+    margin: 4px 0 0;
+    font-size: 20px;
+    line-height: 1.2;
+  }
+}
+
+.filterForm {
+  display: grid;
+  gap: 16px;
+
+  > button {
+    width: 100%;
+  }
+}
+
+.filterFields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
 
   label {
     display: grid;
@@ -139,17 +181,6 @@
     background: var(--surface);
     font: inherit;
   }
-}
-
-.resetFilters {
-  grid-column: 1 / -1;
-  min-height: 40px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  color: var(--accent-a);
-  background: var(--surface-muted);
-  font: inherit;
-  font-weight: 800;
 }
 
 .dateGroup {
@@ -193,16 +224,6 @@
     background: var(--surface);
     font: inherit;
     font-weight: 800;
-  }
-}
-
-@media (min-width: 720px) {
-  .filters {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .resetFilters {
-    grid-column: auto;
   }
 }
 

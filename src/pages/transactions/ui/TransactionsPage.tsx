@@ -19,6 +19,7 @@ import {
   toggleSelectedId,
 } from "@/pages/transactions/lib/transactionSelection";
 import {
+  countActiveTransactionFilters,
   emptyTransactionFilters,
   setTransactionStartDate,
   type TransactionFilters,
@@ -45,6 +46,8 @@ export function TransactionsPage({
   ) => Promise<Transaction>;
 }) {
   const [filters, setFilters] = useState<TransactionFilters>(emptyTransactionFilters);
+  const [draftFilters, setDraftFilters] = useState<TransactionFilters>(emptyTransactionFilters);
+  const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
   const {
     transactions,
     hasMore,
@@ -71,6 +74,7 @@ export function TransactionsPage({
   const [error, setError] = useState<string | null>(null);
   const transactionIds = transactions.map((transaction) => transaction.id);
   const areAllSelected = areAllIdsSelected(selectedIds, transactionIds);
+  const activeFilterCount = countActiveTransactionFilters(filters);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -85,7 +89,18 @@ export function TransactionsPage({
   }, [hasMore, isInitialLoading, isLoadingMore, loadMore, loadMoreError]);
 
   function updateFilter(key: keyof TransactionFilters, value: string) {
-    setFilters((current) => ({ ...current, [key]: value }));
+    setDraftFilters((current) => ({ ...current, [key]: value }));
+  }
+
+  function openFilterDialog() {
+    setDraftFilters(filters);
+    setIsFilterDialogOpen(true);
+  }
+
+  function applyFilters(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFilters(draftFilters);
+    setIsFilterDialogOpen(false);
     setSelectedIds(new Set());
     setIsSelectionMode(false);
   }
@@ -262,48 +277,9 @@ export function TransactionsPage({
       )}
 
       {!isSelectionMode && (
-        <section className={styles.filters} aria-label="Фильтры операций">
-          <label>
-            С
-            <input
-              type="date"
-              value={filters.startDate}
-              onChange={(event) => {
-                setFilters((current) => setTransactionStartDate(current, event.target.value));
-                setSelectedIds(new Set());
-                setIsSelectionMode(false);
-              }}
-            />
-          </label>
-          <label>
-            По
-            <input
-              min={filters.startDate || undefined}
-              type="date"
-              value={filters.endDate}
-              onChange={(event) => updateFilter("endDate", event.target.value)}
-            />
-          </label>
-          <label>
-            Банк
-            <select value={filters.bankId} onChange={(event) => updateFilter("bankId", event.target.value)}>
-              <option value="">Все банки</option>
-              {banks.map((bank) => <option key={bank.id} value={bank.id}>{bank.name}</option>)}
-            </select>
-          </label>
-          <label>
-            Категория
-            <select value={filters.categoryId} onChange={(event) => updateFilter("categoryId", event.target.value)}>
-              <option value="">Все категории</option>
-              {categories.map((category) => <option key={category.id} value={category.id}>{category.nameRu}</option>)}
-            </select>
-          </label>
-          {Object.values(filters).some(Boolean) && (
-            <button className={styles.resetFilters} type="button" onClick={() => setFilters(emptyTransactionFilters)}>
-              Сбросить
-            </button>
-          )}
-        </section>
+        <button className={styles.filterTextButton} type="button" onClick={openFilterDialog}>
+          Отфильтровать{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""}
+        </button>
       )}
 
       {isSelectionMode && (
@@ -360,6 +336,66 @@ export function TransactionsPage({
           </div>
         )}
       </section>
+
+      {isFilterDialogOpen && (
+        <Dialog
+          ariaLabelledBy="transaction-filter-title"
+          backdropClassName={styles.backdrop}
+          className={clsx(styles.dialog, styles.filterDialog)}
+          onClose={() => setIsFilterDialogOpen(false)}
+        >
+          <header className={styles.filterDialogHeader}>
+            <div>
+              <span>операции</span>
+              <h3 id="transaction-filter-title">Фильтры</h3>
+            </div>
+            <button
+              className={styles.filterTextButton}
+              type="button"
+              onClick={() => setDraftFilters(emptyTransactionFilters)}
+            >
+              Сбросить
+            </button>
+          </header>
+          <form className={styles.filterForm} onSubmit={applyFilters}>
+            <div className={styles.filterFields}>
+              <label>
+                С
+                <input
+                  type="date"
+                  value={draftFilters.startDate}
+                  onChange={(event) => setDraftFilters((current) =>
+                    setTransactionStartDate(current, event.target.value))}
+                />
+              </label>
+              <label>
+                По
+                <input
+                  min={draftFilters.startDate || undefined}
+                  type="date"
+                  value={draftFilters.endDate}
+                  onChange={(event) => updateFilter("endDate", event.target.value)}
+                />
+              </label>
+              <label>
+                Банк
+                <select value={draftFilters.bankId} onChange={(event) => updateFilter("bankId", event.target.value)}>
+                  <option value="">Все банки</option>
+                  {banks.map((bank) => <option key={bank.id} value={bank.id}>{bank.name}</option>)}
+                </select>
+              </label>
+              <label>
+                Категория
+                <select value={draftFilters.categoryId} onChange={(event) => updateFilter("categoryId", event.target.value)}>
+                  <option value="">Все категории</option>
+                  {categories.map((category) => <option key={category.id} value={category.id}>{category.nameRu}</option>)}
+                </select>
+              </label>
+            </div>
+            <button className={styles.primaryButton} type="submit">Применить</button>
+          </form>
+        </Dialog>
+      )}
 
       {isBulkDeleteOpen && (
         <Dialog

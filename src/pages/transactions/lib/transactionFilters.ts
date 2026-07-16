@@ -14,6 +14,10 @@ export const emptyTransactionFilters: TransactionFilters = {
   categoryId: "",
 };
 
+export function countActiveTransactionFilters(filters: TransactionFilters) {
+  return Object.values(filters).filter(Boolean).length;
+}
+
 export function setTransactionStartDate(
   filters: TransactionFilters,
   startDate: string,
