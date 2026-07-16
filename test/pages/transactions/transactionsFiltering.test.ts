@@ -15,6 +15,8 @@ describe("TransactionsPage server filtering", () => {
     expect(source).toContain('type="date"');
     expect(source).toContain("value={filters.startDate}");
     expect(source).toContain("value={filters.endDate}");
+    expect(source).toContain("min={filters.startDate || undefined}");
+    expect(source).toContain("setTransactionStartDate(current, event.target.value)");
     expect(source).toContain("Все банки");
     expect(source).toContain("Все категории");
     expect(source).toContain("Сбросить");

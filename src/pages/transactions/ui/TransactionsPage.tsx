@@ -20,6 +20,7 @@ import {
 } from "@/pages/transactions/lib/transactionSelection";
 import {
   emptyTransactionFilters,
+  setTransactionStartDate,
   type TransactionFilters,
 } from "@/pages/transactions/lib/transactionFilters";
 import { groupTransactionsByLocalDate } from "@/pages/transactions/lib/transactionGroups";
@@ -264,11 +265,24 @@ export function TransactionsPage({
         <section className={styles.filters} aria-label="Фильтры операций">
           <label>
             С
-            <input type="date" value={filters.startDate} onChange={(event) => updateFilter("startDate", event.target.value)} />
+            <input
+              type="date"
+              value={filters.startDate}
+              onChange={(event) => {
+                setFilters((current) => setTransactionStartDate(current, event.target.value));
+                setSelectedIds(new Set());
+                setIsSelectionMode(false);
+              }}
+            />
           </label>
           <label>
             По
-            <input type="date" value={filters.endDate} onChange={(event) => updateFilter("endDate", event.target.value)} />
+            <input
+              min={filters.startDate || undefined}
+              type="date"
+              value={filters.endDate}
+              onChange={(event) => updateFilter("endDate", event.target.value)}
+            />
           </label>
           <label>
             Банк

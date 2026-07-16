@@ -14,6 +14,19 @@ export const emptyTransactionFilters: TransactionFilters = {
   categoryId: "",
 };
 
+export function setTransactionStartDate(
+  filters: TransactionFilters,
+  startDate: string,
+): TransactionFilters {
+  return {
+    ...filters,
+    startDate,
+    endDate: startDate && (!filters.endDate || filters.endDate < startDate)
+      ? startDate
+      : filters.endDate,
+  };
+}
+
 function localMidnightIso(value: string, addDays = 0) {
   const [year, month, day] = value.split("-").map(Number);
   return new Date(year, month - 1, day + addDays).toISOString();
