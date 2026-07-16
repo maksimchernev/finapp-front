@@ -110,10 +110,10 @@ IP DEMOFOOD -2739,73 Р
 
 const cashbackUnderPurchaseRawText = `История
 3 июня
-Золотое Яблоко -2 000 ₽
+DEMO BEAUTY -2 000 ₽
 Красота +20 ₽
 2 июня
-Мясная кухня -344 ₽
+DEMO KITCHEN -344 ₽
 ИК Продукты +3 ₽`;
 
 const digitalBankRawText = `15:27 94 RC HHA 297
@@ -156,9 +156,9 @@ DEMO MARKET -737,93 Р`;
 
 const relativeDateHeadersWithCalendarRawText = `История
 Сегодня, 20 июня -533 2
-Максим Денисович Ч. -4 162 ₽
+Тест Получатель А. -4 162 ₽
 Между счетами
-© Самокат -533 Р
+© DEMO GROCERY -533 Р
 Супермаркеты
 Вчера, 24 июня
 Банкомат +4 100 ₽
@@ -167,30 +167,30 @@ const relativeDateHeadersWithCalendarRawText = `История
 const ozonRelativeDateRawText = `13:14 А THAR СЕ
 История А AQ
 Сегодня, 5 июля -533 2
-Максим Денисович Ч. -4162 Р
+Тест Получатель А. -4162 Р
 
 банк
 Между счетами
-© Самокат -533 Р
+© DEMO GROCERY -533 Р
 Супермаркеты +25 @
 Вчера, 2 июля
 Банкомат +4100 Р
 Операции с наличными
 25 июня
-Максим Денисович Ч +62 Р
+Тест Получатель А +62 Р
 банк
 Входящие переводы
-© VK*Parking-NN -61,50 Р
+© DEMO*PARKING -61,50 Р
 Операция отклонена Ф
 22 июня -2 459 Р
-© Автодор -2 459 Р
+© DEMO ROAD -2 459 Р
 Государственные услуги
-Оплата по УИН 0412479001000022087609295
-Максим Денисович Ч +2 459 Р
+Оплата по УИН 0000000000000000000000000
+Тест Получатель А +2 459 Р
 банк
 Входящие переводы
 17 июня -131P
-© UDACHNYY —-131 Р
+© DEMO MARKET —-131 Р
 Супермаркеты`;
 
 const xplatFastFoodRawText = `Операции
@@ -207,6 +207,13 @@ TESTRECIPIENTA - 12 345Р
 Вчера
 Перевод между счетами 4 100Р
 Ежедневный доход > Основной счёт`;
+
+const ownAccountsRawText = `История
+Сегодня
+Списание -500Р
+Между своими счетами
+DEMO MARKET -100Р
+Продукты`;
 
 const cardHistoryRawText = `Поиск
 Платёжный счёт •• 0000 Тип операции Период
@@ -237,11 +244,11 @@ a oo
 a oo
 Что показывать Vv Период v Карта или счёт м Cyt
 Buepa
-у, Максим Денисович Ч 3 901 Р
+у, Тест Получатель А 3 901 Р
 Перевод по CBI
 Платёжный счёт: 0 P
 1 июля, ср
-$ Людмила Геннадьевна Ч. +3 900 Р
+$ Тест Отправитель Б. +3 900 Р
 Входящий перевод
 Платёжный счёт: 3 901 Р
 29 июня, пн
@@ -277,11 +284,11 @@ const forintBankRawText = `Февраль Март Апрель Май Июнь
 25 июня -9 938 Ft
 TESTSENDER -6 500 Ft
 21:25 GIF
-McDonald's -790 Ft
+DEMO PIZZA -790 Ft
 20:42
-Lime -3 708 Ft
+DEMO SHOP -3 708 Ft
 20:38
-Maxsport Catering -990 Ft
+DEMO CATERING -990 Ft
 19:03
 TESTRECIPIENTA +750 Ft
 17:05 GIF
@@ -297,7 +304,7 @@ TESTRECIPIENTB +10 000 Ft
 const forintInlineMetaRawText = `Февраль Март Апрель Май Июнь
 25 июня -9 938 Ft
 TESTSENDER -6 500 Ft 21:25 GIF
-McDonald's -790 Ft 20:42`;
+DEMO PIZZA -790 Ft 20:42`;
 
 const seedLikeCategories: Category[] = [
   {
@@ -459,8 +466,8 @@ describe("OCR bank history parser", () => {
     expect(
       result.map(({ merchant, amount }) => ({ merchant, amount })),
     ).toEqual([
-      { merchant: "Золотое Яблоко", amount: -2000 },
-      { merchant: "Мясная кухня", amount: -344 },
+      { merchant: "DEMO BEAUTY", amount: -2000 },
+      { merchant: "DEMO KITCHEN", amount: -344 },
     ]);
   });
 
@@ -518,8 +525,8 @@ describe("OCR bank history parser", () => {
     expect(
       result.map(({ merchant, amount }) => ({ merchant, amount })),
     ).toEqual([
-      { merchant: "Максим Денисович Ч.", amount: -4162 },
-      { merchant: "Самокат", amount: -533 },
+      { merchant: "Тест Получатель А.", amount: -4162 },
+      { merchant: "DEMO GROCERY", amount: -533 },
       { merchant: "Банкомат", amount: 4100 },
     ]);
     expect(result.map((transaction) => transaction.date.slice(0, 10))).toEqual([
@@ -529,7 +536,7 @@ describe("OCR bank history parser", () => {
     ]);
   });
 
-  it("extracts samokat from ozon raw OCR under noisy today header", () => {
+  it("extracts a grocery purchase from noisy relative-date OCR", () => {
     const result = parseTransactions(
       ozonRelativeDateRawText,
       72,
@@ -540,8 +547,19 @@ describe("OCR bank history parser", () => {
     expect(result).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          merchant: "Самокат",
+          merchant: "DEMO GROCERY",
           amount: -533,
+          selected: true,
+        }),
+        expect.objectContaining({
+          merchant: "DEMO PARKING",
+          amount: -61.5,
+          selected: false,
+        }),
+        expect.objectContaining({
+          merchant: "Тест Получатель А",
+          amount: 62,
+          selected: false,
         }),
       ]),
     );
@@ -570,6 +588,22 @@ describe("OCR bank history parser", () => {
     ]);
   });
 
+  it("deselects operations marked as transfers between own accounts", () => {
+    const result = parseTransactions(
+      ownAccountsRawText,
+      72,
+      "own-accounts.png",
+      categories,
+    );
+
+    expect(
+      result.map(({ merchant, selected }) => ({ merchant, selected })),
+    ).toEqual([
+      { merchant: "Списание", selected: false },
+      { merchant: "DEMO MARKET", selected: true },
+    ]);
+  });
+
   it("keeps internal transfer rows as regular transactions", () => {
     const result = parseTransactions(
       internalTransfersRawText,
@@ -584,6 +618,11 @@ describe("OCR bank history parser", () => {
       { merchant: "TESTRECIPIENTA", amount: -12345 },
       { merchant: "Перевод между счетами", amount: -12345 },
       { merchant: "Перевод между счетами", amount: -4100 },
+    ]);
+    expect(result.map((transaction) => transaction.selected)).toEqual([
+      false,
+      false,
+      false,
     ]);
   });
 
@@ -626,8 +665,8 @@ describe("OCR bank history parser", () => {
     );
 
     expect(result.map(({ merchant, amount }) => ({ merchant, amount }))).toEqual([
-      { merchant: "Максим Денисович Ч", amount: -3901 },
-      { merchant: "Людмила Геннадьевна Ч.", amount: 3900 },
+      { merchant: "Тест Получатель А", amount: -3901 },
+      { merchant: "Тест Отправитель Б.", amount: 3900 },
     ]);
     expect(result[0].date.slice(0, 10)).toBe("2026-06-25");
   });
@@ -687,9 +726,9 @@ describe("OCR bank history parser", () => {
       })),
     ).toEqual([
       { merchant: "TESTSENDER", amount: -6500, currency: "HUF" },
-      { merchant: "McDonald's", amount: -790, currency: "HUF" },
-      { merchant: "Lime", amount: -3708, currency: "HUF" },
-      { merchant: "Maxsport Catering", amount: -990, currency: "HUF" },
+      { merchant: "DEMO PIZZA", amount: -790, currency: "HUF" },
+      { merchant: "DEMO SHOP", amount: -3708, currency: "HUF" },
+      { merchant: "DEMO CATERING", amount: -990, currency: "HUF" },
       { merchant: "TESTRECIPIENTA", amount: 750, currency: "HUF" },
       { merchant: "TESTRECIPIENTB", amount: 1300, currency: "HUF" },
       { merchant: "TESTRECIPIENTA", amount: 5200, currency: "HUF" },
@@ -723,7 +762,7 @@ describe("OCR bank history parser", () => {
       })),
     ).toEqual([
       { merchant: "TESTSENDER", amount: -6500, currency: "HUF" },
-      { merchant: "McDonald's", amount: -790, currency: "HUF" },
+      { merchant: "DEMO PIZZA", amount: -790, currency: "HUF" },
     ]);
   });
 });

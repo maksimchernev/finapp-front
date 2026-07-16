@@ -110,11 +110,38 @@ export function parseBankHistoryRows(
       confidence,
       sourceFile: fileName,
       rawText,
-      selected: true,
+      selected: isHistoryTransactionSelectedByDefault(lines, index),
     });
   });
 
   return transactions;
+}
+
+const DEFAULT_UNSELECTED_HISTORY_PATTERNS = [
+  /операция\s+отклонена/i,
+  /(^|[^\p{L}])перевод(?:ы)?(?=$|[^\p{L}])/iu,
+  /между\s+своими\s+сч[её]тами/i,
+];
+
+// Читает строки текущего блока до следующей операции или даты.
+function isHistoryTransactionSelectedByDefault(
+  lines: string[],
+  index: number,
+) {
+  const blockLines = [lines[index]];
+
+  for (let nextIndex = index + 1; nextIndex < lines.length; nextIndex += 1) {
+    const nextLine = lines[nextIndex];
+    if (extractDateHeader(nextLine) || extractTrailingAmount(nextLine)) {
+      break;
+    }
+    blockLines.push(nextLine);
+  }
+
+  const blockText = blockLines.join(" ");
+  return !DEFAULT_UNSELECTED_HISTORY_PATTERNS.some((pattern) =>
+    pattern.test(blockText),
+  );
 }
 
 // Отличает кешбэк под покупкой от самостоятельной доходной операции.
