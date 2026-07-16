@@ -25,9 +25,9 @@ describe("TransactionsPage date groups", () => {
     expect(styles).toMatch(/\.dateHeading\s*\{[^}]*position:\s*sticky;/s);
     expect(styles).toContain("font-size: 13px");
     expect(styles).toContain("color: var(--text-muted)");
-    expect(styles).toContain("--transaction-list-gap: 11px");
-    expect(styles).toContain("margin-bottom: calc(0px - var(--transaction-list-gap))");
-    expect(source.indexOf("styles.filterSticky")).toBeLessThan(source.indexOf("groups.map((group)"));
+    expect(source).toContain("styles.transactionListShell");
+    expect(source.indexOf("styles.filterSticky")).toBeLessThan(source.indexOf("styles.transactionList}>"));
+    expect(styles).not.toContain("margin-bottom: calc(0px - var(--transaction-list-gap))");
     expect(source.slice(source.indexOf("groups.map((group)"), source.indexOf("<div aria-hidden")))
       .not.toContain("styles.filterTrigger");
   });

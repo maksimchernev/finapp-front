@@ -103,12 +103,13 @@
   background: var(--accent-a);
 }
 
-.transactionList {
-  --transaction-list-gap: 11px;
+.transactionListShell {
+  min-width: 0;
+}
 
-  position: relative;
+.transactionList {
   display: grid;
-  gap: var(--transaction-list-gap);
+  gap: 11px;
   min-width: 0;
 }
 
@@ -131,7 +132,6 @@
   z-index: 3;
   top: 82px;
   height: 0;
-  margin-bottom: calc(0px - var(--transaction-list-gap));
 }
 
 .filterTextButton {

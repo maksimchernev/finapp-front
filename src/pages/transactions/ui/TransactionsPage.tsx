@@ -288,7 +288,7 @@ export function TransactionsPage({
         </button>
       )}
 
-      <section className={styles.transactionList}>
+      <section className={styles.transactionListShell}>
         {!isSelectionMode && (
           <div className={styles.filterSticky}>
             <button className={styles.filterTrigger} type="button" onClick={openFilterDialog}>
@@ -296,6 +296,7 @@ export function TransactionsPage({
             </button>
           </div>
         )}
+        <section className={styles.transactionList}>
         {listError ? (
           <div className={styles.listStatus} role="alert">
             <p>{listError}</p>
@@ -338,6 +339,7 @@ export function TransactionsPage({
             <button type="button" onClick={retryLoadMore}>Повторить</button>
           </div>
         )}
+        </section>
       </section>
 
       {isFilterDialogOpen && (
