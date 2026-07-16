@@ -26,6 +26,8 @@ describe("TransactionsPage server filtering", () => {
     expect(source).toContain("Все банки");
     expect(source).toContain("Все категории");
     expect(source).toContain("Сбросить");
+    expect(source).toContain('aria-label="Закрыть фильтры"');
+    expect(source).toContain("styles.filterHeaderActions");
     expect(source).toContain("Применить");
     expect(source).toContain("styles.filterApplyButton");
     expect(styles).toMatch(/\.filterApplyButton\s*\{[^}]*min-height:\s*48px;[^}]*padding:\s*14px 18px;[^}]*border-radius:\s*8px;/s);

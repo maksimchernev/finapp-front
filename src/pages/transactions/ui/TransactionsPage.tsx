@@ -354,13 +354,23 @@ export function TransactionsPage({
               <span>операции</span>
               <h3 id="transaction-filter-title">Фильтры</h3>
             </div>
-            <button
-              className={styles.filterTextButton}
-              type="button"
-              onClick={() => setDraftFilters(emptyTransactionFilters)}
-            >
-              Сбросить
-            </button>
+            <div className={styles.filterHeaderActions}>
+              <button
+                className={styles.filterTextButton}
+                type="button"
+                onClick={() => setDraftFilters(emptyTransactionFilters)}
+              >
+                Сбросить
+              </button>
+              <button
+                aria-label="Закрыть фильтры"
+                className={styles.closeButton}
+                type="button"
+                onClick={() => setIsFilterDialogOpen(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
           </header>
           <form className={styles.filterForm} onSubmit={applyFilters}>
             <div className={styles.filterFields}>

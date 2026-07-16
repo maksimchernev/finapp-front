@@ -171,6 +171,12 @@
   }
 }
 
+.filterHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .filterForm {
   display: grid;
   gap: 16px;
