@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Check, CloudUpload, Plus, RotateCcw } from "lucide-react";
 import clsx from "clsx";
+import { formatBankLastImportedAt } from "@/entities/bank/lib/lastImportedAt";
 import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
 import type { CreateTransactionRequest } from "@/entities/transaction/api/transactionApi";
@@ -119,6 +120,24 @@ export function UploadPage({
                 job={job}
                 onReview={job.status === "done" ? onReview : undefined}
               />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className={styles.sectionBlock}>
+        <div className={styles.sectionTitle}>
+          <h3>Последняя загрузка по банкам</h3>
+        </div>
+        {banks.length === 0 ? (
+          <EmptyState text="Добавьте банк, чтобы отслеживать дату загрузки." />
+        ) : (
+          <div className={styles.bankImportList}>
+            {banks.map((bank) => (
+              <div className={styles.bankImportRow} key={bank.id}>
+                <b>{bank.name}</b>
+                <span>{formatBankLastImportedAt(bank.lastImportedAt)}</span>
+              </div>
             ))}
           </div>
         )}

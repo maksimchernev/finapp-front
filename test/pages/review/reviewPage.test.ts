@@ -79,6 +79,7 @@ const bank: Bank = {
   name: "T-Bank",
   normalizedName: "t-bank",
   keywords: [],
+  lastImportedAt: null,
   createdAt: "2026-07-02T00:00:00.000Z",
   updatedAt: "2026-07-02T00:00:00.000Z",
 };

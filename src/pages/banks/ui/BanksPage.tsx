@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Building2, Plus, X } from "lucide-react";
+import { formatBankLastImportedAt } from "@/entities/bank/lib/lastImportedAt";
 import type { Bank } from "@/entities/bank/model/types";
 import { Dialog } from "@/shared/ui/Dialog";
 import { PageHeader } from "@/shared/ui/PageHeader";
@@ -176,6 +177,12 @@ export function BanksPage({
                   {bank.keywords.length > 0
                     ? `Ключевые слова: ${bank.keywords.join(", ")}`
                     : "Нажмите, чтобы изменить"}
+                </p>
+                <p className={styles.lastImportedAt}>
+                  Последняя загрузка:{" "}
+                  {bank.lastImportedAt
+                    ? formatBankLastImportedAt(bank.lastImportedAt)
+                    : "ещё не было"}
                 </p>
               </div>
             </button>

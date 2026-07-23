@@ -1,5 +1,6 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { formatBankLastImportedAt } from "@/entities/bank/lib/lastImportedAt";
 import { UploadPage } from "@/pages/upload/ui/UploadPage";
 import type { UploadJob } from "@/features/upload-screenshots/model/types";
 
@@ -103,6 +104,7 @@ describe("UploadPage", () => {
             name: "Т-Банк",
             normalizedName: "т-банк",
             keywords: ["t-bank"],
+            lastImportedAt: null,
             createdAt: "2026-07-03T00:00:00.000Z",
             updatedAt: "2026-07-03T00:00:00.000Z",
           },
@@ -139,5 +141,63 @@ describe("UploadPage", () => {
     );
 
     expect(html).toContain('data-bank="Т-Банк"');
+  });
+
+  it("renders bank import timestamps after recent uploads", () => {
+    const importedAt = "2026-07-23T11:37:00.000Z";
+    const html = renderToStaticMarkup(
+      React.createElement(UploadPage, {
+        banks: [
+          {
+            id: "bank-1",
+            userId: "user-1",
+            name: "Т-Банк",
+            normalizedName: "т-банк",
+            keywords: ["t-bank"],
+            lastImportedAt: importedAt,
+            createdAt: "2026-07-03T00:00:00.000Z",
+            updatedAt: "2026-07-03T00:00:00.000Z",
+          },
+          {
+            id: "bank-2",
+            userId: "user-1",
+            name: "Альфа-Банк",
+            normalizedName: "альфа-банк",
+            keywords: ["альфа"],
+            lastImportedAt: null,
+            createdAt: "2026-07-03T00:00:00.000Z",
+            updatedAt: "2026-07-03T00:00:00.000Z",
+          },
+        ],
+        categories: [],
+        jobs: [],
+        onCreateManualTransaction: async () => undefined,
+        onFiles: () => undefined,
+        onResetRecent: () => undefined,
+        onReview: () => undefined,
+      }),
+    );
+
+    expect(html.indexOf("Последние загрузки")).toBeLessThan(
+      html.indexOf("Последняя загрузка по банкам"),
+    );
+    expect(html).toContain(formatBankLastImportedAt(importedAt));
+    expect(html).toContain("Ещё не загружали");
+  });
+
+  it("shows how to start tracking bank imports when no banks exist", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(UploadPage, {
+        banks: [],
+        categories: [],
+        jobs: [],
+        onCreateManualTransaction: async () => undefined,
+        onFiles: () => undefined,
+        onResetRecent: () => undefined,
+        onReview: () => undefined,
+      }),
+    );
+
+    expect(html).toContain("Добавьте банк, чтобы отслеживать дату загрузки.");
   });
 });

@@ -8,6 +8,7 @@ function bank(overrides: Partial<Bank>): Bank {
     name: "Пользовательский банк",
     normalizedName: "пользовательский банк",
     keywords: [],
+    lastImportedAt: null,
     createdAt: "2026-06-30T00:00:00.000Z",
     updatedAt: "2026-06-30T00:00:00.000Z",
     ...overrides,
