@@ -16,7 +16,6 @@ describe("TransactionsPage bulk delete UI", () => {
 
   test("provides selection mode and select-all controls", () => {
     expect(source).toContain("Изменить");
-    expect(source).toContain("isSticky={true}");
     expect(source).toContain("Готово");
     expect(source).toContain("Выбрать все");
     expect(source).toContain("toggleAllSelectedIds");
@@ -41,6 +40,10 @@ describe("TransactionsPage bulk delete UI", () => {
     expect(styles).toMatch(
       /\.headerSlot\s*\{[^}]*position:\s*sticky;[^}]*top:\s*0;/s,
     );
+    expect(styles).toMatch(
+      /\.headerSlot\s*\{[^}]*margin:\s*-18px -14px -12px;[^}]*padding:\s*18px 14px 12px;/s,
+    );
+    expect(source).not.toContain("isSticky={true}");
   });
 
   test("floats the icon-only delete action above the center of bottom navigation", () => {

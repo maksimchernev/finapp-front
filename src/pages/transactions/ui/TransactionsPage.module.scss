@@ -20,6 +20,8 @@
   position: sticky;
   top: 0;
   z-index: 4;
+  margin: -18px -14px -12px;
+  padding: 18px 14px 12px;
   background: var(--surface);
 }
 
@@ -39,7 +41,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 0 2px;
+  padding: 18px 14px 12px;
   background: var(--surface);
 }
 
@@ -133,7 +135,7 @@
 .filterSticky {
   position: sticky;
   z-index: 3;
-  top: 82px;
+  top: 95px;
   height: 0;
 }
 
@@ -240,9 +242,11 @@
 .dateHeading {
   position: sticky;
   z-index: 2;
-  top: 82px;
+  top: 95px;
   min-height: 28px;
   padding: 6px 2px;
+  margin: 0 -14px;
+  padding: 0 14px;
   background: var(--surface);
 }
 
