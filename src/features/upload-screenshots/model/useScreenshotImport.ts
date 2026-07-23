@@ -19,12 +19,10 @@ import {
 export function useScreenshotImport({
   banks,
   categories,
-  onCreateBank,
   onUploadStarted,
 }: {
   banks: Bank[];
   categories: Category[];
-  onCreateBank: (name: string, keywords?: string[]) => Promise<Bank>;
   onUploadStarted: () => void;
 }) {
   const [jobs, setJobs] = useState<UploadJob[]>([]);
@@ -77,8 +75,6 @@ export function useScreenshotImport({
 
     setJobs((current) => [...current, ...queuedJobs]);
 
-    const knownBanks = [...banks];
-
     for (const [index, file] of images.entries()) {
       const jobId = queuedJobs[index].id;
       updateJob(jobId, {
@@ -97,11 +93,10 @@ export function useScreenshotImport({
             });
           },
         );
-        const bankId = await resolveBankIdForFile(
-          knownBanks,
+        const bankId = resolveBankIdForFile(
+          banks,
           file.name,
           transactionsFromFile,
-          onCreateBank,
         );
         const transactionsWithBank = bankId
           ? transactionsFromFile.map((transaction) => ({
@@ -184,31 +179,11 @@ function normalizeFileName(fileName: string) {
   return fileName.trim().toLowerCase();
 }
 
-async function resolveBankIdForFile(
+function resolveBankIdForFile(
   banks: Bank[],
   fileName: string,
   transactions: ParsedTransaction[],
-  onCreateBank: (name: string, keywords?: string[]) => Promise<Bank>,
 ) {
   const rawText = transactions[0]?.rawText || "";
-  const detectedBank = detectBankFromOcr(banks, rawText, fileName);
-
-  if (detectedBank.bank) {
-    return detectedBank.bank.id;
-  }
-
-  if (!detectedBank.knownBank) {
-    return undefined;
-  }
-
-  try {
-    const bank = await onCreateBank(
-      detectedBank.knownBank.name,
-      detectedBank.knownBank.keywords,
-    );
-    banks.push(bank);
-    return bank.id;
-  } catch {
-    return undefined;
-  }
+  return detectBankFromOcr(banks, rawText, fileName)?.id;
 }

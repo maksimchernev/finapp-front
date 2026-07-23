@@ -65,7 +65,6 @@ export function WorkspacePage({
   const upload = useScreenshotImport({
     banks: finance.banks,
     categories: finance.categories,
-    onCreateBank: finance.createBank,
     onUploadStarted: () => {
       navigate(appRoutes.upload);
     },

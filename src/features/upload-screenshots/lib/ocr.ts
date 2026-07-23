@@ -1,4 +1,4 @@
-import Tesseract from "tesseract.js";
+import Tesseract, { PSM } from "tesseract.js";
 import type { Category } from "@/entities/category/model/types";
 import { TESSERACT_LANG_PATH } from "@/features/upload-screenshots/lib/ocr/constants";
 import { parseTransactions } from "@/features/upload-screenshots/lib/ocr/parser";
@@ -32,10 +32,45 @@ export async function recognizeTransactions(
     const worker = await getOcrWorker(onProgress);
     const result = await worker.recognize(file, {}, { text: true }, jobId);
     const confidence = Math.round(result.data.confidence || 0);
+    const headerText = await recognizeHeader(worker, file);
 
-    return parseTransactions(result.data.text, confidence, file.name, categories);
+    return parseTransactions(
+      [result.data.text, headerText].filter(Boolean).join("\n"),
+      confidence,
+      file.name,
+      categories,
+    );
   } finally {
     jobProgressHandlers.delete(jobId);
+  }
+}
+
+async function recognizeHeader(worker: OcrWorker, file: File) {
+  let bitmap: ImageBitmap | null = null;
+
+  try {
+    bitmap = await createImageBitmap(file);
+    await worker.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_LINE });
+    const result = await worker.recognize(
+      file,
+      {
+        rectangle: {
+          height: Math.max(1, Math.round(bitmap.height * 0.06)),
+          left: 0,
+          top: 0,
+          width: bitmap.width,
+        },
+      },
+      { text: true },
+    );
+    return result.data.text;
+  } catch {
+    return "";
+  } finally {
+    bitmap?.close();
+    await worker
+      .setParameters({ tessedit_pageseg_mode: PSM.AUTO })
+      .catch(() => undefined);
   }
 }
 
