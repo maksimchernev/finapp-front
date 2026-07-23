@@ -1,6 +1,7 @@
 import { useState, type FormEvent, type KeyboardEvent } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 import clsx from "clsx";
+import { AnimatePresence } from "motion/react";
 import type { Category } from "@/entities/category/model/types";
 import { CategoryIcon } from "@/entities/category/ui/CategoryIcon";
 import type { CategoryPayload } from "@/entities/transaction/api/transactionApi";
@@ -244,8 +245,9 @@ export function CategoriesPage({
         )}
       </section>
 
-      {form && (
-        <Dialog
+      <AnimatePresence>
+        {form && (
+          <Dialog
           ariaLabelledBy="category-edit-title"
           backdropClassName={styles.backdrop}
           className={styles.dialog}
@@ -427,8 +429,9 @@ export function CategoriesPage({
               </button>
             </div>
           </form>
-        </Dialog>
-      )}
+          </Dialog>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

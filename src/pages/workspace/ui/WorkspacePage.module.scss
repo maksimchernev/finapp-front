@@ -1,6 +1,10 @@
 .appShell {
   padding: 18px 14px 104px;
   position: relative;
+
+  .routeViewport {
+    width: 100%;
+  }
 }
 
 .centered {

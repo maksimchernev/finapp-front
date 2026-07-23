@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Building2, Plus, X } from "lucide-react";
+import { AnimatePresence } from "motion/react";
 import type { Bank } from "@/entities/bank/model/types";
 import { Dialog } from "@/shared/ui/Dialog";
 import { PageHeader } from "@/shared/ui/PageHeader";
@@ -183,8 +184,9 @@ export function BanksPage({
         )}
       </section>
 
-      {editingBank && (
-        <Dialog
+      <AnimatePresence>
+        {editingBank && (
+          <Dialog
           ariaLabelledBy="bank-edit-title"
           backdropClassName={styles.backdrop}
           className={styles.dialog}
@@ -231,8 +233,9 @@ export function BanksPage({
               {isUpdatingBank ? "Сохраняю" : "Сохранить"}
             </button>
           </form>
-        </Dialog>
-      )}
+          </Dialog>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
