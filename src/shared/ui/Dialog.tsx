@@ -43,7 +43,7 @@ export function Dialog({
       exit={{ opacity: 0 }}
       initial={{ opacity: 0 }}
       role="presentation"
-      transition={{ duration: 0.18 }}
+      transition={{ duration: 0.126 }}
       onMouseDown={onClose}
     >
       <motion.section
@@ -57,8 +57,8 @@ export function Dialog({
         role="dialog"
         transition={{
           bounce: 0,
-          damping: 36,
-          stiffness: 420,
+          damping: 51,
+          stiffness: 857,
           type: "spring",
         }}
         onMouseDown={(event) => event.stopPropagation()}

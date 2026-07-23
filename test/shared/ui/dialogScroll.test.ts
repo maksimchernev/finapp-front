@@ -56,11 +56,11 @@ describe("Dialog scroll behavior", () => {
 
     expect(source).toContain("<motion.div");
     expect(source).toContain("<motion.section");
-    expect(source).toContain("transition={{ duration: 0.18 }}");
+    expect(source).toContain("transition={{ duration: 0.126 }}");
     expect(source).toContain("scale: 0.96, y: 12");
     expect(source).toContain('type: "spring"');
-    expect(source).toContain("stiffness: 420");
-    expect(source).toContain("damping: 36");
+    expect(source).toContain("stiffness: 857");
+    expect(source).toContain("damping: 51");
     expect(source).toContain("bounce: 0");
   });
 

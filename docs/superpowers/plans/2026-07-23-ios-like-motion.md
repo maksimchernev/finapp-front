@@ -4,7 +4,7 @@
 
 **Goal:** Add restrained iOS-like transitions between application pages and to every shared dialog.
 
-**Architecture:** Keep route motion in `WorkspacePage` around the existing `Routes`, with a small pure helper that derives tab/push/pop direction from the previous and next locations. Keep dialog motion in the shared `Dialog` component and add `AnimatePresence` only at its existing conditional call sites so exit animations can finish.
+**Architecture:** Keep one shared route motion preset in `pageTransition.ts` and apply it to every keyed route viewport in `WorkspacePage`. Keep dialog motion in the shared `Dialog` component and add `AnimatePresence` only at its existing conditional call sites so exit animations can finish.
 
 **Tech Stack:** React 19, React Router 7, Motion for React (`motion/react`), TypeScript, Jest, SCSS modules.
 
@@ -13,28 +13,28 @@
 - Keep `BottomNav` mounted and stationary.
 - Do not animate the initial authenticated render.
 - Use `MotionConfig reducedMotion="user"`.
-- Primary transitions are about `220ms`; push/pop transitions are about `300ms`.
-- Dialog backdrop is about `180ms`; dialog uses a restrained low-bounce spring.
+- All primary and secondary page transitions use `110ms`.
+- Dialog backdrop is about `126ms`; dialog uses a restrained low-bounce spring
+  with stiffness `857` and damping `51`.
 - Preserve route semantics, dialog accessibility, click propagation, scroll reset, and page scroll restoration.
 - Do not add swipe gestures, shared-element transitions, parallax, bottom-nav motion, route preloading, or a custom animation framework.
 - Do not commit or push without explicit user permission.
 
 ---
 
-### Task 1: Route motion model
+### Task 1: Shared route motion
 
 **Files:**
 - Create: `src/pages/workspace/lib/pageTransition.ts`
 - Create: `test/pages/workspace/pageTransition.test.ts`
 
 **Interfaces:**
-- Produces: `getPageTransition(previous, next): PageTransitionKind`
-- Produces: `getPageTransitionMotion(kind): { initial; animate; exit; transition }`
-- Consumes: pathname plus optional React Router location state containing `returnTo`.
+- Produces: `getPageMotion(): { initial; animate; exit; transition }`
+- Consumes: no route hierarchy or navigation direction.
 
 - [ ] **Step 1: Write failing tests**
 
-Cover primary-to-primary `tab`, primary-to-secondary `push`, secondary-to-parent `pop`, review-to-reference `push`, reference-to-return route `pop`, and the exact offsets/durations from the spec.
+Cover the single shared opacity, `8px` offset, and `110ms` duration.
 
 - [ ] **Step 2: Verify RED**
 
@@ -44,16 +44,14 @@ Expected: FAIL because `pageTransition.ts` does not exist.
 
 - [ ] **Step 3: Implement the minimum pure model**
 
-Use explicit primary and secondary pathname sets. Treat a target reference page
-with `state.returnTo` as `push`, and treat leaving that reference page for its
-stored `returnTo` as `pop`. Return static motion values:
+Return one static motion value:
 
 ```ts
-type PageTransitionKind = "tab" | "push" | "pop";
-
-type TransitionLocation = {
-  pathname: string;
-  state?: unknown;
+const pageMotion = {
+  initial: { opacity: 0, x: 8 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -8 },
+  transition: { duration: 0.11, ease: "easeOut" },
 };
 ```
 
@@ -159,13 +157,13 @@ Use:
   initial={{ opacity: 0 }}
   animate={{ opacity: 1 }}
   exit={{ opacity: 0 }}
-  transition={{ duration: 0.18 }}
+  transition={{ duration: 0.126 }}
 >
   <motion.section
     initial={{ opacity: 0, scale: 0.96, y: 12 }}
     animate={{ opacity: 1, scale: 1, y: 0 }}
     exit={{ opacity: 0, scale: 0.98, y: 8 }}
-    transition={{ type: "spring", stiffness: 420, damping: 36, bounce: 0 }}
+    transition={{ type: "spring", stiffness: 857, damping: 51, bounce: 0 }}
   >
 ```
 
@@ -209,7 +207,7 @@ Expected: no whitespace errors, no unrelated changes, no commit or push.
 
 - [ ] **Step 4: Manual browser verification**
 
-At mobile width verify primary tabs, analytics-to-months push/pop,
-settings-to-banks/categories push/pop, modal open/close, rapid navigation, and
+At mobile width verify primary tabs, analytics-to-months navigation,
+settings-to-banks/categories navigation, modal open/close, rapid navigation, and
 emulated reduced motion. Confirm the bottom navigation stays fixed and no page
 scroll is reset by route motion.
