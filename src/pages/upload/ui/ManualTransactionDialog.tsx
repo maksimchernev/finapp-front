@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
+import { AnimatePresence } from "motion/react";
 import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
 import type { CreateTransactionRequest } from "@/entities/transaction/api/transactionApi";
@@ -27,8 +28,6 @@ export function ManualTransactionDialog({
   const [manualForm, setManualForm] = useState<ManualTransactionForm>(createInitialForm);
   const [manualError, setManualError] = useState<string | null>(null);
   const [isManualSaving, setIsManualSaving] = useState(false);
-
-  if (!isOpen) return null;
 
   const filteredCategories = categories.filter((category) =>
     manualForm.kind === "income"
@@ -65,6 +64,8 @@ export function ManualTransactionDialog({
   }
 
   return (
+    <AnimatePresence>
+      {isOpen && (
     <Dialog
       ariaLabelledBy="manual-transaction-title"
       backdropClassName={styles.backdrop}
@@ -171,6 +172,8 @@ export function ManualTransactionDialog({
         </button>
       </form>
     </Dialog>
+      )}
+    </AnimatePresence>
   );
 }
 

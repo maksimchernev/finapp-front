@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Check, Trash2, X } from "lucide-react";
 import clsx from "clsx";
+import { AnimatePresence } from "motion/react";
 import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
 import { CategoryIcon } from "@/entities/category/ui/CategoryIcon";
@@ -359,8 +360,9 @@ export function TransactionsPage({
         </section>
       </section>
 
-      {isFilterDialogOpen && (
-        <Dialog
+      <AnimatePresence>
+        {isFilterDialogOpen && (
+          <Dialog
           ariaLabelledBy="transaction-filter-title"
           backdropClassName={styles.backdrop}
           className={clsx(styles.dialog, styles.filterDialog)}
@@ -428,11 +430,11 @@ export function TransactionsPage({
               Применить
             </button>
           </form>
-        </Dialog>
-      )}
+          </Dialog>
+        )}
 
-      {isBulkDeleteOpen && (
-        <Dialog
+        {isBulkDeleteOpen && (
+          <Dialog
           ariaLabelledBy="bulk-delete-title"
           backdropClassName={styles.backdrop}
           className={clsx(styles.dialog, styles.confirmDialog)}
@@ -468,11 +470,11 @@ export function TransactionsPage({
               {isBulkDeleting ? "Удаляем…" : "Удалить"}
             </button>
           </div>
-        </Dialog>
-      )}
+          </Dialog>
+        )}
 
-      {editingTransaction && form && (
-        <Dialog
+        {editingTransaction && form && (
+          <Dialog
           ariaLabelledBy="transaction-edit-title"
           backdropClassName={styles.backdrop}
           className={styles.dialog}
@@ -618,8 +620,9 @@ export function TransactionsPage({
                 </button>
               </div>
             </form>
-        </Dialog>
-      )}
+          </Dialog>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

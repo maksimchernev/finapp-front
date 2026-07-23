@@ -10,6 +10,7 @@ import {
   UserCircle,
   X,
 } from "lucide-react";
+import { AnimatePresence } from "motion/react";
 import type { User } from "@/entities/user/model/types";
 import { Dialog } from "@/shared/ui/Dialog";
 import { PageHeader } from "@/shared/ui/PageHeader";
@@ -169,8 +170,9 @@ export function SettingsPage({
         Выйти из аккаунта
       </button>
 
-      {isProfileModalOpen && (
-        <Dialog
+      <AnimatePresence>
+        {isProfileModalOpen && (
+          <Dialog
           ariaLabelledBy="profile-edit-title"
           backdropClassName={styles.backdrop}
           className={styles.dialog}
@@ -265,8 +267,9 @@ export function SettingsPage({
               {isSavingName ? "Сохраняю" : "Сохранить"}
             </button>
           </form>
-        </Dialog>
-      )}
+          </Dialog>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

@@ -4,6 +4,7 @@ import {
   useRef,
   type ReactNode,
 } from "react";
+import { motion } from "motion/react";
 
 type ScrollTarget = {
   scrollLeft?: number;
@@ -36,18 +37,35 @@ export function Dialog({
   }, [resetPageScroll]);
 
   return (
-    <div className={backdropClassName} role="presentation" onMouseDown={onClose}>
-      <section
+    <motion.div
+      animate={{ opacity: 1 }}
+      className={backdropClassName}
+      exit={{ opacity: 0 }}
+      initial={{ opacity: 0 }}
+      role="presentation"
+      transition={{ duration: 0.18 }}
+      onMouseDown={onClose}
+    >
+      <motion.section
+        animate={{ opacity: 1, scale: 1, y: 0 }}
         aria-labelledby={ariaLabelledBy}
         aria-modal="true"
         className={className}
+        exit={{ opacity: 0, scale: 0.98, y: 8 }}
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
         ref={dialogRef}
         role="dialog"
+        transition={{
+          bounce: 0,
+          damping: 36,
+          stiffness: 420,
+          type: "spring",
+        }}
         onMouseDown={(event) => event.stopPropagation()}
       >
         {children}
-      </section>
-    </div>
+      </motion.section>
+    </motion.div>
   );
 }
 

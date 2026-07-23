@@ -1,6 +1,7 @@
 import { LoaderCircle } from "lucide-react";
 import clsx from "clsx";
-import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import {
   Navigate,
   Route,
@@ -37,7 +38,27 @@ import { TransactionsPage } from "@/pages/transactions/ui/TransactionsPage";
 import { UploadPage } from "@/pages/upload/ui/UploadPage";
 import { resetUploadSession } from "@/pages/workspace/lib/uploadSession";
 import { getReferenceReturnTo } from "@/pages/workspace/lib/referenceNavigation";
+import {
+  getPageTransition,
+  getPageTransitionMotion,
+  type PageTransitionKind,
+} from "@/pages/workspace/lib/pageTransition";
 import styles from "@/pages/workspace/ui/WorkspacePage.module.scss";
+
+const pageVariants = {
+  initial: (kind: PageTransitionKind) => ({
+    ...getPageTransitionMotion(kind).initial,
+    transition: getPageTransitionMotion(kind).transition,
+  }),
+  animate: (kind: PageTransitionKind) => ({
+    ...getPageTransitionMotion(kind).animate,
+    transition: getPageTransitionMotion(kind).transition,
+  }),
+  exit: (kind: PageTransitionKind) => ({
+    ...getPageTransitionMotion(kind).exit,
+    transition: getPageTransitionMotion(kind).transition,
+  }),
+};
 
 export function WorkspacePage({
   token,
@@ -50,6 +71,11 @@ export function WorkspacePage({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const previousLocationRef = useRef(location);
+  const transitionKind = getPageTransition(
+    previousLocationRef.current,
+    location,
+  );
   const [activeReviewJobId, setActiveReviewJobId] = useState<string | null>(
     null,
   );
@@ -87,6 +113,10 @@ export function WorkspacePage({
       }
     : undefined;
   const visibleError = finance.error || upload.error || review.error;
+
+  useEffect(() => {
+    previousLocationRef.current = location;
+  }, [location]);
 
   function clearVisibleError() {
     finance.clearError();
@@ -181,7 +211,21 @@ export function WorkspacePage({
         </div>
       )}
 
-      <Routes>
+      <AnimatePresence
+        custom={transitionKind}
+        initial={false}
+        mode="wait"
+      >
+        <motion.div
+          animate="animate"
+          className={styles.routeViewport}
+          custom={transitionKind}
+          exit="exit"
+          initial="initial"
+          key={location.pathname}
+          variants={pageVariants}
+        >
+      <Routes location={location}>
         <Route
           index
           element={
@@ -325,6 +369,8 @@ export function WorkspacePage({
           element={<Navigate to={appRoutes.dashboard} replace />}
         />
       </Routes>
+        </motion.div>
+      </AnimatePresence>
 
       <BottomNav />
     </AppLayout>
