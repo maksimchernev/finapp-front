@@ -138,6 +138,15 @@ export function useFinanceData({
     setCategories((current) => current.filter((item) => item.id !== id));
   }
 
+  async function reloadTransactionAnalytics() {
+    const [transactionResponse, fetchedStatistics] = await Promise.all([
+      transactionApi.transactions(),
+      loadCurrentMonthStatistics(),
+    ]);
+    setTransactions(transactionResponse.transactions);
+    setStatistics(fetchedStatistics);
+  }
+
   async function updateTransaction(
     id: string,
     transaction: UpdateTransactionRequest,
@@ -146,21 +155,13 @@ export function useFinanceData({
       id,
       transaction,
     );
-    setTransactions((current) =>
-      current
-        .map((item) =>
-          item.id === updatedTransaction.id ? updatedTransaction : item,
-        )
-        .sort(compareTransactions),
-    );
-    setStatistics(await loadCurrentMonthStatistics());
+    await reloadTransactionAnalytics();
     return updatedTransaction;
   }
 
   async function deleteTransaction(id: string) {
     await transactionApi.deleteTransaction(id);
-    setTransactions((current) => current.filter((item) => item.id !== id));
-    setStatistics(await loadCurrentMonthStatistics());
+    await reloadTransactionAnalytics();
   }
 
   async function updateUserName(name: string) {
@@ -198,8 +199,4 @@ function compareCategories(a: Category, b: Category) {
   return a.type === b.type
     ? a.nameRu.localeCompare(b.nameRu)
     : a.type.localeCompare(b.type);
-}
-
-function compareTransactions(a: Transaction, b: Transaction) {
-  return new Date(b.date).getTime() - new Date(a.date).getTime();
 }

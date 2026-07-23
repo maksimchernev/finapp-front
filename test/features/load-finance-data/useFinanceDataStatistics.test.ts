@@ -15,7 +15,15 @@ describe("finance data monthly statistics", () => {
     expect(source).toContain(
       "transactionApi.statistics(getCurrentMonthStatisticsQuery())",
     );
-    expect(source.match(/loadCurrentMonthStatistics\(\)/g)).toHaveLength(4);
+    expect(source.match(/loadCurrentMonthStatistics\(\)/g)).toHaveLength(3);
     expect(source).not.toContain("transactionApi.statistics()");
+  });
+
+  test("refetches transactions and statistics after transaction mutations", () => {
+    expect(source).toContain("async function reloadTransactionAnalytics()");
+    expect(source).toMatch(
+      /Promise\.all\(\[\s*transactionApi\.transactions\(\),\s*loadCurrentMonthStatistics\(\),\s*\]\)/,
+    );
+    expect(source.match(/await reloadTransactionAnalytics\(\)/g)).toHaveLength(2);
   });
 });
