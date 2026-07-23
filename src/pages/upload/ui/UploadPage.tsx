@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Check, CloudUpload, Plus, RotateCcw } from "lucide-react";
+import { Check, CloudUpload, Plus } from "lucide-react";
 import clsx from "clsx";
 import { formatBankLastImportedAt } from "@/entities/bank/lib/lastImportedAt";
 import type { Bank } from "@/entities/bank/model/types";
@@ -8,7 +8,6 @@ import type { CreateTransactionRequest } from "@/entities/transaction/api/transa
 import type { UploadJob } from "@/features/upload-screenshots/model/types";
 import { UploadJobRow } from "@/features/upload-screenshots/ui/UploadJobRow";
 import { ManualTransactionDialog } from "@/pages/upload/ui/ManualTransactionDialog";
-import { EmptyState } from "@/shared/ui/EmptyState";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import styles from "@/pages/upload/ui/UploadPage.module.scss";
 
@@ -18,7 +17,6 @@ export function UploadPage({
   jobs,
   onCreateManualTransaction,
   onFiles,
-  onResetRecent,
   onReview,
 }: {
   banks: Bank[];
@@ -28,7 +26,6 @@ export function UploadPage({
     transaction: CreateTransactionRequest,
   ) => Promise<void>;
   onFiles: (files: FileList | File[]) => void;
-  onResetRecent: () => void;
   onReview: (jobId: string) => void;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -52,6 +49,30 @@ export function UploadPage({
           </button>
         }
       />
+      <section className={styles.bankImportSummary}>
+        <div
+          aria-label="Даты загрузок по банкам"
+          className={styles.bankImportChips}
+          role="list"
+        >
+          <b className={styles.bankImportLabel}>Последние:</b>
+          {banks.length === 0 ? (
+            <p>Добавьте банк, чтобы отслеживать дату загрузки.</p>
+          ) : (
+            banks.map((bank) => (
+              <div
+                className={styles.bankImportChip}
+                key={bank.id}
+                role="listitem"
+              >
+                <b>{bank.name}</b>
+                <span>{formatBankLastImportedAt(bank.lastImportedAt)}</span>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+
       <div
         className={styles.uploadZone}
         onDragOver={(event) => event.preventDefault()}
@@ -83,65 +104,31 @@ export function UploadPage({
         />
       </div>
 
-      <div className={clsx(styles.notice, styles.green)}>
-        <Check size={20} />
-        <div>
-          <b>Без доступа к банковскому кабинету</b>
-          <span>
-            Мы распознаем сумму, дату и имя транзакции локально. Храним только
-            подтвержденные вами операции.
-          </span>
-        </div>
-      </div>
-
-      <section className={styles.sectionBlock}>
-        <div className={styles.sectionTitle}>
-          <h3>Последние загрузки</h3>
-          {jobs.length > 0 && (
-            <button
-              type="button"
-              className={styles.iconButton}
-              aria-label="Сбросить последние загрузки"
-              title="Сбросить последние загрузки"
-              onClick={onResetRecent}
-            >
-              <RotateCcw size={18} />
-            </button>
-          )}
-        </div>
-        {jobs.length === 0 ? (
-          <EmptyState text="Перетащите сюда скриншоты истории операций или выберите файлы." />
-        ) : (
-          <div className={styles.stack}>
-            {jobs.map((job) => (
-              <UploadJobRow
-                key={job.id}
-                bankName={getUploadJobBankName(job, banks)}
-                job={job}
-                onReview={job.status === "done" ? onReview : undefined}
-              />
-            ))}
+      {jobs.length <= 0 && (
+        <div className={clsx(styles.notice, styles.green)}>
+          <Check size={20} />
+          <div>
+            <b>Без доступа к банковскому кабинету</b>
+            <span>
+              Мы распознаем сумму, дату и имя транзакции локально. <br />
+              Храним только подтвержденные вами операции.
+            </span>
           </div>
-        )}
-      </section>
-
-      <section className={styles.sectionBlock}>
-        <div className={styles.sectionTitle}>
-          <h3>Последняя загрузка по банкам</h3>
         </div>
-        {banks.length === 0 ? (
-          <EmptyState text="Добавьте банк, чтобы отслеживать дату загрузки." />
-        ) : (
-          <div className={styles.bankImportList}>
-            {banks.map((bank) => (
-              <div className={styles.bankImportRow} key={bank.id}>
-                <b>{bank.name}</b>
-                <span>{formatBankLastImportedAt(bank.lastImportedAt)}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+      )}
+
+      {jobs.length > 0 && (
+        <section className={styles.stack}>
+          {jobs.map((job) => (
+            <UploadJobRow
+              key={job.id}
+              bankName={getUploadJobBankName(job, banks)}
+              job={job}
+              onReview={job.status === "done" ? onReview : undefined}
+            />
+          ))}
+        </section>
+      )}
 
       <ManualTransactionDialog
         banks={banks}

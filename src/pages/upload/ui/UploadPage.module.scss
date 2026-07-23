@@ -140,33 +140,50 @@
   gap: 11px;
 }
 
-.bankImportList {
-  display: grid;
-  gap: 10px;
+.bankImportSummary {
+  min-width: 0;
 
-  .bankImportRow {
+  .bankImportChips {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    padding: 11px 0;
-    border-top: 1px solid var(--line);
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
 
-    &:first-child {
-      padding-top: 0;
-      border-top: 0;
+    &::-webkit-scrollbar {
+      display: none;
     }
 
-    b {
-      min-width: 0;
-      overflow-wrap: anywhere;
-    }
-
-    span {
+    .bankImportLabel {
       flex: 0 0 auto;
+      font-size: 14px;
+    }
+
+    > p {
+      flex: 0 0 auto;
+      margin: 0;
       color: var(--text-muted);
       font-size: 13px;
-      text-align: right;
+      white-space: nowrap;
+    }
+
+    .bankImportChip {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 11px;
+      border: 1px solid #b9d2c1;
+      border-radius: 999px;
+      color: var(--accent-a);
+      background: var(--green-soft);
+      font-size: 13px;
+      white-space: nowrap;
+
+      span {
+        color: var(--text-muted);
+      }
     }
   }
 }

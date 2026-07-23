@@ -48,8 +48,8 @@ jest.mock("@/shared/ui/PageHeader", () => ({
 }));
 
 describe("UploadPage", () => {
-  it("renders icon-only reset action in recent uploads header when jobs exist", () => {
-    const html = renderToStaticMarkup(
+  it("renders only the job list when jobs exist", () => {
+    const htmlWithJobs = renderToStaticMarkup(
       React.createElement(UploadPage, {
         banks: [],
         categories: [],
@@ -65,13 +65,27 @@ describe("UploadPage", () => {
         ],
         onCreateManualTransaction: async () => undefined,
         onFiles: () => undefined,
-        onResetRecent: () => undefined,
+        onReview: () => undefined,
+      }),
+    );
+    const htmlWithoutJobs = renderToStaticMarkup(
+      React.createElement(UploadPage, {
+        banks: [],
+        categories: [],
+        jobs: [],
+        onCreateManualTransaction: async () => undefined,
+        onFiles: () => undefined,
         onReview: () => undefined,
       }),
     );
 
-    expect(html).toContain('aria-label="Сбросить последние загрузки"');
-    expect(html).not.toContain(">Сбросить<");
+    expect(htmlWithJobs).toContain('data-job="tbank.png"');
+    expect(htmlWithJobs).not.toContain("Последние загрузки");
+    expect(htmlWithJobs).not.toContain("Сбросить последние загрузки");
+    expect(htmlWithoutJobs).not.toContain("data-job");
+    expect(htmlWithoutJobs).not.toContain(
+      "Перетащите сюда скриншоты истории операций или выберите файлы.",
+    );
   });
 
   it("moves manual add action into the upload header and removes the manual block", () => {
@@ -82,7 +96,6 @@ describe("UploadPage", () => {
         jobs: [],
         onCreateManualTransaction: async () => undefined,
         onFiles: () => undefined,
-        onResetRecent: () => undefined,
         onReview: () => undefined,
       }),
     );
@@ -135,7 +148,6 @@ describe("UploadPage", () => {
         ],
         onCreateManualTransaction: async () => undefined,
         onFiles: () => undefined,
-        onResetRecent: () => undefined,
         onReview: () => undefined,
       }),
     );
@@ -143,7 +155,7 @@ describe("UploadPage", () => {
     expect(html).toContain('data-bank="Т-Банк"');
   });
 
-  it("renders bank import timestamps after recent uploads", () => {
+  it("renders bank import timestamps as chips above the upload zone", () => {
     const importedAt = "2026-07-23T11:37:00.000Z";
     const html = renderToStaticMarkup(
       React.createElement(UploadPage, {
@@ -173,14 +185,17 @@ describe("UploadPage", () => {
         jobs: [],
         onCreateManualTransaction: async () => undefined,
         onFiles: () => undefined,
-        onResetRecent: () => undefined,
         onReview: () => undefined,
       }),
     );
 
-    expect(html.indexOf("Последние загрузки")).toBeLessThan(
-      html.indexOf("Последняя загрузка по банкам"),
+    expect(html).toContain("Последние:");
+    expect(html).not.toContain("Последняя загрузка");
+    expect(html.indexOf("Последние:")).toBeLessThan(
+      html.indexOf("Загрузите историю операций"),
     );
+    expect(html).toContain('role="list"');
+    expect(html.match(/role="listitem"/g)).toHaveLength(2);
     expect(html).toContain(formatBankLastImportedAt(importedAt));
     expect(html).toContain("Ещё не загружали");
   });
@@ -193,7 +208,6 @@ describe("UploadPage", () => {
         jobs: [],
         onCreateManualTransaction: async () => undefined,
         onFiles: () => undefined,
-        onResetRecent: () => undefined,
         onReview: () => undefined,
       }),
     );

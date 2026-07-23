@@ -218,7 +218,6 @@ export function WorkspacePage({
               jobs={upload.jobs}
               onCreateManualTransaction={handleCreateManualTransaction}
               onFiles={upload.handleFiles}
-              onResetRecent={handleResetUploadSession}
               onReview={handleOpenReview}
             />
           }
