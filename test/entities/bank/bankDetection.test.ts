@@ -35,4 +35,55 @@ describe("bank OCR detection", () => {
       keywords: ["ozon банк", "0zon банк", "ozon bank", "озон банк"],
     });
   });
+
+  it("detects Alfa Bank from a compact navigation signature before operation banks", () => {
+    const result = detectBankFromOcr(
+      [],
+      "Главный Платежи 🎲 История Чаты Переводы · СБП · Ozon (Еком Банк)",
+      "history.png",
+    );
+
+    expect(result.bank).toBeNull();
+    expect(result.knownBank?.name).toBe("Альфа-Банк");
+  });
+
+  it("returns an existing Alfa Bank matched by the known signature", () => {
+    const alfa = bank({
+      id: "alfa-bank",
+      name: "Альфа-Банк",
+      normalizedName: "альфа-банк",
+      keywords: ["альфа банк"],
+    });
+    const ozon = bank({ id: "ozon-bank" });
+    const result = detectBankFromOcr(
+      [ozon, alfa],
+      "Главный Платежи & История Чаты Ozon Банк",
+      "history.png",
+    );
+
+    expect(result.bank?.id).toBe("alfa-bank");
+    expect(result.knownBank).toBeNull();
+  });
+
+  it("does not match Alfa Bank when navigation words are far apart", () => {
+    const result = detectBankFromOcr(
+      [],
+      `Главный ${"x".repeat(25)} Платежи История Чаты`,
+      "history.png",
+    );
+
+    expect(result.bank).toBeNull();
+    expect(result.knownBank).toBeNull();
+  });
+
+  it("does not match Alfa Bank from isolated navigation words", () => {
+    const result = detectBankFromOcr(
+      [],
+      "История операции. Главный получатель. Открыть платежи позже. Новые чаты.",
+      "history.png",
+    );
+
+    expect(result.bank).toBeNull();
+    expect(result.knownBank).toBeNull();
+  });
 });
