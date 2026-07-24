@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { BarChart3, Minimize2 } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { formatCurrencyTotal } from "@/entities/transaction/lib/currencyTotals";
 import { formatMoney } from "@/entities/transaction/lib/format";
 import type {
@@ -48,6 +49,13 @@ export function AnalyticsPage({
 }) {
   const [chartKind, setChartKind] = useState<ChartKind>("expense");
   const [chartMode, setChartMode] = useState<AnalyticsChartMode>("month");
+  const shouldReduceMotion = useReducedMotion();
+  const periodZoomMotion = shouldReduceMotion
+    ? { opacity: 1, scale: 1 }
+    : {
+        opacity: [0.72, 1],
+        scale: chartMode === "week" ? [0.97, 1] : [1.03, 1],
+      };
   const [selectedWeekStartDay, setSelectedWeekStartDay] = useState(1);
   const [hoveredWeekRange, setHoveredWeekRange] =
     useState<AnalyticsWeekRange | null>(null);
@@ -279,11 +287,14 @@ export function AnalyticsPage({
           ) : null}
         </div>
       )}
-      <div
+      <motion.div
+        animate={periodZoomMotion}
         className={clsx(
           styles.analyticsContent,
           chartMode === "week" && styles.weekCloud,
         )}
+        initial={false}
+        transition={{ duration: 0.18, ease: "easeOut" }}
       >
         {chartMode === "week" && (
           <div className={styles.weekNavigation}>
@@ -395,7 +406,7 @@ export function AnalyticsPage({
             <EmptyState text="Категории появятся после сохранения операций." />
           )}
         </section>
-      </div>
+      </motion.div>
     </section>
   );
 }

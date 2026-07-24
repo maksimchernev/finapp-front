@@ -26,6 +26,22 @@ describe("analytics weekly layout", () => {
     expect(source.match(/styles\.chartCard/g)).toHaveLength(2);
   });
 
+  it("zooms into weeks and out to months without an initial animation", () => {
+    expect(source).toContain(
+      'import { motion, useReducedMotion } from "motion/react";',
+    );
+    expect(source).toContain("const shouldReduceMotion = useReducedMotion();");
+    expect(source).toContain('chartMode === "week" ? [0.97, 1] : [1.03, 1]');
+    expect(source).toContain("<motion.div");
+    expect(source).toContain("animate={periodZoomMotion}");
+    expect(source).toContain("initial={false}");
+    expect(source).toContain(
+      'transition={{ duration: 0.18, ease: "easeOut" }}',
+    );
+    expect(source).toContain("shouldReduceMotion");
+    expect(source).toContain("{ opacity: 1, scale: 1 }");
+  });
+
   it("removes manual zoom-in from the chart header", () => {
     expect(source).not.toContain("Maximize2");
     expect(source).not.toContain("toggleZoom");
