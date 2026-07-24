@@ -129,7 +129,9 @@ export function AnalyticsPage({
         },
       ];
   const selectedCategoryStats = categoryStats.filter(
-    (item) => item.currency === selectedChartCurrency,
+    (item) =>
+      item.currency === selectedChartCurrency &&
+      item.category.type === chartKind,
   );
   const maxCategory = Math.max(
     ...selectedCategoryStats.map((item) => Math.abs(item.totalMinor)),

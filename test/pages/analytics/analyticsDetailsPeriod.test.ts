@@ -11,6 +11,12 @@ describe("analytics details period", () => {
     expect(source).toContain("buildMonthCategoryStats(periodTransactions)");
   });
 
+  it("filters category details by the active income or expense kind", () => {
+    expect(source).toMatch(
+      /item\.currency === selectedChartCurrency &&\s*item\.category\.type === chartKind/,
+    );
+  });
+
   it("renders a weekly details heading from the selected week range", () => {
     expect(source).toMatch(
       /getMonthWeekRange\(\s*activeMonthKey,\s*selectedWeekStartDay,\s*\)/,
