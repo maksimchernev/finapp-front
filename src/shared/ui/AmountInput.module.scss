@@ -1,0 +1,43 @@
+.root {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+
+  .sign {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid var(--accent-a);
+    border-radius: 8px;
+    color: white;
+    background: var(--accent-a);
+    font: inherit;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .input {
+    min-width: 0;
+    min-height: 32px;
+    padding: 0 6px;
+    border: 0;
+    outline: 0;
+    color: var(--ink);
+    background: transparent;
+    font: inherit;
+  }
+
+  &:focus-within {
+    border-color: var(--accent-a);
+    box-shadow: 0 0 0 2px rgba(36, 76, 56, 0.08);
+  }
+}

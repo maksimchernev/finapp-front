@@ -10,6 +10,11 @@ jest.mock("@/features/review-transactions/ui/DraftCard.module.scss", () =>
     },
   ),
 );
+jest.mock("@/shared/ui/AmountInput.module.scss", () => ({
+  input: "input",
+  root: "root",
+  sign: "sign",
+}));
 
 const draft: ParsedTransaction = {
   localId: "draft-1",

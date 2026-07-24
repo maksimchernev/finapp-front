@@ -9,6 +9,7 @@ import {
   toManualTransactionPayload,
   type ManualTransactionForm,
 } from "@/pages/upload/lib/manualTransaction";
+import { AmountInput } from "@/shared/ui/AmountInput";
 import { Dialog } from "@/shared/ui/Dialog";
 import styles from "@/pages/upload/ui/ManualTransactionDialog.module.scss";
 
@@ -88,23 +89,6 @@ export function ManualTransactionDialog({
       </header>
 
       <form className={styles.manualForm} onSubmit={handleManualSubmit}>
-        <div className={styles.segmented}>
-          <button
-            type="button"
-            className={manualForm.kind === "expense" ? styles.selectedSegment : undefined}
-            onClick={() => updateManualForm({ categoryId: "", kind: "expense" })}
-          >
-            Расход
-          </button>
-          <button
-            type="button"
-            className={manualForm.kind === "income" ? styles.selectedSegment : undefined}
-            onClick={() => updateManualForm({ categoryId: "", kind: "income" })}
-          >
-            Доход
-          </button>
-        </div>
-
         <label>
           Имя транзакции
           <input
@@ -117,12 +101,31 @@ export function ManualTransactionDialog({
           <div className={styles.manualGrid}>
             <label>
               Сумма
-              <input
-                inputMode="decimal"
-                value={manualForm.amount}
-                onChange={(event) => updateManualForm({ amount: event.target.value })}
-                placeholder="0,00"
-              />
+              <span className={styles.amountWithCurrency}>
+                <AmountInput
+                  negative={manualForm.kind === "expense"}
+                  value={manualForm.amount}
+                  onNegativeChange={(negative) =>
+                    updateManualForm({
+                      categoryId: "",
+                      kind: negative ? "expense" : "income",
+                    })
+                  }
+                  onValueChange={(amount) => updateManualForm({ amount })}
+                />
+                <select
+                  aria-label="Валюта"
+                  value={manualForm.currency}
+                  onChange={(event) =>
+                    updateManualForm({ currency: event.target.value })
+                  }
+                >
+                  <option value="RUB">RUB</option>
+                  <option value="EUR">EUR</option>
+                  <option value="USD">USD</option>
+                  <option value="HUF">HUF</option>
+                </select>
+              </span>
             </label>
             <label>
               Дата

@@ -4,6 +4,7 @@ import type { Ref } from "react";
 import type { Category } from "@/entities/category/model/types";
 import { dateOnlyToIso, toDateInput } from "@/entities/transaction/lib/format";
 import type { ReviewTransactionDraft } from "@/features/upload-screenshots/model/types";
+import { AmountInput } from "@/shared/ui/AmountInput";
 import styles from "@/features/review-transactions/ui/DraftCard.module.scss";
 
 export function DraftCard({
@@ -25,7 +26,11 @@ export function DraftCard({
 }) {
   const isDateMissing = !draft.date;
   const isCategoryMissing = draft.selected && !draft.categoryId;
+  const isExpense = draft.amount !== "" && draft.amount < 0;
   const dateValue = draft.date ? toDateInput(draft.date) : "";
+  const filteredCategories = categories.filter((category) =>
+    isExpense ? category.type === "expense" : category.type === "income",
+  );
   const confidenceTone =
     draft.confidence >= 80
       ? styles.confidenceHigh
@@ -67,13 +72,24 @@ export function DraftCard({
         </label>
         <label>
           Сумма
-          <input
-            type="number"
-            step="0.01"
-            value={draft.amount}
-            onChange={(event) =>
+          <AmountInput
+            negative={isExpense}
+            value={draft.amount === "" ? "" : String(Math.abs(draft.amount))}
+            onNegativeChange={(negative) =>
               onUpdate(draft.localId, {
-                amount: event.target.value === "" ? "" : Number(event.target.value),
+                amount:
+                  draft.amount === ""
+                    ? ""
+                    : Math.abs(draft.amount) * (negative ? -1 : 1),
+                categoryId: "",
+              })
+            }
+            onValueChange={(value) =>
+              onUpdate(draft.localId, {
+                amount:
+                  value === ""
+                    ? ""
+                    : Number(value.replace(",", ".")) * (isExpense ? -1 : 1),
               })
             }
           />
@@ -118,7 +134,7 @@ export function DraftCard({
           onChange={(event) => onUpdate(draft.localId, { categoryId: event.target.value })}
         >
           <option value="">Без категории</option>
-          {categories.map((item) => (
+          {filteredCategories.map((item) => (
             <option key={item.id} value={item.id}>
               {item.nameRu}
             </option>

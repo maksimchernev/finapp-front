@@ -27,6 +27,7 @@ import {
 } from "@/pages/transactions/lib/transactionFilters";
 import { groupTransactionsByLocalDate } from "@/pages/transactions/lib/transactionGroups";
 import { usePaginatedTransactions } from "@/pages/transactions/model/usePaginatedTransactions";
+import { AmountInput } from "@/shared/ui/AmountInput";
 import { Dialog } from "@/shared/ui/Dialog";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { PageHeader } from "@/shared/ui/PageHeader";
@@ -564,29 +565,6 @@ export function TransactionsPage({
             </header>
 
             <form className={styles.editForm} onSubmit={handleSubmit}>
-              <div className={styles.segmented}>
-                <button
-                  className={
-                    form.kind === "expense" ? styles.selectedSegment : undefined
-                  }
-                  type="button"
-                  onClick={() =>
-                    updateForm({ categoryId: "", kind: "expense" })
-                  }
-                >
-                  Расход
-                </button>
-                <button
-                  className={
-                    form.kind === "income" ? styles.selectedSegment : undefined
-                  }
-                  type="button"
-                  onClick={() => updateForm({ categoryId: "", kind: "income" })}
-                >
-                  Доход
-                </button>
-              </div>
-
               <label>
                 Имя транзакции
                 <input
@@ -602,14 +580,31 @@ export function TransactionsPage({
               <div className={styles.formGrid}>
                 <label>
                   Сумма
-                  <input
-                    inputMode="decimal"
-                    value={form.amount}
-                    onChange={(event) =>
-                      updateForm({ amount: event.target.value })
-                    }
-                    placeholder="0,00"
-                  />
+                  <span className={styles.amountWithCurrency}>
+                    <AmountInput
+                      negative={form.kind === "expense"}
+                      value={form.amount}
+                      onNegativeChange={(negative) =>
+                        updateForm({
+                          categoryId: "",
+                          kind: negative ? "expense" : "income",
+                        })
+                      }
+                      onValueChange={(amount) => updateForm({ amount })}
+                    />
+                    <select
+                      aria-label="Валюта"
+                      value={form.currency}
+                      onChange={(event) =>
+                        updateForm({ currency: event.target.value })
+                      }
+                    >
+                      <option value="RUB">RUB</option>
+                      <option value="EUR">EUR</option>
+                      <option value="USD">USD</option>
+                      <option value="HUF">HUF</option>
+                    </select>
+                  </span>
                 </label>
                 <label>
                   Дата
