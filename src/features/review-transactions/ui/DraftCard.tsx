@@ -84,14 +84,19 @@ export function DraftCard({
                 categoryId: "",
               })
             }
-            onValueChange={(value) =>
+            onValueChange={(value) => {
+              if (value === "") {
+                onUpdate(draft.localId, { amount: "" });
+                return;
+              }
+
+              const amount = Number(value.replace(",", "."));
+              if (!Number.isFinite(amount)) return;
+
               onUpdate(draft.localId, {
-                amount:
-                  value === ""
-                    ? ""
-                    : Number(value.replace(",", ".")) * (isExpense ? -1 : 1),
-              })
-            }
+                amount: amount * (isExpense ? -1 : 1),
+              });
+            }}
           />
         </label>
         <label>

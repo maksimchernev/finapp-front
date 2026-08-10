@@ -72,6 +72,15 @@ describe("DraftCard amount input", () => {
     expect(onUpdate).toHaveBeenCalledWith("manual-1", { amount: -125.5 });
   });
 
+  it("does not store NaN when an invalid amount reaches the card", () => {
+    const onUpdate = jest.fn();
+    const amountInput = getAmountInput(-10, onUpdate);
+
+    amountInput.props.onValueChange("letters");
+
+    expect(onUpdate).not.toHaveBeenCalled();
+  });
+
   it("switches the sign and clears an incompatible category", () => {
     const onUpdate = jest.fn();
     const amountInput = getAmountInput(-125.5, onUpdate);

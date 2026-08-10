@@ -47,4 +47,21 @@ describe("AmountInput", () => {
     expect(onNegativeChange).toHaveBeenCalledWith(true);
     expect(onValueChange).toHaveBeenCalledWith("10,50");
   });
+
+  it("does not report text that is not a decimal value", () => {
+    const onValueChange = jest.fn();
+    const field = AmountInput({
+      negative: false,
+      value: "10",
+      onNegativeChange: () => undefined,
+      onValueChange,
+    }) as React.ReactElement<{ children: React.ReactNode }>;
+    const input = React.Children.toArray(field.props.children)[1] as React.ReactElement<{
+      onChange: (event: { target: { value: string } }) => void;
+    }>;
+
+    input.props.onChange({ target: { value: "10a" } });
+
+    expect(onValueChange).not.toHaveBeenCalled();
+  });
 });

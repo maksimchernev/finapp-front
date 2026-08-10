@@ -26,7 +26,13 @@ export function AmountInput({
         inputMode="decimal"
         placeholder="0,00"
         value={value}
-        onChange={(event) => onValueChange(event.target.value)}
+        onChange={(event) => {
+          const nextValue = event.target.value;
+
+          if (/^\d*(?:[.,]\d*)?$/.test(nextValue)) {
+            onValueChange(nextValue);
+          }
+        }}
       />
     </span>
   );
