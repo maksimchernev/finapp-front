@@ -68,9 +68,12 @@ async function recognizeHeader(worker: OcrWorker, file: File) {
     return "";
   } finally {
     bitmap?.close();
-    await worker
-      .setParameters({ tessedit_pageseg_mode: PSM.AUTO })
-      .catch(() => undefined);
+    try {
+      await worker.reinitialize("rus+eng", 1);
+    } catch {
+      workerPromise = null;
+      await worker.terminate().catch(() => undefined);
+    }
   }
 }
 

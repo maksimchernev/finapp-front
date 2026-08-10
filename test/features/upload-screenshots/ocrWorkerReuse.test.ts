@@ -1,5 +1,7 @@
 const mockWorker = {
+  reinitialize: jest.fn(async () => undefined),
   setParameters: jest.fn(async () => undefined),
+  terminate: jest.fn(async () => undefined),
   recognize: jest.fn(async () => ({
     data: {
       confidence: 88,
@@ -63,7 +65,7 @@ describe("recognizeTransactions", () => {
       });
   });
 
-  it("reuses one initialized Tesseract worker for repeated OCR jobs", async () => {
+  it("reinitializes one cached Tesseract worker between repeated OCR jobs", async () => {
     const firstFile = { name: "first.png" } as File;
     const secondFile = { name: "second.png" } as File;
     const onProgress = jest.fn();
@@ -111,9 +113,11 @@ describe("recognizeTransactions", () => {
     expect(mockWorker.setParameters).toHaveBeenCalledWith({
       tessedit_pageseg_mode: "7",
     });
-    expect(mockWorker.setParameters).toHaveBeenLastCalledWith({
-      tessedit_pageseg_mode: "3",
-    });
+    expect(mockWorker.reinitialize).toHaveBeenCalledTimes(2);
+    expect(mockWorker.reinitialize).toHaveBeenNthCalledWith(1, "rus+eng", 1);
+    expect(mockWorker.reinitialize.mock.invocationCallOrder[0]).toBeLessThan(
+      mockWorker.recognize.mock.invocationCallOrder[2],
+    );
     expect(mockParseTransactions).toHaveBeenNthCalledWith(
       1,
       "first main text\nfirst header text",
