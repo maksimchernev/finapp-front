@@ -95,6 +95,8 @@ export const HISTORY_CHROME_WORDS = [
 ];
 
 export const CATEGORY_HINTS = [
+  "дом и ремонт",
+  "дом ремонт",
   "продукты",
   "красота",
   "прочие расходы",
@@ -108,7 +110,7 @@ export const CATEGORY_HINTS = [
 ];
 
 export const DATE_HEADER_REGEX =
-  /^(\d{1,2})\s+(янв(?:аря)?|фев(?:раля)?|мар(?:та)?|апр(?:еля)?|мая?|июн(?:я)?|июл(?:я)?|авг(?:уста)?|сен(?:тября)?|окт(?:ября)?|ноя(?:бря)?|дек(?:абря)?|jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\.?(?:,?\s*[a-zа-яё]{2,3})?(?:\s+[+\-]?\s?(?:\d{1,3}(?:[ .]\d{3})+|\d+)(?:[,.]\d{1,2})?\s*(?:₽|руб\.?|rub|rur|€|eur|\$|usd|ft|huf|[РPp]|2)?)?$/i;
+  /^(\d{1,2})\s+(янв(?:аря)?|фев(?:раля)?|мар(?:та)?|апр(?:еля)?|мая?|июн(?:я)?|июл(?:я)?|авг(?:уста)?|сен(?:тября)?|окт(?:ября)?|ноя(?:бря)?|дек(?:абря)?|jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\.?(?:,?\s*[a-zа-яё]{2,3})?(?:\s+[+\-]?\s*[\d .,/]+\s*(?:₽|руб\.?|rub|rur|€|eur|\$|usd|ft|huf|[РPp]|2)?)?$/i;
 
 export const AMOUNT_PATTERN =
   /([+\-]?\s?(?:\d{1,3}(?:[ .]\d{3})+|\d+)(?:[,.]\d{1,2})?)\s*(₽|руб\.?|rub|rur|€|eur|\$|usd|ft|huf|[РPp]|2)?/i;

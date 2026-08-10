@@ -23,7 +23,7 @@ export function deriveMerchant(text: string, fileName: string) {
 // Чистит левую часть строки истории и превращает ее в имя получателя.
 export function deriveHistoryMerchant(value: string) {
   const parts = cleanMerchant(value)
-    .replace(/\b\d+\b/g, " ")
+    .replace(/(?<!\p{L}\.)\b\d+\b/gu, " ")
     .split(" ")
     .filter((part, index, source) => {
       if (part.length > 1) return true;

@@ -45,6 +45,13 @@ export function matchCategory(
   type: TransactionType,
 ) {
   const normalized = merchant.toLowerCase();
+  if (
+    type === "expense" &&
+    (normalized.includes("дом и ремонт") || normalized.includes("дом ремонт"))
+  ) {
+    const shopping = categories.find((category) => category.name === "shopping");
+    if (shopping) return shopping;
+  }
   let best: { category: Category; score: number } | null = null;
 
   for (const category of categories.filter((item) => item.type === type)) {

@@ -46,9 +46,15 @@ export function parseBankHistoryRows(
 
     const amountResult = extractTrailingAmount(line);
     const date = currentDate || extractDate(line);
+    const categoryHint = [
+      extractCategoryHint(lines[index + 1], categories),
+      extractCategoryHint(lines[index + 2], categories),
+    ]
+      .filter(Boolean)
+      .join(" ");
     if (
       !amountResult ||
-      !date ||
+      (!date && !categoryHint) ||
       isHistoryChromeLine(line) ||
       isHistoryDetailLine(line)
     ) {
@@ -80,12 +86,6 @@ export function parseBankHistoryRows(
     const signedAmount = amountResult.hasExplicitSign
       ? amountResult.amount
       : Math.abs(amountResult.amount) * (type === "income" ? 1 : -1);
-    const categoryHint = [
-      extractCategoryHint(lines[index + 1], categories),
-      extractCategoryHint(lines[index + 2], categories),
-    ]
-      .filter(Boolean)
-      .join(" ");
     const category = matchCategory(
       [merchant, categoryHint].filter(Boolean).join(" "),
       categories,
@@ -104,7 +104,7 @@ export function parseBankHistoryRows(
       localId: `${Date.now()}-${index}-${Math.random().toString(16).slice(2)}`,
       amount: Number(signedAmount.toFixed(2)),
       currency: amountResult.currency,
-      date: date.toISOString(),
+      date: date?.toISOString() || "",
       merchant,
       categoryId: category?.id,
       confidence,
@@ -120,6 +120,7 @@ export function parseBankHistoryRows(
 const DEFAULT_UNSELECTED_HISTORY_PATTERNS = [
   /операция\s+отклонена/i,
   /(^|[^\p{L}])(?:перевод(?:ы)?|transfers?)(?=$|[^\p{L}])/iu,
+  /между\s+сч[её]тами/i,
   /между\s+своими\s+сч[её]тами/i,
 ];
 

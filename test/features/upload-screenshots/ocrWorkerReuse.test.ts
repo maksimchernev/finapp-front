@@ -23,6 +23,7 @@ jest.mock("tesseract.js", () => ({
   __esModule: true,
   PSM: {
     AUTO: "3",
+    SINGLE_BLOCK: "6",
     SINGLE_LINE: "7",
   },
   default: {
@@ -87,7 +88,7 @@ describe("recognizeTransactions", () => {
       1,
       firstFile,
       {},
-      { text: true },
+      { blocks: true, text: true },
       expect.stringMatching(/^ocr-\d+$/),
     );
     expect(mockWorker.recognize).toHaveBeenNthCalledWith(
@@ -107,7 +108,7 @@ describe("recognizeTransactions", () => {
       3,
       secondFile,
       {},
-      { text: true },
+      { blocks: true, text: true },
       expect.stringMatching(/^ocr-\d+$/),
     );
     expect(mockWorker.setParameters).toHaveBeenCalledWith({
@@ -126,5 +127,59 @@ describe("recognizeTransactions", () => {
       [],
     );
     expect(closeBitmap).toHaveBeenCalledTimes(2);
+  });
+
+  it("repeats low-confidence full-width rows as single lines", async () => {
+    mockWorker.recognize.mockReset();
+    mockWorker.recognize
+      .mockResolvedValueOnce({
+        data: {
+          blocks: [
+            {
+              paragraphs: [
+                {
+                  lines: [
+                    {
+                      bbox: { x0: 60, y0: 800, x1: 1258, y1: 920 },
+                      confidence: 79,
+                      text: "SEMASHKO, D.30 —Э1512 В",
+                    },
+                    {
+                      bbox: { x0: 230, y0: 887, x1: 1246, y1: 921 },
+                      confidence: 96,
+                      text: "Супермаркеты +45",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          confidence: 79,
+          text: "SEMASHKO, D.30 —Э1512 В\nСупермаркеты +45",
+        } as any,
+      })
+      .mockResolvedValueOnce({
+        data: { confidence: 63, text: "SEMASHKO, 0.30 -97312 Р" },
+      })
+      .mockResolvedValueOnce({
+        data: { confidence: 62, text: "SEMASHKO, D.30 —-97312 Р" },
+      })
+      .mockResolvedValueOnce({
+        data: { confidence: 70, text: "header text" },
+      });
+
+    await recognizeTransactions(
+      { name: "cropped-history.jpg" } as File,
+      [],
+      jest.fn(),
+    );
+
+    expect(mockWorker.recognize).toHaveBeenCalledTimes(4);
+    expect(mockParseTransactions).toHaveBeenCalledWith(
+      "SEMASHKO, D.30 -97312 Р\nСупермаркеты +45\nheader text",
+      79,
+      "cropped-history.jpg",
+      [],
+    );
   });
 });

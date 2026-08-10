@@ -324,6 +324,18 @@ $0 июля -1204,71Р
 DEMO STORE -299,90 Р
 Супермаркеты`;
 
+const croppedHistoryRawText = `® Fix Price -36,60 Р
+Дом и ремонт
+› SEMASHKO, D.30 —-889,31Р
+Супермаркеты +40
+З июля -1 50612 Р
+› SEMASHKO, D.30 97312 Р
+Супермаркеты +45
+Максим Денисович Ч. -4162 Р
+ЗК Между счетами
+› Самокат -533 Р
+4 Супермаркеты +25`;
+
 const forintBankRawText = `Февраль Март Апрель Май Июнь
 25 июня -9 938 Ft
 TESTSENDER -6 500 Ft
@@ -829,6 +841,66 @@ describe("OCR bank history parser", () => {
       ).toEqual([
         { merchant: "DEMO MARKET", amount: -409.6, date: "2026-07-31" },
         { merchant: "DEMO STORE", amount: -299.9, date: "2026-07-30" },
+      ]);
+    } finally {
+      jest.setSystemTime(new Date("2026-06-26T08:00:00.000Z"));
+    }
+  });
+
+  it("extracts rows above the first visible date from a cropped history", () => {
+    jest.setSystemTime(new Date("2026-08-10T08:00:00.000Z"));
+
+    try {
+      const result = parseTransactions(
+        croppedHistoryRawText,
+        72,
+        "cropped-history.jpg",
+        categories,
+      );
+      expect(
+        result.map(({ merchant, amount, categoryId, date, selected }) => ({
+          merchant,
+          amount,
+          categoryId,
+          date: date.slice(0, 10),
+          selected,
+        })),
+      ).toEqual([
+        {
+          merchant: "Fix Price",
+          amount: -36.6,
+          categoryId: "shopping",
+          date: "2026-07-03",
+          selected: true,
+        },
+        {
+          merchant: "SEMASHKO D.30",
+          amount: -889.31,
+          categoryId: "groceries",
+          date: "2026-07-03",
+          selected: true,
+        },
+        {
+          merchant: "SEMASHKO D.30",
+          amount: -973.12,
+          categoryId: "groceries",
+          date: "2026-07-03",
+          selected: true,
+        },
+        {
+          merchant: "Максим Денисович Ч.",
+          amount: -4162,
+          categoryId: "other_expense",
+          date: "2026-07-03",
+          selected: false,
+        },
+        {
+          merchant: "Самокат",
+          amount: -533,
+          categoryId: "groceries",
+          date: "2026-07-03",
+          selected: true,
+        },
       ]);
     } finally {
       jest.setSystemTime(new Date("2026-06-26T08:00:00.000Z"));
