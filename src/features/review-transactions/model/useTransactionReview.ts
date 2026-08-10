@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { transactionApi } from "@/entities/transaction/api/transactionApi";
-import { amountToMinor } from "@/entities/transaction/lib/format";
+import {
+  amountToMinor,
+  isTransactionDateInRange,
+  TRANSACTION_DATE_ERROR,
+} from "@/entities/transaction/lib/format";
 import type { ReviewTransactionDraft } from "@/features/upload-screenshots/model/types";
+import { parseReviewDraftAmount } from "@/features/upload-screenshots/model/uploadJobDrafts";
 
 export function useTransactionReview({ onSaved }: { onSaved: () => Promise<void> | void }) {
   const [drafts, setDrafts] = useState<ReviewTransactionDraft[]>([]);
@@ -32,14 +37,16 @@ export function useTransactionReview({ onSaved }: { onSaved: () => Promise<void>
       return;
     }
 
-    if (
-      selected.some(
-        (draft) =>
-          typeof draft.amount !== "number" ||
-          !Number.isFinite(draft.amount) ||
-          draft.amount === 0,
-      )
-    ) {
+    if (selected.some((draft) => !isTransactionDateInRange(draft.date))) {
+      setError(TRANSACTION_DATE_ERROR);
+      return;
+    }
+
+    const selectedWithAmounts = selected.map((draft) => ({
+      draft,
+      amount: parseReviewDraftAmount(draft.amount),
+    }));
+    if (selectedWithAmounts.some(({ amount }) => amount === null)) {
       setError("Введите ненулевую сумму.");
       return;
     }
@@ -48,8 +55,8 @@ export function useTransactionReview({ onSaved }: { onSaved: () => Promise<void>
     setError(null);
     try {
       await transactionApi.createTransactions(
-        selected.map((draft) => ({
-          amountMinor: amountToMinor(draft.amount as number),
+        selectedWithAmounts.map(({ draft, amount }) => ({
+          amountMinor: amountToMinor(amount!),
           currency: draft.currency,
           date: draft.date,
           merchant: draft.merchant,

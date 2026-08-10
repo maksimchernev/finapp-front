@@ -37,6 +37,28 @@
   }
 }
 
+.reviewBankControls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.applyBankOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink);
+  white-space: nowrap;
+
+  input {
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    accent-color: var(--accent-a);
+  }
+}
+
 .fieldInvalid {
   border-color: var(--red) !important;
   box-shadow: 0 0 0 2px rgba(184, 73, 73, 0.12);
@@ -132,6 +154,14 @@
 }
 
 @media (max-width: 380px) {
+  .reviewBankControls {
+    grid-template-columns: 1fr;
+  }
+
+  .applyBankOption {
+    white-space: normal;
+  }
+
   .actionRow {
     grid-template-columns: 1fr;
   }

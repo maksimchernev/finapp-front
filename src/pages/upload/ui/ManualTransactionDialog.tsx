@@ -4,7 +4,11 @@ import { AnimatePresence } from "motion/react";
 import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
 import type { CreateTransactionRequest } from "@/entities/transaction/api/transactionApi";
-import { toDateInput } from "@/entities/transaction/lib/format";
+import {
+  getMaxTransactionDate,
+  MIN_TRANSACTION_DATE,
+  toDateInput,
+} from "@/entities/transaction/lib/format";
 import {
   toManualTransactionPayload,
   type ManualTransactionForm,
@@ -130,6 +134,8 @@ export function ManualTransactionDialog({
             <label>
               Дата
               <input
+                max={getMaxTransactionDate()}
+                min={MIN_TRANSACTION_DATE}
                 type="date"
                 value={manualForm.date}
                 onChange={(event) => updateManualForm({ date: event.target.value })}

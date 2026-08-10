@@ -1,3 +1,4 @@
+import { isTransactionDateInRange } from "@/entities/transaction/lib/format";
 import type {
   ParsedTransaction,
   ReviewTransactionDraft,
@@ -40,6 +41,22 @@ export function updateUploadJobDraft(
   );
 }
 
+export function applyBankToUnassignedUploadJobs(
+  jobs: UploadJob[],
+  bankId: string,
+) {
+  return jobs.map((job) =>
+    job.status === "done" &&
+    job.drafts.length > 0 &&
+    job.drafts.every((draft) => !draft.bankId)
+      ? {
+          ...job,
+          drafts: job.drafts.map((draft) => ({ ...draft, bankId })),
+        }
+      : job,
+  );
+}
+
 export function removeDraftFromUploadJob(
   jobs: UploadJob[],
   jobId: string,
@@ -70,13 +87,17 @@ export function areReviewDraftsValid(drafts: ReviewTransactionDraft[]) {
     hasSharedBank &&
     selectedDrafts.every(
       (draft) =>
-        Boolean(draft.date) &&
+        isTransactionDateInRange(draft.date) &&
         Boolean(draft.categoryId) &&
-        typeof draft.amount === "number" &&
-        Number.isFinite(draft.amount) &&
-        draft.amount !== 0,
+        parseReviewDraftAmount(draft.amount) !== null,
     )
   );
+}
+
+export function parseReviewDraftAmount(amount: number | string) {
+  const parsed =
+    typeof amount === "number" ? amount : Number(amount.replace(",", "."));
+  return Number.isFinite(parsed) && parsed !== 0 ? parsed : null;
 }
 
 export function getDoneUploadJobs(jobs: UploadJob[]) {

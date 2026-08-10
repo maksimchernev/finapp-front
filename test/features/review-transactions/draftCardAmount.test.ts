@@ -34,7 +34,7 @@ const draft: ParsedTransaction = {
 
 describe("DraftCard amount input", () => {
   function getAmountInput(
-    amount: number | "",
+    amount: number | string,
     onUpdate: jest.Mock,
     isManual = false,
   ): React.ReactElement<React.ComponentProps<typeof AmountInput>> {
@@ -77,7 +77,22 @@ describe("DraftCard amount input", () => {
 
     amountInput.props.onValueChange("125,50");
 
-    expect(onUpdate).toHaveBeenCalledWith("manual-1", { amount: -125.5 });
+    expect(onUpdate).toHaveBeenCalledWith("manual-1", { amount: "-125,50" });
+  });
+
+  it("keeps a trailing comma while entering a decimal amount", () => {
+    const firstUpdate = jest.fn();
+    const firstInput = getAmountInput(-10, firstUpdate);
+
+    firstInput.props.onValueChange("12,");
+    expect(firstUpdate).toHaveBeenCalledWith("manual-1", { amount: "-12," });
+
+    const secondUpdate = jest.fn();
+    const secondInput = getAmountInput("-12,", secondUpdate);
+    expect(secondInput.props.value).toBe("12,");
+
+    secondInput.props.onValueChange("12,5");
+    expect(secondUpdate).toHaveBeenCalledWith("manual-1", { amount: "-12,5" });
   });
 
   it("does not store NaN when an invalid amount reaches the card", () => {
@@ -133,5 +148,24 @@ describe("DraftCard amount input", () => {
 
     expect(html).toContain("Расходная");
     expect(html).not.toContain("Доходная");
+  });
+
+  it("limits the transaction date from 2000 through today", () => {
+    jest.useFakeTimers().setSystemTime(new Date("2026-08-10T12:00:00.000Z"));
+
+    try {
+      const html = renderToStaticMarkup(
+        React.createElement(DraftCard, {
+          draft: { ...draft, date: "2026-08-10T00:00:00.000Z" },
+          categories: [],
+          onUpdate: () => undefined,
+        }),
+      );
+
+      expect(html).toContain('min="2000-01-01"');
+      expect(html).toContain('max="2026-08-10"');
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

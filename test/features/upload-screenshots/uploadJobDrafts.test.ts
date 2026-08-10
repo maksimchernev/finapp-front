@@ -4,6 +4,7 @@ import type {
   UploadJob,
 } from "@/features/upload-screenshots/model/types";
 import {
+  applyBankToUnassignedUploadJobs,
   areReviewDraftsValid,
   appendDraftToUploadJob,
   attachDraftsToUploadJob,
@@ -11,6 +12,7 @@ import {
   getPreviousDoneUploadJob,
   getReviewJobForSelection,
   isLastDoneUploadJob,
+  parseReviewDraftAmount,
   removeDraftFromUploadJob,
   removeUploadJob,
   updateUploadJobDraft,
@@ -91,6 +93,36 @@ describe("upload job drafts", () => {
     expect(nextJobs[1].drafts).toEqual([]);
   });
 
+  it("applies a bank only to completed screenshots without a bank", () => {
+    const blankDraft = { ...baseDraft, bankId: undefined };
+    const nextJobs = applyBankToUnassignedUploadJobs(
+      [
+        { ...jobs[0], id: "blank", drafts: [blankDraft] },
+        {
+          ...jobs[0],
+          id: "assigned",
+          drafts: [blankDraft, { ...baseDraft, localId: "draft-2" }],
+        },
+        {
+          ...jobs[0],
+          id: "processing",
+          status: "processing",
+          drafts: [blankDraft],
+        },
+        { ...jobs[1], id: "empty" },
+      ],
+      "bank-2",
+    );
+
+    expect(nextJobs[0].drafts[0].bankId).toBe("bank-2");
+    expect(nextJobs[1].drafts.map((draft) => draft.bankId)).toEqual([
+      undefined,
+      "bank-1",
+    ]);
+    expect(nextJobs[2].drafts[0].bankId).toBeUndefined();
+    expect(nextJobs[3].drafts).toEqual([]);
+  });
+
   it("removes a draft only from the matching upload job", () => {
     const nextJobs = removeDraftFromUploadJob(
       [
@@ -169,6 +201,22 @@ describe("upload job drafts", () => {
           date: "",
           selected: false,
         },
+      ]),
+    ).toBe(true);
+  });
+
+  it("parses signed review amounts without losing a comma decimal", () => {
+    expect(parseReviewDraftAmount("-12,5")).toBe(-12.5);
+    expect(parseReviewDraftAmount(-12.5)).toBe(-12.5);
+    expect(parseReviewDraftAmount("")).toBeNull();
+    expect(parseReviewDraftAmount("0")).toBeNull();
+    expect(parseReviewDraftAmount("letters")).toBeNull();
+  });
+
+  it("accepts a selected draft with a valid signed text amount", () => {
+    expect(
+      areReviewDraftsValid([
+        { ...baseDraft, amount: "-12,5" } as unknown as ReviewTransactionDraft,
       ]),
     ).toBe(true);
   });

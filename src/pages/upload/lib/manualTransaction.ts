@@ -1,4 +1,9 @@
-import { amountToMinor, dateOnlyToIso } from "@/entities/transaction/lib/format";
+import {
+  amountToMinor,
+  dateOnlyToIso,
+  isTransactionDateInRange,
+  TRANSACTION_DATE_ERROR,
+} from "@/entities/transaction/lib/format";
 import type { CreateTransactionRequest } from "@/entities/transaction/api/transactionApi";
 
 export type ManualTransactionKind = "expense" | "income";
@@ -19,7 +24,6 @@ export function toManualTransactionPayload(
 ): CreateTransactionRequest {
   const merchant = form.merchant.trim();
   const amount = Number(form.amount.replace(",", "."));
-  const date = new Date(dateOnlyToIso(form.date));
 
   if (!merchant) {
     throw new Error("Введите имя транзакции.");
@@ -29,9 +33,15 @@ export function toManualTransactionPayload(
     throw new Error("Введите сумму больше нуля.");
   }
 
-  if (Number.isNaN(date.getTime())) {
+  if (!form.date) {
     throw new Error("Укажите дату операции.");
   }
+
+  if (!isTransactionDateInRange(form.date)) {
+    throw new Error(TRANSACTION_DATE_ERROR);
+  }
+
+  const date = new Date(dateOnlyToIso(form.date));
 
   return {
     amountMinor:

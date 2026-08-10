@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Bank } from "@/entities/bank/model/types";
 import {
+  applyReviewBankSelection,
   applyReviewBankToDrafts,
   ReviewPage,
 } from "@/pages/review/ui/ReviewPage";
@@ -217,6 +218,24 @@ describe("ReviewPage", () => {
     expect(html).toContain("T-Bank");
   });
 
+  it("labels the option to apply the bank to all screenshots", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(ReviewPage, {
+        drafts: [{ ...unselectedDraft, bankId: "bank-1" }],
+        banks: [bank],
+        categories: [],
+        isSaving: false,
+        onApplyBankToUnassigned: () => undefined,
+        onBack: () => undefined,
+        onSave: () => undefined,
+        onUpdate: () => undefined,
+      }),
+    );
+
+    expect(html).toContain('type="checkbox"');
+    expect(html).toContain("Применить ко всем скриншотам");
+  });
+
   it("applies the selected bank to every draft in the current review", () => {
     const updates: Array<[string, Partial<ReviewTransactionDraft>]> = [];
     applyReviewBankToDrafts(
@@ -234,6 +253,22 @@ describe("ReviewPage", () => {
       ["draft-1", { bankId: "bank-1" }],
       ["draft-2", { bankId: "bank-1" }],
     ]);
+  });
+
+  it("requests applying a selected bank to unassigned screenshots", () => {
+    const onUpdate = jest.fn();
+    const onApplyBankToUnassigned = jest.fn();
+
+    applyReviewBankSelection(
+      [unselectedDraft],
+      "bank-1",
+      true,
+      onUpdate,
+      onApplyBankToUnassigned,
+    );
+
+    expect(onUpdate).toHaveBeenCalledWith("draft-1", { bankId: "bank-1" });
+    expect(onApplyBankToUnassigned).toHaveBeenCalledWith("bank-1");
   });
 
   it("exposes a plus action for adding a manual draft", () => {

@@ -1,4 +1,9 @@
 import type { Category } from "@/entities/category/model/types";
+import {
+  dateOnlyToIso,
+  getMaxTransactionDate,
+  isTransactionDateInRange,
+} from "@/entities/transaction/lib/format";
 import type { ParsedTransaction } from "@/features/upload-screenshots/model/types";
 import {
   createFallbackTransaction,
@@ -25,7 +30,7 @@ export function parseTransactions(
   );
 
   if (historyRows.length > 0) {
-    return historyRows;
+    return repairInvalidOcrDates(historyRows);
   }
 
   const parsed = parseCandidateGroups(
@@ -37,10 +42,41 @@ export function parseTransactions(
   );
 
   if (parsed.length > 0) {
-    return parsed;
+    return repairInvalidOcrDates(parsed);
   }
 
-  return [
+  return repairInvalidOcrDates([
     createFallbackTransaction(rawText, ocrConfidence, fileName, categories),
-  ];
+  ]);
+}
+
+export function repairInvalidOcrDates(
+  transactions: ParsedTransaction[],
+  now = new Date(),
+) {
+  const validIndexes = transactions.flatMap((transaction, index) =>
+    isTransactionDateInRange(transaction.date, now) ? [index] : [],
+  );
+  const fallbackDate = dateOnlyToIso(getMaxTransactionDate(now));
+
+  return transactions.map((transaction, index) => {
+    if (isTransactionDateInRange(transaction.date, now)) return transaction;
+
+    const nearestIndex = validIndexes.reduce<number | undefined>(
+      (nearest, candidate) =>
+        nearest === undefined ||
+        Math.abs(candidate - index) < Math.abs(nearest - index)
+          ? candidate
+          : nearest,
+      undefined,
+    );
+
+    return {
+      ...transaction,
+      date:
+        nearestIndex === undefined
+          ? fallbackDate
+          : transactions[nearestIndex].date,
+    };
+  });
 }

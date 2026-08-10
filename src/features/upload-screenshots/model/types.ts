@@ -13,7 +13,7 @@ export interface ParsedTransaction {
 }
 
 export type ReviewTransactionDraft = Omit<ParsedTransaction, "amount"> & {
-  amount: number | "";
+  amount: number | string;
 };
 
 export interface UploadJob {

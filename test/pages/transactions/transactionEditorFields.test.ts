@@ -23,4 +23,15 @@ describe("transaction editor fields", () => {
       expect(source).toContain(`<option value="${currency}">${currency}</option>`);
     }
   });
+
+  it("limits the transaction date from 2000 through today", () => {
+    const filterForm = source.match(
+      /<form className=\{styles\.filterForm\}[\s\S]*?<\/form>/,
+    )?.[0];
+
+    expect(source).toMatch(
+      /className=\{styles\.editForm\}[\s\S]*Дата\s*<input\s*max=\{getMaxTransactionDate\(\)\}\s*min=\{MIN_TRANSACTION_DATE\}/,
+    );
+    expect(filterForm).not.toContain("MIN_TRANSACTION_DATE");
+  });
 });

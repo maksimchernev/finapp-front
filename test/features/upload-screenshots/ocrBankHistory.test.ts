@@ -447,12 +447,14 @@ describe("OCR bank history parser", () => {
   });
 
   it("extracts digital bank history rows without cashback detail rows", () => {
+    jest.setSystemTime(new Date("2026-06-30T08:00:00.000Z"));
     const result = parseTransactions(
       digitalBankRawText,
       68,
       "digital-bank.png",
       categories,
     );
+    jest.setSystemTime(new Date("2026-06-26T08:00:00.000Z"));
 
     expect(
       result.map(({ merchant, amount }) => ({ merchant, amount })),
@@ -716,12 +718,14 @@ describe("OCR bank history parser", () => {
   });
 
   it("extracts English bank history with English date and category hints", () => {
+    jest.setSystemTime(new Date("2026-06-30T08:00:00.000Z"));
     const result = parseTransactions(
       englishBankRawText,
       83,
       "english-bank.png",
       categories,
     );
+    jest.setSystemTime(new Date("2026-06-26T08:00:00.000Z"));
 
     expect(
       result.map(({ merchant, amount }) => ({ merchant, amount })),

@@ -2,7 +2,13 @@ import { Check, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import type { Ref } from "react";
 import type { Category } from "@/entities/category/model/types";
-import { dateOnlyToIso, toDateInput } from "@/entities/transaction/lib/format";
+import {
+  dateOnlyToIso,
+  getMaxTransactionDate,
+  isTransactionDateInRange,
+  MIN_TRANSACTION_DATE,
+  toDateInput,
+} from "@/entities/transaction/lib/format";
 import type { ReviewTransactionDraft } from "@/features/upload-screenshots/model/types";
 import { AmountInput } from "@/shared/ui/AmountInput";
 import styles from "@/features/review-transactions/ui/DraftCard.module.scss";
@@ -24,9 +30,16 @@ export function DraftCard({
   onOpenCategories?: () => void;
   onUpdate: (localId: string, patch: Partial<ReviewTransactionDraft>) => void;
 }) {
-  const isDateMissing = !draft.date;
+  const isDateInvalid = !isTransactionDateInRange(draft.date);
   const isCategoryMissing = draft.selected && !draft.categoryId;
-  const isExpense = draft.amount === "" ? isManual : draft.amount < 0;
+  const isExpense =
+    typeof draft.amount === "number"
+      ? draft.amount < 0
+      : draft.amount.startsWith("-") || (draft.amount === "" && isManual);
+  const amountValue =
+    typeof draft.amount === "number"
+      ? String(Math.abs(draft.amount))
+      : draft.amount.replace(/^-/, "");
   const dateValue = draft.date ? toDateInput(draft.date) : "";
   const filteredCategories = categories.filter((category) =>
     isExpense ? category.type === "expense" : category.type === "income",
@@ -74,13 +87,15 @@ export function DraftCard({
           Сумма
           <AmountInput
             negative={isExpense}
-            value={draft.amount === "" ? "" : String(Math.abs(draft.amount))}
+            value={amountValue}
             onNegativeChange={(negative) =>
               onUpdate(draft.localId, {
                 amount:
-                  draft.amount === ""
-                    ? ""
-                    : Math.abs(draft.amount) * (negative ? -1 : 1),
+                  typeof draft.amount === "number"
+                    ? Math.abs(draft.amount) * (negative ? -1 : 1)
+                    : amountValue
+                      ? `${negative ? "-" : ""}${amountValue}`
+                      : "",
                 categoryId: "",
               })
             }
@@ -94,7 +109,7 @@ export function DraftCard({
               if (!Number.isFinite(amount)) return;
 
               onUpdate(draft.localId, {
-                amount: amount * (isExpense ? -1 : 1),
+                amount: `${isExpense ? "-" : ""}${value}`,
               });
             }}
           />
@@ -102,8 +117,10 @@ export function DraftCard({
         <label>
           Дата
           <input
-            aria-invalid={isDateMissing}
-            className={clsx(isDateMissing && styles.dateInvalid)}
+            aria-invalid={isDateInvalid}
+            className={clsx(isDateInvalid && styles.dateInvalid)}
+            max={getMaxTransactionDate()}
+            min={MIN_TRANSACTION_DATE}
             type="date"
             value={dateValue}
             onChange={(event) =>

@@ -106,4 +106,50 @@ describe("useTransactionReview", () => {
     expect(transactionApi.createTransactions).not.toHaveBeenCalled();
     expect(onSaved).not.toHaveBeenCalled();
   });
+
+  it("saves a signed review amount entered with a comma", async () => {
+    const onSaved = jest.fn();
+    let review!: ReturnType<typeof useTransactionReview>;
+
+    function Harness() {
+      review = useTransactionReview({ onSaved });
+      return null;
+    }
+
+    renderToStaticMarkup(React.createElement(Harness));
+
+    await review.saveDrafts([
+      {
+        ...unselectedDraft,
+        amount: "-12,5",
+        selected: true,
+      },
+    ]);
+
+    expect(transactionApi.createTransactions).toHaveBeenCalledWith([
+      expect.objectContaining({ amountMinor: -1250 }),
+    ]);
+    expect(onSaved).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(["1999-12-31", "2999-01-01"])(
+    "does not submit a selected draft with out-of-range date %s",
+    async (date) => {
+      const onSaved = jest.fn();
+      let review!: ReturnType<typeof useTransactionReview>;
+
+      function Harness() {
+        review = useTransactionReview({ onSaved });
+        return null;
+      }
+
+      renderToStaticMarkup(React.createElement(Harness));
+      await review.saveDrafts([
+        { ...unselectedDraft, date, selected: true },
+      ]);
+
+      expect(transactionApi.createTransactions).not.toHaveBeenCalled();
+      expect(onSaved).not.toHaveBeenCalled();
+    },
+  );
 });

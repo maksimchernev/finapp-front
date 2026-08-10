@@ -2,6 +2,8 @@ import type { UpdateTransactionRequest } from "@/entities/transaction/api/transa
 import {
   amountToMinor,
   dateOnlyToIso,
+  isTransactionDateInRange,
+  TRANSACTION_DATE_ERROR,
   toDateInput,
 } from "@/entities/transaction/lib/format";
 import type { Transaction } from "@/entities/transaction/model/types";
@@ -38,7 +40,6 @@ export function toTransactionUpdatePayload(
 ): UpdateTransactionRequest {
   const merchant = form.merchant.trim();
   const amount = Number(form.amount.replace(",", "."));
-  const date = new Date(dateOnlyToIso(form.date));
   const notes = form.notes.trim();
 
   if (!merchant) {
@@ -49,9 +50,15 @@ export function toTransactionUpdatePayload(
     throw new Error("Введите сумму больше нуля.");
   }
 
-  if (Number.isNaN(date.getTime())) {
+  if (!form.date) {
     throw new Error("Укажите дату операции.");
   }
+
+  if (!isTransactionDateInRange(form.date)) {
+    throw new Error(TRANSACTION_DATE_ERROR);
+  }
+
+  const date = new Date(dateOnlyToIso(form.date));
 
   return {
     amountMinor:

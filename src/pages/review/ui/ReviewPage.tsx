@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { Plus } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
 import { DraftCard } from "@/features/review-transactions/ui/DraftCard";
@@ -19,6 +19,7 @@ export function ReviewPage({
   isSaving,
   reviewProgress,
   saveLabel = "Сохранить",
+  onApplyBankToUnassigned,
   onBack,
   onAddDraft,
   onDeleteDraft,
@@ -36,6 +37,7 @@ export function ReviewPage({
     total: number;
   };
   saveLabel?: string;
+  onApplyBankToUnassigned?: (bankId: string) => void;
   onBack: () => void;
   onAddDraft?: () => void;
   onDeleteDraft?: (localId: string) => void;
@@ -51,6 +53,7 @@ export function ReviewPage({
   const areDraftsValid = areReviewDraftsValid(drafts);
   const latestDraftRef = useRef<HTMLElement | null>(null);
   const previousDraftCountRef = useRef(drafts.length);
+  const [applyBankToAll, setApplyBankToAll] = useState(false);
 
   const title = `Проверка ${reviewProgress ? `${reviewProgress.current} / ${reviewProgress.total}` : ""}`;
   const subtitle = saveSummary;
@@ -69,7 +72,13 @@ export function ReviewPage({
   }, [drafts.length]);
 
   function handleReviewBankChange(bankId: string) {
-    applyReviewBankToDrafts(drafts, bankId, onUpdate);
+    applyReviewBankSelection(
+      drafts,
+      bankId,
+      applyBankToAll,
+      onUpdate,
+      onApplyBankToUnassigned,
+    );
   }
 
   return (
@@ -104,20 +113,38 @@ export function ReviewPage({
               Управлять банками
             </button>
           </div>
-          <select
-            aria-labelledby="review-bank-label"
-            aria-invalid={isBankMissing}
-            className={clsx(isBankMissing && styles.fieldInvalid)}
-            value={selectedBankId}
-            onChange={(event) => handleReviewBankChange(event.target.value)}
-          >
-            <option value="">Банк не выбран</option>
-            {banks.map((bank) => (
-              <option key={bank.id} value={bank.id}>
-                {bank.name}
-              </option>
-            ))}
-          </select>
+          <div className={styles.reviewBankControls}>
+            <select
+              aria-labelledby="review-bank-label"
+              aria-invalid={isBankMissing}
+              className={clsx(isBankMissing && styles.fieldInvalid)}
+              value={selectedBankId}
+              onChange={(event) => handleReviewBankChange(event.target.value)}
+            >
+              <option value="">Банк не выбран</option>
+              {banks.map((bank) => (
+                <option key={bank.id} value={bank.id}>
+                  {bank.name}
+                </option>
+              ))}
+            </select>
+            {onApplyBankToUnassigned ? (
+              <label className={styles.applyBankOption}>
+                <input
+                  checked={applyBankToAll}
+                  type="checkbox"
+                  onChange={(event) => {
+                    const checked = event.target.checked;
+                    setApplyBankToAll(checked);
+                    if (checked && selectedBankId) {
+                      onApplyBankToUnassigned(selectedBankId);
+                    }
+                  }}
+                />
+                <span>Применить ко всем скриншотам</span>
+              </label>
+            ) : null}
+          </div>
         </div>
       ) : null}
 
@@ -176,4 +203,15 @@ export function applyReviewBankToDrafts(
   drafts.forEach((draft) => {
     onUpdate(draft.localId, { bankId });
   });
+}
+
+export function applyReviewBankSelection(
+  drafts: ReviewTransactionDraft[],
+  bankId: string,
+  applyToAll: boolean,
+  onUpdate: (localId: string, patch: Partial<ReviewTransactionDraft>) => void,
+  onApplyBankToUnassigned?: (bankId: string) => void,
+) {
+  applyReviewBankToDrafts(drafts, bankId, onUpdate);
+  if (applyToAll) onApplyBankToUnassigned?.(bankId);
 }

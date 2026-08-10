@@ -23,4 +23,9 @@ describe("manual transaction amount field", () => {
       expect(source).toContain(`<option value="${currency}">${currency}</option>`);
     }
   });
+
+  it("limits the transaction date from 2000 through today", () => {
+    expect(source).toContain("min={MIN_TRANSACTION_DATE}");
+    expect(source).toContain("max={getMaxTransactionDate()}");
+  });
 });

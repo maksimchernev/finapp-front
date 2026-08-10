@@ -6,7 +6,11 @@ import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
 import { CategoryIcon } from "@/entities/category/ui/CategoryIcon";
 import type { UpdateTransactionRequest } from "@/entities/transaction/api/transactionApi";
-import { formatMoney } from "@/entities/transaction/lib/format";
+import {
+  formatMoney,
+  getMaxTransactionDate,
+  MIN_TRANSACTION_DATE,
+} from "@/entities/transaction/lib/format";
 import type { Transaction } from "@/entities/transaction/model/types";
 import {
   createTransactionEditForm,
@@ -609,6 +613,8 @@ export function TransactionsPage({
                 <label>
                   Дата
                   <input
+                    max={getMaxTransactionDate()}
+                    min={MIN_TRANSACTION_DATE}
                     type="date"
                     value={form.date}
                     onChange={(event) =>

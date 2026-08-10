@@ -66,4 +66,24 @@ describe("transaction editor", () => {
       }),
     ).toThrow("Введите имя транзакции.");
   });
+
+  it.each(["1999-12-31", "2999-01-01"])(
+    "rejects out-of-range transaction date %s",
+    (date) => {
+      expect(() =>
+        toTransactionUpdatePayload({
+          amount: "100",
+          bankId: "",
+          categoryId: "",
+          currency: "RUB",
+          date,
+          kind: "expense",
+          merchant: "Кофе",
+          notes: "",
+        }),
+      ).toThrow(
+        "Дата операции должна быть с 01.01.2000 по сегодняшний день.",
+      );
+    },
+  );
 });

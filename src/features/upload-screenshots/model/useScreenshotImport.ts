@@ -9,6 +9,7 @@ import type {
   UploadJob,
 } from "@/features/upload-screenshots/model/types";
 import {
+  applyBankToUnassignedUploadJobs,
   appendDraftToUploadJob,
   attachDraftsToUploadJob,
   removeDraftFromUploadJob,
@@ -135,6 +136,12 @@ export function useScreenshotImport({
     setJobs((current) => updateUploadJobDraft(current, jobId, localId, patch));
   }
 
+  function applyBankToUnassignedJobs(bankId: string) {
+    setJobs((current) =>
+      applyBankToUnassignedUploadJobs(current, bankId),
+    );
+  }
+
   function addDraft(jobId: string, draft: ReviewTransactionDraft) {
     setJobs((current) => appendDraftToUploadJob(current, jobId, draft));
   }
@@ -160,6 +167,7 @@ export function useScreenshotImport({
     error,
     clearError,
     handleFiles,
+    applyBankToUnassignedJobs,
     addDraft,
     removeDraft,
     removeJob,

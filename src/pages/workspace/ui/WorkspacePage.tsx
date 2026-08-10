@@ -237,6 +237,7 @@ export function WorkspacePage({
               isSaving={review.isSaving}
               reviewProgress={reviewProgress}
               saveLabel={isFinalReviewJob ? "Сохранить все" : "Далее"}
+              onApplyBankToUnassigned={upload.applyBankToUnassignedJobs}
               onBack={handlePreviousReview}
               onAddDraft={handleAddReviewDraft}
               onDeleteDraft={(localId) => {
