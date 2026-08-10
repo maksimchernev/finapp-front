@@ -6,7 +6,7 @@ import {
 const RUSSIAN_MONTH_PATTERN =
   "(?:янв(?:аря)?|фев(?:раля)?|мар(?:та)?|апр(?:еля)?|мая?|июн(?:я)?|июл(?:я)?|авг(?:уста)?|сен(?:тября)?|окт(?:ября)?|ноя(?:бря)?|дек(?:абря)?)";
 const SHORT_RELATIVE_DATE_HEADER_REGEX =
-  /^(сегодня|вчера)\.?(?:,?\s*[а-яё]{2,3})?$/i;
+  /^(сегодня|вчера|today|yesterday)\.?(?:,?\s*[a-zа-яё]{2,3})?$/i;
 const OCR_YESTERDAY_HEADER_REGEX = /^buepa$/i;
 const CALENDAR_RELATIVE_DATE_HEADER_REGEX = new RegExp(
   `^(сегодня|вчера)\\.?,?\\s*(\\d{1,2})\\s+(${RUSSIAN_MONTH_PATTERN})\\.?(?:\\s+.*)?$`,
@@ -66,7 +66,7 @@ export function extractDateHeader(text: string) {
   return safeDate(inferYearForMonthDay(month, day), month, day, 0, 0);
 }
 
-// Парсит относительные заголовки банковской истории: "Сегодня" и "Вчера".
+// Парсит относительные заголовки банковской истории: "Сегодня"/"Вчера" и Today/Yesterday.
 function extractRelativeDateHeader(text: string) {
   const normalized = text.toLowerCase();
   const calendarMatch = normalized.match(CALENDAR_RELATIVE_DATE_HEADER_REGEX);
@@ -84,7 +84,10 @@ function extractRelativeDateHeader(text: string) {
   }
 
   const today = new Date();
-  const dayOffset = match[1] === "вчера" || match[0] === "buepa" ? -1 : 0;
+  const dayOffset =
+    match[1] === "вчера" || match[1] === "yesterday" || match[0] === "buepa"
+      ? -1
+      : 0;
   return safeDate(
     today.getFullYear(),
     today.getMonth(),

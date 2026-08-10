@@ -33,6 +33,16 @@ const categories: Category[] = [
     keywords: ["transport", "carsharing", "такси"],
   },
   {
+    id: "shopping",
+    name: "shopping",
+    nameRu: "Покупки",
+    icon: "shopping-bag",
+    color: "#000",
+    bgColor: "#fff",
+    type: "expense",
+    keywords: ["home improvement"],
+  },
+  {
     id: "other_expense",
     name: "other_expense",
     nameRu: "Прочие расходы",
@@ -279,6 +289,32 @@ DEMO CARSHARE +690 Р
 Carsharing Debit card
 9 © е@ :
 Main Payments City Chat Hub`;
+
+const englishRelativeTransfersRawText = `Transactions
+Yesterday
+DEMO TAXI -208 Р
+Taxi +10 Debit card
+TEST SENDER +208 Р
+Transfers Black
+7 August
+DEMO CASH -25 000 Р
+Cash Debit card
+TEST SENDER +25 000 Р
+Transfers Black
+5 August
+TEST SENDER -50 000 Р
+Transfers Black`;
+
+const homeImprovementRawText = `Transactions
+21 June
+DEMO HOME -1 590 Р
+Home Improvement +79 Black
+TEST SENDER +1 590 Р
+Transfers Black
+DEMO HOME -8 993 Р
+Home Improvement +449 Black
+TEST SENDER +9 000 Р
+Transfers Black`;
 
 const forintBankRawText = `Февраль Март Апрель Май Июнь
 25 июня -9 938 Ft
@@ -707,6 +743,57 @@ describe("OCR bank history parser", () => {
       "other_income",
       "transport",
       "other_income",
+    ]);
+  });
+
+  it("uses English relative dates and deselects English transfer blocks", () => {
+    jest.setSystemTime(new Date("2026-08-10T08:00:00.000Z"));
+
+    try {
+      const result = parseTransactions(
+        englishRelativeTransfersRawText,
+        83,
+        "english-relative.png",
+        categories,
+      );
+
+      expect(
+        result.map(({ merchant, date, selected }) => ({
+          merchant,
+          date: date.slice(0, 10),
+          selected,
+        })),
+      ).toEqual([
+        { merchant: "DEMO TAXI", date: "2026-08-09", selected: true },
+        { merchant: "TEST SENDER", date: "2026-08-09", selected: false },
+        { merchant: "DEMO CASH", date: "2026-08-07", selected: true },
+        { merchant: "TEST SENDER", date: "2026-08-07", selected: false },
+        { merchant: "TEST SENDER", date: "2026-08-05", selected: false },
+      ]);
+    } finally {
+      jest.setSystemTime(new Date("2026-06-26T08:00:00.000Z"));
+    }
+  });
+
+  it("uses Home Improvement as a shopping category hint", () => {
+    const result = parseTransactions(
+      homeImprovementRawText,
+      83,
+      "home-improvement.png",
+      categories,
+    );
+
+    expect(
+      result.map(({ merchant, amount, categoryId }) => ({
+        merchant,
+        amount,
+        categoryId,
+      })),
+    ).toEqual([
+      { merchant: "DEMO HOME", amount: -1590, categoryId: "shopping" },
+      { merchant: "TEST SENDER", amount: 1590, categoryId: "other_income" },
+      { merchant: "DEMO HOME", amount: -8993, categoryId: "shopping" },
+      { merchant: "TEST SENDER", amount: 9000, categoryId: "other_income" },
     ]);
   });
 

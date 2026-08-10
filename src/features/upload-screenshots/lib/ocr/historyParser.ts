@@ -119,7 +119,7 @@ export function parseBankHistoryRows(
 
 const DEFAULT_UNSELECTED_HISTORY_PATTERNS = [
   /операция\s+отклонена/i,
-  /(^|[^\p{L}])перевод(?:ы)?(?=$|[^\p{L}])/iu,
+  /(^|[^\p{L}])(?:перевод(?:ы)?|transfers?)(?=$|[^\p{L}])/iu,
   /между\s+своими\s+сч[её]тами/i,
 ];
 
