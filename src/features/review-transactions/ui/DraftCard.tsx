@@ -39,7 +39,7 @@ export function DraftCard({
   const amountValue =
     typeof draft.amount === "number"
       ? String(Math.abs(draft.amount))
-      : draft.amount.replace(/^-/, "");
+      : draft.amount.replace(/^[+-]/, "");
   const dateValue = draft.date ? toDateInput(draft.date) : "";
   const filteredCategories = categories.filter((category) =>
     isExpense ? category.type === "expense" : category.type === "income",
@@ -95,13 +95,15 @@ export function DraftCard({
                     ? Math.abs(draft.amount) * (negative ? -1 : 1)
                     : amountValue
                       ? `${negative ? "-" : ""}${amountValue}`
-                      : "",
+                      : negative
+                        ? "-"
+                        : "+",
                 categoryId: "",
               })
             }
             onValueChange={(value) => {
               if (value === "") {
-                onUpdate(draft.localId, { amount: "" });
+                onUpdate(draft.localId, { amount: isExpense ? "-" : "+" });
                 return;
               }
 

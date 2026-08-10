@@ -56,19 +56,39 @@ describe("DraftCard amount input", () => {
     >;
   }
 
-  it("keeps a cleared amount empty instead of restoring zero", () => {
+  it("keeps a cleared amount visually empty without losing its sign", () => {
     const onUpdate = jest.fn();
-    const amountInput = getAmountInput(0, onUpdate);
+    const amountInput = getAmountInput(-10, onUpdate);
 
     amountInput.props.onValueChange("");
 
-    expect(onUpdate).toHaveBeenCalledWith("manual-1", { amount: "" });
+    expect(onUpdate).toHaveBeenCalledWith("manual-1", { amount: "-" });
+
+    const clearedInput = getAmountInput("-", jest.fn());
+    expect(clearedInput.props.negative).toBe(true);
+    expect(clearedInput.props.value).toBe("");
   });
 
   it("starts a blank manual draft as an expense", () => {
     const amountInput = getAmountInput("", jest.fn(), true);
 
     expect(amountInput.props.negative).toBe(true);
+  });
+
+  it("keeps a selected expense sign before the amount is entered", () => {
+    const onUpdate = jest.fn();
+    const amountInput = getAmountInput("", onUpdate);
+
+    amountInput.props.onNegativeChange(true);
+
+    expect(onUpdate).toHaveBeenCalledWith("manual-1", {
+      amount: "-",
+      categoryId: "",
+    });
+
+    const signedInput = getAmountInput("-", jest.fn());
+    expect(signedInput.props.negative).toBe(true);
+    expect(signedInput.props.value).toBe("");
   });
 
   it("preserves the sign while changing the magnitude", () => {
