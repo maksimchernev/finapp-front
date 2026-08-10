@@ -56,7 +56,8 @@ export function extractDateHeader(text: string) {
     return relativeDate;
   }
 
-  const match = text.toLowerCase().match(DATE_HEADER_REGEX);
+  const normalizedText = text.replace(/^\$0(?=\s)/, "30").toLowerCase();
+  const match = normalizedText.match(DATE_HEADER_REGEX);
   if (!match) {
     return null;
   }

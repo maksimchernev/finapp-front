@@ -316,6 +316,14 @@ Home Improvement +449 Black
 TEST SENDER +9 000 Р
 Transfers Black`;
 
+const corruptedDateTotalRawText = `История
+31 июля -475,60 Р
+DEMO MARKET -409,60 Р
+Супермаркеты
+$0 июля -1204,71Р
+DEMO STORE -299,90 Р
+Супермаркеты`;
+
 const forintBankRawText = `Февраль Март Апрель Май Июнь
 25 июня -9 938 Ft
 TESTSENDER -6 500 Ft
@@ -795,6 +803,32 @@ describe("OCR bank history parser", () => {
       { merchant: "DEMO HOME", amount: -8993, categoryId: "shopping" },
       { merchant: "TEST SENDER", amount: 9000, categoryId: "other_income" },
     ]);
+  });
+
+  it("does not treat a day total as a transaction when OCR reads 30 as $0", () => {
+    jest.setSystemTime(new Date("2026-08-10T08:00:00.000Z"));
+
+    try {
+      const result = parseTransactions(
+        corruptedDateTotalRawText,
+        83,
+        "corrupted-date-total.png",
+        categories,
+      );
+
+      expect(
+        result.map(({ merchant, amount, date }) => ({
+          merchant,
+          amount,
+          date: date.slice(0, 10),
+        })),
+      ).toEqual([
+        { merchant: "DEMO MARKET", amount: -409.6, date: "2026-07-31" },
+        { merchant: "DEMO STORE", amount: -299.9, date: "2026-07-30" },
+      ]);
+    } finally {
+      jest.setSystemTime(new Date("2026-06-26T08:00:00.000Z"));
+    }
   });
 
   it("extracts forint bank history rows with HUF currency", () => {

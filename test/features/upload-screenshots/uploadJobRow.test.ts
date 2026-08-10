@@ -2,14 +2,18 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { UploadJobRow } from "@/features/upload-screenshots/ui/UploadJobRow";
 import type { UploadJob } from "@/features/upload-screenshots/model/types";
 
-jest.mock("@/features/upload-screenshots/ui/UploadJobRow.module.scss", () =>
-  new Proxy(
-    {},
-    {
-      get: (_, key) => String(key),
-    },
-  ),
-);
+jest.mock("@/features/upload-screenshots/ui/UploadJobRow.module.scss", () => ({
+  bankName: "bankName",
+  done: "done",
+  error: "error",
+  fileStatus: "fileStatus",
+  interactive: "interactive",
+  progressTrack: "progressTrack",
+  spin: "spin",
+  thin: "thin",
+  uploadRow: "uploadRow",
+  uploadRowMain: "uploadRowMain",
+}));
 
 const job: UploadJob = {
   id: "job-1",
@@ -52,5 +56,40 @@ describe("UploadJobRow", () => {
 
     expect(html).toContain("Т-Банк");
     expect(html).not.toContain("Банк:");
+  });
+
+  it("keeps the completed icon green when review data is valid", () => {
+    const html = renderToStaticMarkup(UploadJobRow({ job }));
+
+    expect(html).toContain("fileStatus done");
+    expect(html).toContain("lucide-file-check");
+  });
+
+  it("renders the same completed icon in red when review data has errors", () => {
+    const html = renderToStaticMarkup(
+      UploadJobRow({
+        job: {
+          ...job,
+          drafts: [
+            {
+              amount: -100,
+              bankId: "bank-1",
+              categoryId: "",
+              confidence: 80,
+              currency: "RUB",
+              date: "2026-08-10",
+              localId: "draft-1",
+              merchant: "Test",
+              rawText: "Test -100",
+              selected: true,
+              sourceFile: "tbank.png",
+            },
+          ],
+        },
+      }),
+    );
+
+    expect(html).toContain("fileStatus error");
+    expect(html).toContain("lucide-file-check");
   });
 });

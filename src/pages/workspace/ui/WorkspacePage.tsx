@@ -17,6 +17,7 @@ import {
   getDoneUploadJobs,
   getNextDoneUploadJob,
   getPreviousDoneUploadJob,
+  getReviewJobForSelection,
   isLastDoneUploadJob,
 } from "@/features/upload-screenshots/model/uploadJobDrafts";
 import { useScreenshotImport } from "@/features/upload-screenshots/model/useScreenshotImport";
@@ -109,7 +110,10 @@ export function WorkspacePage({
   }
 
   function handleOpenReview(jobId: string) {
-    setActiveReviewJobId(jobId);
+    const reviewJob = getReviewJobForSelection(upload.jobs, jobId);
+    if (!reviewJob) return;
+
+    setActiveReviewJobId(reviewJob.id);
     navigate(appRoutes.review);
   }
 

@@ -1,5 +1,6 @@
 import { FileCheck, FileText, LoaderCircle } from "lucide-react";
 import clsx from "clsx";
+import { areReviewDraftsValid } from "@/features/upload-screenshots/model/uploadJobDrafts";
 import type { UploadJob } from "@/features/upload-screenshots/model/types";
 import styles from "@/features/upload-screenshots/ui/UploadJobRow.module.scss";
 
@@ -12,11 +13,13 @@ export function UploadJobRow({
   job: UploadJob;
   onReview?: (jobId: string) => void;
 }) {
+  const hasReviewErrors =
+    job.status === "done" && !areReviewDraftsValid(job.drafts);
   const statusClass =
-    job.status === "done"
-      ? styles.done
-      : job.status === "error"
-        ? styles.error
+    job.status === "error" || hasReviewErrors
+      ? styles.error
+      : job.status === "done"
+        ? styles.done
         : "";
   const content = (
     <>

@@ -36,10 +36,12 @@ describe("DraftCard amount input", () => {
   function getAmountInput(
     amount: number | "",
     onUpdate: jest.Mock,
+    isManual = false,
   ): React.ReactElement<React.ComponentProps<typeof AmountInput>> {
     const card = DraftCard({
       draft: { ...draft, amount },
       categories: [],
+      isManual,
       onUpdate,
     }) as React.ReactElement<{ children: React.ReactNode }>;
     const editGrid = React.Children.toArray(card.props.children)[1] as React.ReactElement<{
@@ -61,6 +63,12 @@ describe("DraftCard amount input", () => {
     amountInput.props.onValueChange("");
 
     expect(onUpdate).toHaveBeenCalledWith("manual-1", { amount: "" });
+  });
+
+  it("starts a blank manual draft as an expense", () => {
+    const amountInput = getAmountInput("", jest.fn(), true);
+
+    expect(amountInput.props.negative).toBe(true);
   });
 
   it("preserves the sign while changing the magnitude", () => {

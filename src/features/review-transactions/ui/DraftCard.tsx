@@ -26,7 +26,7 @@ export function DraftCard({
 }) {
   const isDateMissing = !draft.date;
   const isCategoryMissing = draft.selected && !draft.categoryId;
-  const isExpense = draft.amount !== "" && draft.amount < 0;
+  const isExpense = draft.amount === "" ? isManual : draft.amount < 0;
   const dateValue = draft.date ? toDateInput(draft.date) : "";
   const filteredCategories = categories.filter((category) =>
     isExpense ? category.type === "expense" : category.type === "income",

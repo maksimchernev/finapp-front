@@ -1,9 +1,15 @@
-import type { ParsedTransaction, UploadJob } from "@/features/upload-screenshots/model/types";
+import type {
+  ParsedTransaction,
+  ReviewTransactionDraft,
+  UploadJob,
+} from "@/features/upload-screenshots/model/types";
 import {
+  areReviewDraftsValid,
   appendDraftToUploadJob,
   attachDraftsToUploadJob,
   getNextDoneUploadJob,
   getPreviousDoneUploadJob,
+  getReviewJobForSelection,
   isLastDoneUploadJob,
   removeDraftFromUploadJob,
   removeUploadJob,
@@ -17,6 +23,8 @@ const baseDraft: ParsedTransaction = {
   date: "2026-07-02",
   merchant: "Coffee",
   confidence: 0.91,
+  bankId: "bank-1",
+  categoryId: "category-1",
   sourceFile: "one.png",
   rawText: "Coffee 320",
   selected: true,
@@ -148,5 +156,59 @@ describe("upload job drafts", () => {
     expect(getNextDoneUploadJob(reviewJobs, "job-3")?.id).toBe("job-4");
     expect(isLastDoneUploadJob(reviewJobs, "job-3")).toBe(false);
     expect(isLastDoneUploadJob(reviewJobs, "job-4")).toBe(true);
+  });
+
+  it("treats zero selections as valid", () => {
+    expect(
+      areReviewDraftsValid([
+        {
+          ...baseDraft,
+          amount: 0,
+          bankId: "",
+          categoryId: "",
+          date: "",
+          selected: false,
+        },
+      ]),
+    ).toBe(true);
+  });
+
+  it.each([
+    ["bank", { bankId: "" }],
+    ["category", { categoryId: "" }],
+    ["date", { date: "" }],
+    ["empty amount", { amount: "" as const }],
+    ["zero amount", { amount: 0 }],
+    ["non-finite amount", { amount: Number.NaN }],
+  ])("rejects a selected draft with an invalid %s", (_, patch) => {
+    expect(
+      areReviewDraftsValid([
+        { ...baseDraft, ...patch } as ReviewTransactionDraft,
+      ]),
+    ).toBe(false);
+  });
+
+  it("opens the first invalid done job before the tapped job", () => {
+    const reviewJobs: UploadJob[] = [
+      { ...jobs[0], id: "job-1", drafts: [baseDraft] },
+      {
+        ...jobs[0],
+        id: "job-2",
+        drafts: [{ ...baseDraft, categoryId: "" }],
+      },
+      { ...jobs[0], id: "job-3", drafts: [baseDraft] },
+    ];
+
+    expect(getReviewJobForSelection(reviewJobs, "job-3")?.id).toBe("job-2");
+  });
+
+  it("opens the tapped job when every earlier done job is valid", () => {
+    const reviewJobs: UploadJob[] = [
+      { ...jobs[0], id: "job-1", drafts: [baseDraft] },
+      { ...jobs[0], id: "job-2", drafts: [baseDraft] },
+      { ...jobs[0], id: "job-3", drafts: [baseDraft] },
+    ];
+
+    expect(getReviewJobForSelection(reviewJobs, "job-3")?.id).toBe("job-3");
   });
 });

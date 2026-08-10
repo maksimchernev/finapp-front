@@ -5,6 +5,7 @@ import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
 import { DraftCard } from "@/features/review-transactions/ui/DraftCard";
 import type { ReviewTransactionDraft } from "@/features/upload-screenshots/model/types";
+import { areReviewDraftsValid } from "@/features/upload-screenshots/model/uploadJobDrafts";
 import { isManualReviewDraft } from "@/pages/review/lib/manualReviewDraft";
 import { shouldScrollToLatestDraft } from "@/pages/review/lib/reviewDraftScroll";
 import { EmptyState } from "@/shared/ui/EmptyState";
@@ -47,15 +48,7 @@ export function ReviewPage({
   const saveSummary = `Выбрано ${selectedCount} из ${drafts.length}`;
   const selectedBankId = getReviewBankId(drafts);
   const isBankMissing = selectedCount > 0 && !selectedBankId;
-  const hasInvalidSelectedDraft = drafts.some(
-    (draft) =>
-      draft.selected &&
-      (!draft.date ||
-        !draft.categoryId ||
-        typeof draft.amount !== "number" ||
-        !Number.isFinite(draft.amount) ||
-        draft.amount === 0),
-  );
+  const areDraftsValid = areReviewDraftsValid(drafts);
   const latestDraftRef = useRef<HTMLElement | null>(null);
   const previousDraftCountRef = useRef(drafts.length);
 
@@ -161,7 +154,7 @@ export function ReviewPage({
         <button
           className={clsx(styles.primaryAction, styles.compact)}
           onClick={onSave}
-          disabled={isSaving || hasInvalidSelectedDraft || isBankMissing}
+          disabled={isSaving || !areDraftsValid}
         >
           {isSaving ? "Сохраняю..." : saveLabel}
         </button>

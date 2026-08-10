@@ -28,7 +28,7 @@ describe("manual review draft", () => {
 
     expect(draft).toEqual({
       localId: "manual-1",
-      amount: 0,
+      amount: "",
       currency: "RUB",
       date: "",
       merchant: "Новая транзакция",

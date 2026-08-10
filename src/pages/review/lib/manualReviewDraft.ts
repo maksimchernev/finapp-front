@@ -11,7 +11,7 @@ export function createManualReviewDraft({
 }): ReviewTransactionDraft {
   return {
     localId,
-    amount: 0,
+    amount: "",
     currency: "RUB",
     date: "",
     merchant: "Новая транзакция",
