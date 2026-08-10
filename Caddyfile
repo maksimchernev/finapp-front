@@ -15,3 +15,5 @@
 		file_server
 	}
 }
+
+import /etc/caddy/sites/*.caddy
