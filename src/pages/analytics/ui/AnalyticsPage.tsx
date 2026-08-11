@@ -259,7 +259,7 @@ export function AnalyticsPage({
         <div className={styles.periodNavigation}>
           <div className={styles.monthTabsViewport}>
             <div className={styles.monthTabs} aria-label="Месяц аналитики">
-              {monthTabs.map((month) => (
+              {monthTabs.toReversed().map((month) => (
                 <button
                   key={month.key}
                   className={
