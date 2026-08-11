@@ -1,6 +1,9 @@
 import { request } from "@/shared/api/client";
 import type { Category } from "@/entities/category/model/types";
-import type { Statistics, Transaction } from "@/entities/transaction/model/types";
+import type {
+  Statistics,
+  Transaction,
+} from "@/entities/transaction/model/types";
 
 export type CreateTransactionRequest = {
   amountMinor: number;
@@ -89,7 +92,7 @@ export const categoryApi = {
 };
 
 export const transactionApi = {
-  transactions: (query: TransactionListQuery = { limit: 200 }) =>
+  transactions: (query: TransactionListQuery = { limit: 500 }) =>
     request<TransactionListResponse>(buildTransactionListUrl(query)),
   statistics: (query: StatisticsQuery = {}) =>
     request<Statistics>(buildStatisticsUrl(query)),
