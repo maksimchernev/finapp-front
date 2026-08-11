@@ -56,6 +56,31 @@ describe("DraftCard amount input", () => {
     >;
   }
 
+  function getDateInput(
+    dateWasRepaired: boolean,
+    onUpdate: jest.Mock,
+  ): React.ReactElement<React.ComponentProps<"input">> {
+    const card = DraftCard({
+      draft: {
+        ...draft,
+        date: "2026-08-08T00:00:00.000Z",
+        dateWasRepaired,
+      },
+      categories: [],
+      onUpdate,
+    }) as React.ReactElement<{ children: React.ReactNode }>;
+    const editGrid = React.Children.toArray(card.props.children)[1] as React.ReactElement<{
+      children: React.ReactNode;
+    }>;
+    const dateLabel = React.Children.toArray(editGrid.props.children)[2] as React.ReactElement<{
+      children: React.ReactNode;
+    }>;
+
+    return React.Children.toArray(dateLabel.props.children)[1] as React.ReactElement<
+      React.ComponentProps<"input">
+    >;
+  }
+
   it("keeps a cleared amount visually empty without losing its sign", () => {
     const onUpdate = jest.fn();
     const amountInput = getAmountInput(-10, onUpdate);
@@ -187,5 +212,33 @@ describe("DraftCard amount input", () => {
     } finally {
       jest.useRealTimers();
     }
+  });
+
+  it("warns about an automatically repaired OCR date until it is edited", () => {
+    const onUpdate = jest.fn();
+    const html = renderToStaticMarkup(
+      React.createElement(DraftCard, {
+        draft: {
+          ...draft,
+          date: "2026-08-08T00:00:00.000Z",
+          dateWasRepaired: true,
+        },
+        categories: [],
+        onUpdate,
+      }),
+    );
+
+    expect(html).toContain('aria-describedby="draft-date-warning-manual-1"');
+    expect(html).toContain("Дата исправлена автоматически");
+
+    const dateInput = getDateInput(true, onUpdate);
+    dateInput.props.onChange?.({
+      target: { value: "2026-08-09" },
+    } as React.ChangeEvent<HTMLInputElement>);
+
+    expect(onUpdate).toHaveBeenCalledWith("manual-1", {
+      date: "2026-08-09T00:00:00.000Z",
+      dateWasRepaired: false,
+    });
   });
 });

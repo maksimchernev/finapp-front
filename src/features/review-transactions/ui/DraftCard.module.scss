@@ -92,6 +92,18 @@
   box-shadow: 0 0 0 2px rgba(184, 73, 73, 0.12);
 }
 
+.dateWarning {
+  border-color: var(--coral) !important;
+  background: var(--coral-soft) !important;
+  box-shadow: 0 0 0 2px rgba(240, 113, 85, 0.14);
+}
+
+.dateWarningText {
+  color: var(--coral);
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .categorySelect {
   display: grid;
   gap: 7px;

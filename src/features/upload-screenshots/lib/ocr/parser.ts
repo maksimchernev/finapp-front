@@ -77,6 +77,7 @@ export function repairInvalidOcrDates(
         nearestIndex === undefined
           ? fallbackDate
           : transactions[nearestIndex].date,
+      dateWasRepaired: true,
     };
   });
 }

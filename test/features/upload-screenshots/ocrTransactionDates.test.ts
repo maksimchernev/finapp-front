@@ -37,6 +37,13 @@ describe("OCR transaction date repair", () => {
       "2026-08-10T00:00:00.000Z",
       "2026-08-10T00:00:00.000Z",
     ]);
+    expect(repaired.map((item) => item.dateWasRepaired)).toEqual([
+      true,
+      undefined,
+      true,
+      undefined,
+      true,
+    ]);
   });
 
   it("uses today when no recognized transaction has a valid date", () => {
@@ -52,5 +59,6 @@ describe("OCR transaction date repair", () => {
       "2026-08-10T00:00:00.000Z",
       "2026-08-10T00:00:00.000Z",
     ]);
+    expect(repaired.map((item) => item.dateWasRepaired)).toEqual([true, true]);
   });
 });

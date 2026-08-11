@@ -31,6 +31,7 @@ export function DraftCard({
   onUpdate: (localId: string, patch: Partial<ReviewTransactionDraft>) => void;
 }) {
   const isDateInvalid = !isTransactionDateInRange(draft.date);
+  const isDateWarning = Boolean(draft.dateWasRepaired && !isDateInvalid);
   const isCategoryMissing = draft.selected && !draft.categoryId;
   const isExpense =
     typeof draft.amount === "number"
@@ -119,8 +120,14 @@ export function DraftCard({
         <label>
           Дата
           <input
+            aria-describedby={
+              isDateWarning ? `draft-date-warning-${draft.localId}` : undefined
+            }
             aria-invalid={isDateInvalid}
-            className={clsx(isDateInvalid && styles.dateInvalid)}
+            className={clsx(
+              isDateInvalid && styles.dateInvalid,
+              isDateWarning && styles.dateWarning,
+            )}
             max={getMaxTransactionDate()}
             min={MIN_TRANSACTION_DATE}
             type="date"
@@ -128,9 +135,18 @@ export function DraftCard({
             onChange={(event) =>
               onUpdate(draft.localId, {
                 date: event.target.value ? dateOnlyToIso(event.target.value) : "",
+                dateWasRepaired: false,
               })
             }
           />
+          {isDateWarning ? (
+            <small
+              id={`draft-date-warning-${draft.localId}`}
+              className={styles.dateWarningText}
+            >
+              Дата исправлена автоматически
+            </small>
+          ) : null}
         </label>
         <label>
           Валюта

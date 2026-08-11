@@ -3,6 +3,7 @@ export interface ParsedTransaction {
   amount: number;
   currency: string;
   date: string;
+  dateWasRepaired?: boolean;
   merchant: string;
   categoryId?: string;
   bankId?: string;

@@ -34,4 +34,18 @@ describe("DraftCard mobile field layout", () => {
       /@media \(max-width: 440px\)[\s\S]*input\[type="date"\]\s*\{\s*padding-inline:\s*0;/,
     );
   });
+
+  it("uses the orange warning palette for repaired OCR dates", () => {
+    const source = readFileSync(
+      join(
+        process.cwd(),
+        "src/features/review-transactions/ui/DraftCard.module.scss",
+      ),
+      "utf8",
+    );
+
+    expect(source).toMatch(
+      /\.dateWarning\s*\{[\s\S]*border-color:\s*var\(--coral\)[\s\S]*background:\s*var\(--coral-soft\)/,
+    );
+  });
 });
