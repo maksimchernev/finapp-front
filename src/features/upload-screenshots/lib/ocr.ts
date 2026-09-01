@@ -1,9 +1,7 @@
 import Tesseract, { PSM } from "tesseract.js";
 import type { Category } from "@/entities/category/model/types";
-import { extractTrailingAmount } from "@/features/upload-screenshots/lib/ocr/amount";
 import { TESSERACT_LANG_PATH } from "@/features/upload-screenshots/lib/ocr/constants";
 import { parseTransactions } from "@/features/upload-screenshots/lib/ocr/parser";
-import { normalizeOcrLine } from "@/features/upload-screenshots/lib/ocr/text";
 import type { ProgressHandler } from "@/features/upload-screenshots/lib/ocr/types";
 
 export { parseTransactions } from "@/features/upload-screenshots/lib/ocr/parser";
@@ -14,11 +12,10 @@ type TesseractProgressEvent = {
   status?: string;
   userJobId?: string;
 };
-type OcrLine = {
-  bbox: { x0: number; y0: number; x1: number; y1: number };
-  confidence: number;
-  text: string;
-};
+type OcrImage = File | HTMLCanvasElement;
+
+const MIN_OCR_IMAGE_WIDTH = 1000;
+const MAX_OCR_IMAGE_SCALE = 2;
 
 let workerPromise: Promise<OcrWorker> | null = null;
 let nextOcrJobId = 1;
@@ -37,19 +34,19 @@ export async function recognizeTransactions(
 
   try {
     const worker = await getOcrWorker(onProgress);
+    const image = await prepareOcrImage(file);
     await worker.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_BLOCK });
     const result = await worker.recognize(
-      file,
+      image,
       {},
-      { blocks: true, text: true },
+      { text: true },
       jobId,
     );
     const confidence = Math.round(result.data.confidence || 0);
-    const mainText = await refineLowConfidenceRows(worker, file, result.data);
-    const headerText = await recognizeHeader(worker, file);
+    const headerText = await recognizeHeader(worker, image);
 
     return parseTransactions(
-      [mainText, headerText].filter(Boolean).join("\n"),
+      [result.data.text, headerText].filter(Boolean).join("\n"),
       confidence,
       file.name,
       categories,
@@ -59,81 +56,40 @@ export async function recognizeTransactions(
   }
 }
 
-async function refineLowConfidenceRows(
-  worker: OcrWorker,
-  file: File,
-  data: {
-    blocks?: Array<{
-      paragraphs?: Array<{ lines?: OcrLine[] }>;
-    }> | null;
-    text: string;
-  },
-) {
-  const lines = (data.blocks || []).flatMap((block) =>
-    (block.paragraphs || []).flatMap((paragraph) => paragraph.lines || []),
-  );
-  if (lines.length === 0) return data.text;
-
-  const rightEdge = Math.max(...lines.map((line) => line.bbox.x1));
-  const bottomEdge = Math.max(...lines.map((line) => line.bbox.y1));
-  const imageWidth = Math.ceil(rightEdge * 1.05);
-  const cropLeft = Math.round(imageWidth * 0.12);
-  const cropHeight = Math.max(40, Math.round(imageWidth * 0.057));
-  const refinedLines = new Map<OcrLine, string>();
-  const rowsToRefine = lines.filter(
-    (line) =>
-      line.confidence < 85 &&
-      line.bbox.x1 > imageWidth * 0.72 &&
-      /\d/.test(line.text),
-  );
-
-  if (rowsToRefine.length > 0) {
-    await worker.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_LINE });
-  }
-
-  for (const line of rowsToRefine) {
-    const candidates = [];
-    for (const offset of [0.011, 0.015]) {
-      const top = Math.max(0, Math.round(line.bbox.y0 - imageWidth * offset));
-      const result = await worker.recognize(
-        file,
-        {
-          rectangle: {
-            height: Math.min(cropHeight, Math.max(1, bottomEdge - top)),
-            left: cropLeft,
-            top,
-            width: imageWidth - cropLeft,
-          },
-        },
-        { text: true },
-      );
-      const text = normalizeOcrLine(result.data.text);
-      if (extractTrailingAmount(text)) {
-        candidates.push({
-          confidence: result.data.confidence || 0,
-          letterCount: text.match(/\p{L}/gu)?.length || 0,
-          text,
-        });
-      }
-    }
-
-    const best = candidates.sort(
-      (a, b) => b.letterCount - a.letterCount || b.confidence - a.confidence,
-    )[0];
-    if (best) refinedLines.set(line, best.text);
-  }
-
-  return lines.map((line) => refinedLines.get(line) || line.text).join("\n");
-}
-
-async function recognizeHeader(worker: OcrWorker, file: File) {
+async function prepareOcrImage(file: File): Promise<OcrImage> {
   let bitmap: ImageBitmap | null = null;
 
   try {
     bitmap = await createImageBitmap(file);
+    if (bitmap.width >= MIN_OCR_IMAGE_WIDTH) return file;
+
+    const scale = Math.min(
+      MAX_OCR_IMAGE_SCALE,
+      MIN_OCR_IMAGE_WIDTH / bitmap.width,
+    );
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    const context = canvas.getContext("2d");
+    if (!context) return file;
+
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    return canvas;
+  } catch {
+    return file;
+  } finally {
+    bitmap?.close();
+  }
+}
+
+async function recognizeHeader(worker: OcrWorker, image: OcrImage) {
+  let bitmap: ImageBitmap | null = null;
+
+  try {
+    bitmap = await createImageBitmap(image);
     await worker.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_LINE });
     const result = await worker.recognize(
-      file,
+      image,
       {
         rectangle: {
           height: Math.max(1, Math.round(bitmap.height * 0.06)),

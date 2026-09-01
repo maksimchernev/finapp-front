@@ -88,7 +88,7 @@ describe("recognizeTransactions", () => {
       1,
       firstFile,
       {},
-      { blocks: true, text: true },
+      { text: true },
       expect.stringMatching(/^ocr-\d+$/),
     );
     expect(mockWorker.recognize).toHaveBeenNthCalledWith(
@@ -108,7 +108,7 @@ describe("recognizeTransactions", () => {
       3,
       secondFile,
       {},
-      { blocks: true, text: true },
+      { text: true },
       expect.stringMatching(/^ocr-\d+$/),
     );
     expect(mockWorker.setParameters).toHaveBeenCalledWith({
@@ -126,10 +126,61 @@ describe("recognizeTransactions", () => {
       "first.png",
       [],
     );
-    expect(closeBitmap).toHaveBeenCalledTimes(2);
+    expect(closeBitmap).toHaveBeenCalledTimes(4);
   });
 
-  it("repeats low-confidence full-width rows as single lines", async () => {
+  it("upscales narrow screenshots before recognition", async () => {
+    const sourceBitmap = {
+      close: jest.fn(),
+      height: 1280,
+      width: 589,
+    };
+    const preparedCanvas = {
+      getContext: jest.fn(() => ({ drawImage: jest.fn() })),
+      height: 0,
+      width: 0,
+    };
+    Object.defineProperty(globalThis, "createImageBitmap", {
+      configurable: true,
+      value: jest
+        .fn()
+        .mockResolvedValueOnce(sourceBitmap)
+        .mockResolvedValueOnce({
+          close: closeBitmap,
+          height: 2173,
+          width: 1000,
+        }),
+    });
+    Object.defineProperty(globalThis, "document", {
+      configurable: true,
+      value: {
+        createElement: jest.fn(() => preparedCanvas),
+      },
+    });
+
+    try {
+      const file = { name: "narrow-history.jpg" } as File;
+
+      await recognizeTransactions(file, [], jest.fn());
+
+      expect(preparedCanvas).toEqual(
+        expect.objectContaining({ height: 2173, width: 1000 }),
+      );
+      expect(preparedCanvas.getContext).toHaveBeenCalledWith("2d");
+      expect(mockWorker.recognize).toHaveBeenNthCalledWith(
+        1,
+        preparedCanvas,
+        {},
+        { text: true },
+        expect.stringMatching(/^ocr-\d+$/),
+      );
+      expect(sourceBitmap.close).toHaveBeenCalledTimes(1);
+    } finally {
+      Reflect.deleteProperty(globalThis, "document");
+    }
+  });
+
+  it("keeps full-image OCR rows instead of replacing them with fixed crops", async () => {
     mockWorker.recognize.mockReset();
     mockWorker.recognize
       .mockResolvedValueOnce({
@@ -159,12 +210,6 @@ describe("recognizeTransactions", () => {
         } as any,
       })
       .mockResolvedValueOnce({
-        data: { confidence: 63, text: "SEMASHKO, 0.30 -97312 Р" },
-      })
-      .mockResolvedValueOnce({
-        data: { confidence: 62, text: "SEMASHKO, D.30 —-97312 Р" },
-      })
-      .mockResolvedValueOnce({
         data: { confidence: 70, text: "header text" },
       });
 
@@ -174,9 +219,9 @@ describe("recognizeTransactions", () => {
       jest.fn(),
     );
 
-    expect(mockWorker.recognize).toHaveBeenCalledTimes(4);
+    expect(mockWorker.recognize).toHaveBeenCalledTimes(2);
     expect(mockParseTransactions).toHaveBeenCalledWith(
-      "SEMASHKO, D.30 -97312 Р\nСупермаркеты +45\nheader text",
+      "SEMASHKO, D.30 —Э1512 В\nСупермаркеты +45\nheader text",
       79,
       "cropped-history.jpg",
       [],
