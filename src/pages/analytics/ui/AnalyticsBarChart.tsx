@@ -137,6 +137,7 @@ export function AnalyticsBarChart({
               return bar ? getAnalyticsBarTooltipTitle(bar) : "";
             },
             label: (context) => {
+              if (context.parsed.y === 0) return "";
               const amount = formatMoney(Number(context.parsed.y), currency);
               return hasCategorySeries && context.dataset.label
                 ? `${context.dataset.label}: ${amount}`
