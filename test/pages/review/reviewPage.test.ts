@@ -24,6 +24,17 @@ jest.mock(
     ),
 );
 
+jest.mock(
+  "@/pages/review/ui/ScreenshotPreview/ScreenshotPreview.module.scss",
+  () =>
+    new Proxy(
+      {},
+      {
+        get: (_, key) => String(key),
+      },
+    ),
+);
+
 jest.mock("@/features/review-transactions/ui/DraftCard", () => ({
   DraftCard: ({
     draft,
@@ -196,6 +207,24 @@ describe("ReviewPage", () => {
     );
 
     expect(html).toContain("Сохранить все");
+  });
+
+  it("shows the original screenshot for the current review", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(ReviewPage, {
+        drafts: [unselectedDraft],
+        banks: [],
+        categories: [],
+        isSaving: false,
+        screenshotUrl: "blob:current-screenshot",
+        onBack: () => undefined,
+        onSave: () => undefined,
+        onUpdate: () => undefined,
+      }),
+    );
+
+    expect(html).toContain('aria-label="Открыть исходный скриншот"');
+    expect(html).toContain('src="blob:current-screenshot"');
   });
 
   it("renders one bank selector for the whole review", () => {

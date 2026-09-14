@@ -236,6 +236,7 @@ export function WorkspacePage({
               categories={finance.categories}
               isSaving={review.isSaving}
               reviewProgress={reviewProgress}
+              screenshotUrl={activeReviewJob?.previewUrl}
               saveLabel={isFinalReviewJob ? "Сохранить все" : "Далее"}
               onApplyBankToUnassigned={upload.applyBankToUnassignedJobs}
               onBack={handlePreviousReview}

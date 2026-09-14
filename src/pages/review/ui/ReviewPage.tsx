@@ -8,6 +8,7 @@ import type { ReviewTransactionDraft } from "@/features/upload-screenshots/model
 import { areReviewDraftsValid } from "@/features/upload-screenshots/model/uploadJobDrafts";
 import { isManualReviewDraft } from "@/pages/review/lib/manualReviewDraft";
 import { shouldScrollToLatestDraft } from "@/pages/review/lib/reviewDraftScroll";
+import { ScreenshotPreview } from "@/pages/review/ui/ScreenshotPreview";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import styles from "@/pages/review/ui/ReviewPage.module.scss";
@@ -18,6 +19,7 @@ export function ReviewPage({
   categories,
   isSaving,
   reviewProgress,
+  screenshotUrl,
   saveLabel = "Сохранить",
   onApplyBankToUnassigned,
   onBack,
@@ -36,6 +38,7 @@ export function ReviewPage({
     current: number;
     total: number;
   };
+  screenshotUrl?: string;
   saveLabel?: string;
   onApplyBankToUnassigned?: (bankId: string) => void;
   onBack: () => void;
@@ -186,6 +189,7 @@ export function ReviewPage({
           {isSaving ? "Сохраняю..." : saveLabel}
         </button>
       </div>
+      {screenshotUrl ? <ScreenshotPreview src={screenshotUrl} /> : null}
     </section>
   );
 }

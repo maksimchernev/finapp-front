@@ -1,0 +1,53 @@
+.thumbnail {
+  position: absolute;
+  left: 14px;
+  bottom: 170px;
+  z-index: 6;
+  width: 72px;
+  height: 128px;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  border-radius: 8px;
+  padding: 0;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow:
+    0 14px 32px rgba(18, 38, 28, 0.24),
+    0 3px 9px rgba(18, 38, 28, 0.14);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-a);
+    outline-offset: 3px;
+  }
+}
+
+.fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  width: 100vw;
+  height: 100dvh;
+  border: 0;
+  padding: max(16px, env(safe-area-inset-top)) 16px
+    max(16px, env(safe-area-inset-bottom));
+  background: rgba(12, 18, 14, 0.94);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+@media (max-width: 380px) {
+  .thumbnail {
+    bottom: 214px;
+  }
+}

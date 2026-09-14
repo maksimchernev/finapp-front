@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { detectBankFromOcr } from "@/entities/bank/lib/bankDetection";
 import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
@@ -28,6 +28,14 @@ export function useScreenshotImport({
 }) {
   const [jobs, setJobs] = useState<UploadJob[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const previewUrlsRef = useRef(new Set<string>());
+
+  useEffect(
+    () => () => {
+      clearPreviewUrls();
+    },
+    [],
+  );
 
   async function handleFiles(files: FileList | File[]) {
     const currentFileNames = new Set(
@@ -65,14 +73,20 @@ export function useScreenshotImport({
         : null,
     );
 
-    const queuedJobs: UploadJob[] = images.map((file) => ({
-      id: crypto.randomUUID(),
-      fileName: file.name,
-      progress: 0,
-      status: "queued",
-      message: "В очереди",
-      drafts: [],
-    }));
+    const queuedJobs: UploadJob[] = images.map((file) => {
+      const previewUrl = URL.createObjectURL(file);
+      previewUrlsRef.current.add(previewUrl);
+
+      return {
+        id: crypto.randomUUID(),
+        fileName: file.name,
+        previewUrl,
+        progress: 0,
+        status: "queued",
+        message: "В очереди",
+        drafts: [],
+      };
+    });
 
     setJobs((current) => [...current, ...queuedJobs]);
 
@@ -151,11 +165,25 @@ export function useScreenshotImport({
   }
 
   function resetJobs() {
+    clearPreviewUrls();
     setJobs([]);
   }
 
   function removeJob(jobId: string) {
+    releasePreviewUrl(jobs.find((job) => job.id === jobId)?.previewUrl);
     setJobs((current) => removeUploadJob(current, jobId));
+  }
+
+  function releasePreviewUrl(previewUrl?: string) {
+    if (!previewUrl || !previewUrlsRef.current.delete(previewUrl)) return;
+    URL.revokeObjectURL(previewUrl);
+  }
+
+  function clearPreviewUrls() {
+    previewUrlsRef.current.forEach((previewUrl) => {
+      URL.revokeObjectURL(previewUrl);
+    });
+    previewUrlsRef.current.clear();
   }
 
   function clearError() {

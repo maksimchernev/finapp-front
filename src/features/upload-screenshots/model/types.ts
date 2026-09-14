@@ -20,6 +20,7 @@ export type ReviewTransactionDraft = Omit<ParsedTransaction, "amount"> & {
 export interface UploadJob {
   id: string;
   fileName: string;
+  previewUrl?: string;
   progress: number;
   status: "queued" | "processing" | "done" | "error";
   message: string;
