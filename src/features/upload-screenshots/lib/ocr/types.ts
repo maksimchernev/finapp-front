@@ -7,7 +7,6 @@ export type AmountCandidate = {
   currency: string;
   hasDecimal: boolean;
   hasExplicitSign: boolean;
-  inferredDecimal: boolean;
   source: string;
 };
 

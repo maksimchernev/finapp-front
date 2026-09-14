@@ -18,4 +18,18 @@ describe("OCR date headers", () => {
   it("does not treat a merchant row after the date as a header", () => {
     expect(extractDateHeader("3 июля Fix Price -36,60 Р")).toBeNull();
   });
+
+  it.each(["51 августа", "31 февраля", "0 сентября"])(
+    "rejects an impossible date instead of rolling it into another month: %s",
+    (text) => {
+      expect(extractDateHeader(text)).toBeNull();
+    },
+  );
+
+  it("handles yesterday across a month boundary", () => {
+    jest.setSystemTime(new Date("2026-09-01T08:00:00Z"));
+    expect(extractDateHeader("Вчера")?.toISOString()).toBe(
+      "2026-08-31T00:00:00.000Z",
+    );
+  });
 });

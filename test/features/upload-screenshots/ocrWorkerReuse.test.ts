@@ -43,6 +43,7 @@ describe("recognizeTransactions", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockWorker.recognize.mockReset();
     Object.defineProperty(globalThis, "createImageBitmap", {
       configurable: true,
       value: jest.fn(async () => ({
@@ -56,13 +57,7 @@ describe("recognizeTransactions", () => {
         data: { confidence: 88, text: "first main text" },
       })
       .mockResolvedValueOnce({
-        data: { confidence: 70, text: "first header text" },
-      })
-      .mockResolvedValueOnce({
         data: { confidence: 89, text: "second main text" },
-      })
-      .mockResolvedValueOnce({
-        data: { confidence: 71, text: "second header text" },
       });
   });
 
@@ -83,53 +78,41 @@ describe("recognizeTransactions", () => {
         langPath: "/tessdata/",
       }),
     );
-    expect(mockWorker.recognize).toHaveBeenCalledTimes(4);
+    expect(mockWorker.recognize).toHaveBeenCalledTimes(2);
     expect(mockWorker.recognize).toHaveBeenNthCalledWith(
       1,
       firstFile,
       {},
-      { text: true },
+      { text: true, blocks: true },
       expect.stringMatching(/^ocr-\d+$/),
     );
     expect(mockWorker.recognize).toHaveBeenNthCalledWith(
       2,
-      firstFile,
-      {
-        rectangle: {
-          height: 120,
-          left: 0,
-          top: 0,
-          width: 1000,
-        },
-      },
-      { text: true },
-    );
-    expect(mockWorker.recognize).toHaveBeenNthCalledWith(
-      3,
       secondFile,
       {},
-      { text: true },
+      { text: true, blocks: true },
       expect.stringMatching(/^ocr-\d+$/),
     );
     expect(mockWorker.setParameters).toHaveBeenCalledWith({
-      tessedit_pageseg_mode: "7",
+      tessedit_pageseg_mode: "6",
     });
     expect(mockWorker.reinitialize).toHaveBeenCalledTimes(2);
     expect(mockWorker.reinitialize).toHaveBeenNthCalledWith(1, "rus+eng", 1);
     expect(mockWorker.reinitialize.mock.invocationCallOrder[0]).toBeLessThan(
-      mockWorker.recognize.mock.invocationCallOrder[2],
+      mockWorker.recognize.mock.invocationCallOrder[1],
     );
     expect(mockParseTransactions).toHaveBeenNthCalledWith(
       1,
-      "first main text\nfirst header text",
+      "first main text",
       88,
       "first.png",
       [],
+      new Map(),
     );
-    expect(closeBitmap).toHaveBeenCalledTimes(4);
+    expect(closeBitmap).toHaveBeenCalledTimes(2);
   });
 
-  it("upscales narrow screenshots before recognition", async () => {
+  it("uses an upscaled screenshot only as an additional pass", async () => {
     const sourceBitmap = {
       close: jest.fn(),
       height: 1280,
@@ -168,11 +151,10 @@ describe("recognizeTransactions", () => {
       );
       expect(preparedCanvas.getContext).toHaveBeenCalledWith("2d");
       expect(mockWorker.recognize).toHaveBeenNthCalledWith(
-        1,
+        2,
         preparedCanvas,
         {},
-        { text: true },
-        expect.stringMatching(/^ocr-\d+$/),
+        { text: true, blocks: true },
       );
       expect(sourceBitmap.close).toHaveBeenCalledTimes(1);
     } finally {
@@ -219,12 +201,13 @@ describe("recognizeTransactions", () => {
       jest.fn(),
     );
 
-    expect(mockWorker.recognize).toHaveBeenCalledTimes(2);
+    expect(mockWorker.recognize).toHaveBeenCalledTimes(1);
     expect(mockParseTransactions).toHaveBeenCalledWith(
-      "SEMASHKO, D.30 —Э1512 В\nСупермаркеты +45\nheader text",
+      "SEMASHKO, D.30 —Э1512 В\nСупермаркеты +45",
       79,
       "cropped-history.jpg",
       [],
+      new Map(),
     );
   });
 });

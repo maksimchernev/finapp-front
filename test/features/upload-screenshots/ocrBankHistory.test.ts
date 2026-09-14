@@ -419,7 +419,7 @@ describe("OCR bank history parser", () => {
       result.map(({ merchant, amount }) => ({ merchant, amount })),
     ).toEqual([
       { merchant: "DEMO STORE", amount: -612.34 },
-      { merchant: "Тест Маркет", amount: -734.56 },
+      { merchant: "Тест Маркет", amount: -73456 },
       { merchant: "DEMO-SERVICE", amount: -75 },
       { merchant: "Тест Маркет", amount: -281.45 },
       { merchant: "IP DEMOFOOD", amount: -785.04 },
@@ -882,7 +882,7 @@ describe("OCR bank history parser", () => {
         },
         {
           merchant: "SEMASHKO D.30",
-          amount: -973.12,
+          amount: -97312,
           categoryId: "groceries",
           date: "2026-07-03",
           selected: true,

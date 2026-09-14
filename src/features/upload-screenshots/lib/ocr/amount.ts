@@ -9,7 +9,9 @@ import type {
 
 // Ищет наиболее похожую на сумму подстроку в произвольном тексте.
 export function extractAmount(text: string) {
-  const matches = [...text.matchAll(new RegExp(AMOUNT_PATTERN, "gi"))]
+  const matches = [
+    ...maskPhoneNumbers(text).matchAll(new RegExp(AMOUNT_PATTERN, "gi")),
+  ]
     .map((match) => parseAmountCandidate(match[1], match[2], match[0]))
     .filter((match) => {
       if (!Number.isFinite(match.amount) || match.amount === 0) return false;
@@ -34,7 +36,7 @@ export function extractAmount(text: string) {
 export function extractTrailingAmount(
   line: string,
 ): LineAmountCandidate | null {
-  const searchableLine = removeTrailingHistoryMetadata(line);
+  const searchableLine = maskPhoneNumbers(removeTrailingHistoryMetadata(line));
   const match = searchableLine.match(TRAILING_AMOUNT_PATTERN);
   if (!match || match.index === undefined) {
     return null;
@@ -57,6 +59,17 @@ function removeTrailingHistoryMetadata(line: string) {
   return line.replace(/\s+\d{1,2}:\d{2}(?:\s+gif)?\s*$/i, "").trimEnd();
 }
 
+// Сохраняет индексы текста, но исключает группы номера телефона из поиска денег.
+function maskPhoneNumbers(text: string) {
+  return text.replace(
+    /\+?\d{1,3}[\s(]+\d{2,4}\)?[\s-]+\d{2,4}(?:-\d{2,4}){1,2}\b/g,
+    (phone) => {
+      const digits = phone.replace(/\D/g, "").length;
+      return digits >= 10 && digits <= 15 ? " ".repeat(phone.length) : phone;
+    },
+  );
+}
+
 // Приводит найденную строку суммы к числу, валюте и служебным флагам.
 export function parseAmountCandidate(
   value: string,
@@ -64,31 +77,20 @@ export function parseAmountCandidate(
   source = value,
 ): AmountCandidate {
   const raw = value.replace(/\s/g, "");
-  const normalizedRaw = raw.replace(/\./g, "").replace(",", ".");
   const hasDecimal = /[,.]\d{1,2}$/.test(raw);
-  const hasThousandsSeparator = /\d[ .]\d{3}/.test(value);
+  const decimalIndex = hasDecimal
+    ? Math.max(raw.lastIndexOf("."), raw.lastIndexOf(","))
+    : raw.length;
+  const normalizedRaw =
+    raw.slice(0, decimalIndex).replace(/[.,]/g, "") +
+    (hasDecimal ? `.${raw.slice(decimalIndex + 1)}` : "");
   const hasExplicitSign = /^[+\-]/.test(raw);
-  const digitCount = raw.replace(/[+\-]/g, "").length;
-  let inferredDecimal = false;
-  let amount = Number(normalizedRaw);
-
-  if (
-    Number.isFinite(amount) &&
-    !hasDecimal &&
-    !hasThousandsSeparator &&
-    digitCount >= 5 &&
-    normalizeCurrency(currencyValue) === "RUB"
-  ) {
-    amount = amount / 100;
-    inferredDecimal = true;
-  }
 
   return {
-    amount,
+    amount: Number(normalizedRaw),
     currency: normalizeCurrency(currencyValue),
     hasDecimal,
     hasExplicitSign,
-    inferredDecimal,
     source,
   };
 }

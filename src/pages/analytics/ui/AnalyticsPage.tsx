@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, type TouchEvent } from "react";
 import clsx from "clsx";
-import { BarChart3, Minimize2 } from "lucide-react";
+import { BarChart3, ChevronLeft, ChevronRight, Minimize2 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { formatCurrencyTotal } from "@/entities/transaction/lib/currencyTotals";
 import { formatMoney } from "@/entities/transaction/lib/format";
@@ -13,13 +13,16 @@ import {
   type AnalyticsWeekRange,
   buildAnalyticsAmountBars,
   buildAnalyticsMonthTabs,
+  buildAnalyticsWeekTabs,
   buildAnalyticsWeekCategorySeries,
   buildMonthCategoryStats,
   buildMonthCurrencyTotals,
   filterTransactionsByMonth,
   filterTransactionsByWeek,
   formatAnalyticsWeekPeriodLabel,
+  getAdjacentAnalyticsWeek,
   getAnalyticsBarDay,
+  getAnalyticsSwipeDirection,
   getMonthWeekRange,
   getMonthWeekStartDay,
   isMonthWeekStarted,
@@ -57,6 +60,7 @@ export function AnalyticsPage({
         scale: chartMode === "week" ? [0.97, 1] : [1.03, 1],
       };
   const [selectedWeekStartDay, setSelectedWeekStartDay] = useState(1);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [hoveredWeekRange, setHoveredWeekRange] =
     useState<AnalyticsWeekRange | null>(null);
   const monthTabs = useMemo(
@@ -70,6 +74,26 @@ export function AnalyticsPage({
       : monthTabs[0].key;
   const activeMonthLabel =
     monthTabs.find((tab) => tab.key === activeMonthKey)?.label ?? "";
+  const chronologicalMonthTabs = monthTabs.toReversed();
+  const chronologicalMonthKeys = chronologicalMonthTabs.map(
+    (month) => month.key,
+  );
+  const activeMonthIndex = chronologicalMonthKeys.indexOf(activeMonthKey);
+  const previousMonth = chronologicalMonthTabs[activeMonthIndex - 1];
+  const nextMonth = chronologicalMonthTabs[activeMonthIndex + 1];
+  const weekTabs = buildAnalyticsWeekTabs(activeMonthKey);
+  const previousWeek = getAdjacentAnalyticsWeek(
+    chronologicalMonthKeys,
+    activeMonthKey,
+    selectedWeekStartDay,
+    -1,
+  );
+  const nextWeek = getAdjacentAnalyticsWeek(
+    chronologicalMonthKeys,
+    activeMonthKey,
+    selectedWeekStartDay,
+    1,
+  );
   const monthTransactions = useMemo(
     () => filterTransactionsByMonth(transactions, activeMonthKey),
     [activeMonthKey, transactions],
@@ -193,6 +217,24 @@ export function AnalyticsPage({
     setHoveredWeekRange(null);
   }
 
+  function selectWeek(monthKey: string, weekStartDay: number) {
+    setSelectedMonthKey(monthKey);
+    setSelectedWeekStartDay(weekStartDay);
+    setChartMode("week");
+    setHoveredWeekRange(null);
+  }
+
+  function navigatePeriod(direction: "previous" | "next") {
+    if (chartMode === "month") {
+      const month = direction === "previous" ? previousMonth : nextMonth;
+      if (month) selectMonth(month.key);
+      return;
+    }
+
+    const week = direction === "previous" ? previousWeek : nextWeek;
+    if (week) selectWeek(week.monthKey, week.weekStartDay);
+  }
+
   function drillDownToWeek(bar: AnalyticsBar) {
     if (chartMode !== "month") return;
 
@@ -202,9 +244,7 @@ export function AnalyticsPage({
     const weekStartDay = getMonthWeekStartDay(day);
     if (!isMonthWeekStarted(activeMonthKey, weekStartDay)) return;
 
-    setSelectedWeekStartDay(weekStartDay);
-    setChartMode("week");
-    setHoveredWeekRange(null);
+    selectWeek(activeMonthKey, weekStartDay);
   }
 
   function previewWeek(bar: AnalyticsBar | null) {
@@ -238,6 +278,36 @@ export function AnalyticsPage({
     setHoveredWeekRange(null);
   }
 
+  function handleTouchStart(event: TouchEvent<HTMLElement>) {
+    const touch = event.touches[0];
+    touchStartRef.current = touch
+      ? { x: touch.clientX, y: touch.clientY }
+      : null;
+  }
+
+  function handleTouchEnd(event: TouchEvent<HTMLElement>) {
+    const start = touchStartRef.current;
+    const touch = event.changedTouches[0];
+    touchStartRef.current = null;
+    if (!start || !touch) return;
+
+    const direction = getAnalyticsSwipeDirection(
+      start.x,
+      touch.clientX,
+      start.y,
+      touch.clientY,
+    );
+    if (direction) navigatePeriod(direction);
+  }
+
+  function handleTouchCancel() {
+    touchStartRef.current = null;
+  }
+
+  function stopTouchPropagation(event: TouchEvent<HTMLElement>) {
+    event.stopPropagation();
+  }
+
   return (
     <section className={styles.screen}>
       <PageHeader
@@ -256,37 +326,63 @@ export function AnalyticsPage({
         }
       />
       {chartMode === "month" && (
-        <div className={styles.periodNavigation}>
-          <div className={styles.monthTabsViewport}>
-            <div className={styles.monthTabs} aria-label="Месяц аналитики">
-              {monthTabs.toReversed().map((month) => (
-                <button
-                  key={month.key}
-                  className={
-                    month.key === activeMonthKey
-                      ? styles.selectedMonth
-                      : undefined
-                  }
-                  type="button"
-                  onClick={() => selectMonth(month.key)}
-                >
-                  {month.label}
-                </button>
-              ))}
-            </div>
-          </div>
+        <div className={styles.periodControls}>
           {monthTabs.length > 1 ? (
-            <button
-              className={styles.monthsLink}
-              type="button"
-              aria-label="Сводка по месяцам"
-              title="Сводка по месяцам"
-              onClick={onOpenMonths}
-            >
-              <BarChart3 size={16} aria-hidden="true" />
-              <span>По месяцам</span>
-            </button>
+            <div className={styles.modeActionRow}>
+              <button
+                className={styles.monthsLink}
+                type="button"
+                aria-label="Сводка по месяцам"
+                title="Сводка по месяцам"
+                onClick={onOpenMonths}
+              >
+                <BarChart3 size={16} aria-hidden="true" />
+                <span>По месяцам</span>
+              </button>
+            </div>
           ) : null}
+          <div className={styles.periodNavigation}>
+            <button
+              aria-label="Предыдущий месяц"
+              className={styles.periodArrow}
+              disabled={!previousMonth}
+              type="button"
+              onClick={() => navigatePeriod("previous")}
+            >
+              <ChevronLeft size={18} aria-hidden="true" />
+            </button>
+            <div
+              className={styles.monthTabsViewport}
+              onTouchStart={stopTouchPropagation}
+            >
+              <div className={styles.monthTabs} aria-label="Месяц аналитики">
+                {chronologicalMonthTabs.map((month) => (
+                  <button
+                    aria-pressed={month.key === activeMonthKey}
+                    key={month.key}
+                    className={
+                      month.key === activeMonthKey
+                        ? styles.selectedMonth
+                        : undefined
+                    }
+                    type="button"
+                    onClick={() => selectMonth(month.key)}
+                  >
+                    {month.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button
+              aria-label="Следующий месяц"
+              className={styles.periodArrow}
+              disabled={!nextMonth}
+              type="button"
+              onClick={() => navigatePeriod("next")}
+            >
+              <ChevronRight size={18} aria-hidden="true" />
+            </button>
+          </div>
         </div>
       )}
       <motion.div
@@ -297,19 +393,66 @@ export function AnalyticsPage({
         )}
         initial={false}
         transition={{ duration: 0.18, ease: "easeOut" }}
+        onTouchCancel={handleTouchCancel}
+        onTouchEnd={handleTouchEnd}
+        onTouchStart={handleTouchStart}
       >
         {chartMode === "week" && (
-          <div className={styles.weekNavigation}>
-            <strong>{weekPeriodLabel}</strong>
-            <button
-              className={styles.zoomOutBtn}
-              type="button"
-              aria-label="Отдалиться до месяца"
-              title="Отдалиться до месяца"
-              onClick={zoomOutToMonth}
-            >
-              <Minimize2 size={16} aria-hidden="true" />
-            </button>
+          <div className={styles.periodControls}>
+            <div className={styles.modeActionRow}>
+              <button
+                className={styles.zoomOutBtn}
+                type="button"
+                aria-label="Отдалиться до месяца"
+                title="Отдалиться до месяца"
+                onClick={zoomOutToMonth}
+              >
+                <Minimize2 size={16} aria-hidden="true" />
+              </button>
+            </div>
+            <div className={styles.weekNavigation}>
+              <button
+                aria-label="Предыдущая неделя"
+                className={styles.periodArrow}
+                disabled={!previousWeek}
+                type="button"
+                onClick={() => navigatePeriod("previous")}
+              >
+                <ChevronLeft size={18} aria-hidden="true" />
+              </button>
+              <div
+                className={styles.monthTabsViewport}
+                onTouchStart={stopTouchPropagation}
+              >
+                <div className={styles.monthTabs} aria-label="Неделя аналитики">
+                  {weekTabs.map((week) => (
+                    <button
+                      aria-pressed={week.startDay === selectedWeekStartDay}
+                      className={
+                        week.startDay === selectedWeekStartDay
+                          ? styles.selectedMonth
+                          : undefined
+                      }
+                      disabled={week.disabled}
+                      key={week.startDay}
+                      type="button"
+                      onClick={() => selectWeek(activeMonthKey, week.startDay)}
+                    >
+                      {week.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <button
+                aria-label="Следующая неделя"
+                className={styles.periodArrow}
+                disabled={!nextWeek}
+                type="button"
+                onClick={() => navigatePeriod("next")}
+              >
+                <ChevronRight size={18} aria-hidden="true" />
+              </button>
+            </div>
           </div>
         )}
         <div className={styles.metricsGrid}>

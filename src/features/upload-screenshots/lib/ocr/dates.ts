@@ -92,10 +92,15 @@ function extractRelativeDateHeader(text: string) {
     match[1] === "вчера" || match[1] === "yesterday" || match[0] === "buepa"
       ? -1
       : 0;
-  return safeDate(
+  const relativeDay = new Date(
     today.getFullYear(),
     today.getMonth(),
     today.getDate() + dayOffset,
+  );
+  return safeDate(
+    relativeDay.getFullYear(),
+    relativeDay.getMonth(),
+    relativeDay.getDate(),
     0,
     0,
   );
@@ -110,7 +115,14 @@ function safeDate(
   minute: number,
 ) {
   const date = new Date(Date.UTC(year, month, day, hour, minute));
-  if (Number.isNaN(date.getTime())) {
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month ||
+    date.getUTCDate() !== day ||
+    date.getUTCHours() !== hour ||
+    date.getUTCMinutes() !== minute
+  ) {
     return null;
   }
   return date;

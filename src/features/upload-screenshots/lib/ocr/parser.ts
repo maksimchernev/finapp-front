@@ -18,6 +18,7 @@ export function parseTransactions(
   ocrConfidence: number,
   fileName: string,
   categories: Category[],
+  lineAlternatives: ReadonlyMap<number, string> = new Map(),
 ): ParsedTransaction[] {
   const lines = rawText.split(/\r?\n/).map(normalizeOcrLine).filter(Boolean);
 
@@ -27,6 +28,7 @@ export function parseTransactions(
     ocrConfidence,
     fileName,
     categories,
+    lineAlternatives,
   );
 
   if (historyRows.length > 0) {

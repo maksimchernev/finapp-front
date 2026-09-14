@@ -40,7 +40,6 @@ export function scoreHistoryRowConfidence(
   if (details.amount.hasExplicitSign) score += 6;
   if (details.amount.currency) score += 5;
 
-  if (details.amount.inferredDecimal) score -= 12;
   if (!details.categoryHint) score -= 5;
   if (/["“”#$©]/.test(details.line)) score -= 4;
   if (/[A-ZА-ЯЁ]{1}\s+[A-ZА-ЯЁ]{1}\s+/i.test(details.merchant)) score -= 3;

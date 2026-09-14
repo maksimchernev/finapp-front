@@ -56,6 +56,12 @@ export interface AnalyticsWeekRange {
   endKey: string;
 }
 
+export interface AnalyticsWeekTab {
+  startDay: number;
+  label: string;
+  disabled: boolean;
+}
+
 export function buildAnalyticsMonthTabs(
   transactions: readonly Transaction[],
   today = new Date(),
@@ -234,6 +240,78 @@ export function getLastStartedWeekStartDay(
 
   if (maxDay < 1) return null;
   return getMonthWeekStartDay(maxDay);
+}
+
+export function buildAnalyticsWeekTabs(
+  monthKey: string,
+  today = new Date(),
+): AnalyticsWeekTab[] {
+  const daysInMonth = getDaysInMonth(monthKey);
+
+  return Array.from({ length: Math.ceil(daysInMonth / 7) }, (_, index) => {
+    const range = getMonthWeekRange(monthKey, index * 7 + 1);
+
+    return {
+      startDay: range.startDay,
+      label: `${range.startDay}–${range.endDay}`,
+      disabled: !isMonthWeekStarted(monthKey, range.startDay, today),
+    };
+  });
+}
+
+export function getAdjacentAnalyticsWeek(
+  monthKeys: readonly string[],
+  monthKey: string,
+  weekStartDay: number,
+  direction: -1 | 1,
+  today = new Date(),
+) {
+  const weeks = buildAnalyticsWeekTabs(monthKey, today);
+  const weekIndex = weeks.findIndex(
+    (week) => week.startDay === weekStartDay,
+  );
+  const monthIndex = monthKeys.indexOf(monthKey);
+  if (weekIndex < 0 || monthIndex < 0) return null;
+
+  const adjacentWeek = weeks[weekIndex + direction];
+
+  if (adjacentWeek) {
+    return adjacentWeek.disabled
+      ? null
+      : { monthKey, weekStartDay: adjacentWeek.startDay };
+  }
+
+  const adjacentMonthKey = monthKeys[monthIndex + direction];
+  if (!adjacentMonthKey) return null;
+
+  const adjacentMonthWeeks = buildAnalyticsWeekTabs(
+    adjacentMonthKey,
+    today,
+  ).filter((week) => !week.disabled);
+  const targetWeek =
+    direction === -1
+      ? adjacentMonthWeeks[adjacentMonthWeeks.length - 1]
+      : adjacentMonthWeeks[0];
+
+  return targetWeek
+    ? { monthKey: adjacentMonthKey, weekStartDay: targetWeek.startDay }
+    : null;
+}
+
+export function getAnalyticsSwipeDirection(
+  startX: number,
+  endX: number,
+  startY: number,
+  endY: number,
+): "previous" | "next" | null {
+  const deltaX = endX - startX;
+  const deltaY = endY - startY;
+
+  if (Math.abs(deltaX) < 50 || Math.abs(deltaX) <= Math.abs(deltaY)) {
+    return null;
+  }
+
+  return deltaX > 0 ? "previous" : "next";
 }
 
 export function getAnalyticsBarDay(bar: AnalyticsBar) {

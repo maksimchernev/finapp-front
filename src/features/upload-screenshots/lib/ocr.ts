@@ -1,7 +1,13 @@
-import Tesseract, { PSM } from "tesseract.js";
+import Tesseract, { PSM, type Page } from "tesseract.js";
 import type { Category } from "@/entities/category/model/types";
-import { TESSERACT_LANG_PATH } from "@/features/upload-screenshots/lib/ocr/constants";
+import {
+  DATE_HEADER_REGEX,
+  TESSERACT_LANG_PATH,
+} from "@/features/upload-screenshots/lib/ocr/constants";
+import { extractDateHeader } from "@/features/upload-screenshots/lib/ocr/dates";
+import { normalizeOcrLine } from "@/features/upload-screenshots/lib/ocr/text";
 import { parseTransactions } from "@/features/upload-screenshots/lib/ocr/parser";
+import { mergeOcrPages } from "@/features/upload-screenshots/lib/ocr/recognition";
 import type { ProgressHandler } from "@/features/upload-screenshots/lib/ocr/types";
 
 export { parseTransactions } from "@/features/upload-screenshots/lib/ocr/parser";
@@ -12,8 +18,6 @@ type TesseractProgressEvent = {
   status?: string;
   userJobId?: string;
 };
-type OcrImage = File | HTMLCanvasElement;
-
 const MIN_OCR_IMAGE_WIDTH = 1000;
 const MAX_OCR_IMAGE_SCALE = 2;
 
@@ -31,37 +35,108 @@ export async function recognizeTransactions(
 ) {
   const jobId = `ocr-${nextOcrJobId++}`;
   jobProgressHandlers.set(jobId, onProgress);
+  let worker: OcrWorker | undefined;
 
   try {
-    const worker = await getOcrWorker(onProgress);
-    const image = await prepareOcrImage(file);
+    worker = await getOcrWorker(onProgress);
     await worker.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_BLOCK });
     const result = await worker.recognize(
-      image,
+      file,
       {},
-      { text: true },
+      { text: true, blocks: true },
       jobId,
     );
     const confidence = Math.round(result.data.confidence || 0);
-    const headerText = await recognizeHeader(worker, image);
+    const prepared = await prepareOcrImage(file);
+    let secondary;
+    if (prepared) {
+      try {
+        onProgress(90, "Проверяю распознанные строки");
+        await worker.reinitialize("rus+eng", 1);
+        await worker.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_BLOCK });
+        secondary = await worker.recognize(
+          prepared.image,
+          {},
+          { text: true, blocks: true },
+        );
+      } catch {
+        // Дополнительный проход не должен терять уже распознанный исходник.
+      }
+    }
+    await rereadInvalidDates(worker, file, result.data);
+    const merged = mergeOcrPages(result.data, secondary?.data, prepared?.scale);
 
     return parseTransactions(
-      [result.data.text, headerText].filter(Boolean).join("\n"),
+      merged.text,
       confidence,
       file.name,
       categories,
+      merged.alternatives,
     );
   } finally {
     jobProgressHandlers.delete(jobId);
+    if (worker) {
+      try {
+        await worker.reinitialize("rus+eng", 1);
+      } catch {
+        workerPromise = null;
+        await worker.terminate().catch(() => undefined);
+      }
+    }
   }
 }
 
-async function prepareOcrImage(file: File): Promise<OcrImage> {
+async function rereadInvalidDates(worker: OcrWorker, file: File, page: Page) {
+  const lines = (page.blocks || []).flatMap((block) =>
+    block.paragraphs.flatMap((paragraph) => paragraph.lines),
+  );
+  const invalid = lines.filter((line) => {
+    const text = normalizeOcrLine(line.text);
+    return DATE_HEADER_REGEX.test(text) && !extractDateHeader(text);
+  });
+  if (!invalid.length) return;
+  let bitmap: ImageBitmap | null = null;
+  try {
+    bitmap = await createImageBitmap(file);
+    await worker.reinitialize("rus+eng", 1);
+    await worker.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_LINE });
+    // Ограничиваем дополнительную работу даже на очень длинном изображении.
+    for (const line of invalid.slice(0, 8)) {
+      const padding = Math.ceil((line.bbox.y1 - line.bbox.y0) / 2);
+      const left = Math.max(0, line.bbox.x0 - padding);
+      const top = Math.max(0, line.bbox.y0 - padding);
+      const { data } = await worker.recognize(
+        file,
+        {
+          rectangle: {
+            left,
+            top,
+            width: Math.min(bitmap.width, line.bbox.x1 + padding) - left,
+            height: Math.min(bitmap.height, line.bbox.y1 + padding) - top,
+          },
+        },
+        { text: true },
+      );
+      const text = normalizeOcrLine(data.text);
+      if (extractDateHeader(text)) line.text = text;
+    }
+    page.text = lines
+      .map((line) => normalizeOcrLine(line.text))
+      .filter(Boolean)
+      .join("\n");
+  } catch {
+    // Нечитаемая дата останется помеченной для ручной проверки в парсере.
+  } finally {
+    bitmap?.close();
+  }
+}
+
+async function prepareOcrImage(file: File) {
   let bitmap: ImageBitmap | null = null;
 
   try {
     bitmap = await createImageBitmap(file);
-    if (bitmap.width >= MIN_OCR_IMAGE_WIDTH) return file;
+    if (bitmap.width >= MIN_OCR_IMAGE_WIDTH) return null;
 
     const scale = Math.min(
       MAX_OCR_IMAGE_SCALE,
@@ -71,46 +146,14 @@ async function prepareOcrImage(file: File): Promise<OcrImage> {
     canvas.width = Math.round(bitmap.width * scale);
     canvas.height = Math.round(bitmap.height * scale);
     const context = canvas.getContext("2d");
-    if (!context) return file;
+    if (!context) return null;
 
     context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    return canvas;
+    return { image: canvas, scale };
   } catch {
-    return file;
+    return null;
   } finally {
     bitmap?.close();
-  }
-}
-
-async function recognizeHeader(worker: OcrWorker, image: OcrImage) {
-  let bitmap: ImageBitmap | null = null;
-
-  try {
-    bitmap = await createImageBitmap(image);
-    await worker.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_LINE });
-    const result = await worker.recognize(
-      image,
-      {
-        rectangle: {
-          height: Math.max(1, Math.round(bitmap.height * 0.06)),
-          left: 0,
-          top: 0,
-          width: bitmap.width,
-        },
-      },
-      { text: true },
-    );
-    return result.data.text;
-  } catch {
-    return "";
-  } finally {
-    bitmap?.close();
-    try {
-      await worker.reinitialize("rus+eng", 1);
-    } catch {
-      workerPromise = null;
-      await worker.terminate().catch(() => undefined);
-    }
   }
 }
 

@@ -3,24 +3,24 @@
   gap: 18px;
 }
 
-.periodNavigation {
-  height: 36px;
+.periodControls {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
   gap: 8px;
+
+  .modeActionRow {
+    min-height: 36px;
+    display: flex;
+    justify-content: flex-end;
+  }
 }
 
+.periodNavigation,
 .weekNavigation {
   height: 36px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 34px;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
-
-  strong {
-    font-size: 14px;
-  }
 }
 
 .analyticsContent {
@@ -37,6 +37,23 @@
 
 .monthTabsViewport {
   min-width: 0;
+}
+
+.periodArrow {
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--accent-a);
+  background: var(--surface);
+
+  &:disabled {
+    color: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.35;
+  }
 }
 
 .monthsLink {
@@ -81,6 +98,11 @@
     background: var(--surface);
     font-size: 13px;
     font-weight: 800;
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.4;
+    }
   }
 }
 

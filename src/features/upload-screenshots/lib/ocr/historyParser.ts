@@ -7,6 +7,7 @@ import {
   matchCategory,
 } from "@/features/upload-screenshots/lib/ocr/categories";
 import {
+  DATE_HEADER_REGEX,
   HISTORY_CHROME_WORDS,
   POSITIVE_HINTS,
 } from "@/features/upload-screenshots/lib/ocr/constants";
@@ -17,6 +18,17 @@ import {
 } from "@/features/upload-screenshots/lib/ocr/dates";
 import { isLikelyIncome } from "@/features/upload-screenshots/lib/ocr/income";
 import { deriveHistoryMerchant } from "@/features/upload-screenshots/lib/ocr/merchant";
+import type { LineAmountCandidate } from "@/features/upload-screenshots/lib/ocr/types";
+
+type HistoryGroup = {
+  totals: LineAmountCandidate[];
+  uncertainDate: boolean;
+  rows: {
+    transaction: ParsedTransaction;
+    alternate: LineAmountCandidate | null;
+    compared: boolean;
+  }[];
+};
 
 // Парсит экран истории операций, где каждая операция обычно занимает строку.
 export function parseBankHistoryRows(
@@ -25,10 +37,13 @@ export function parseBankHistoryRows(
   ocrConfidence: number,
   fileName: string,
   categories: Category[],
+  lineAlternatives: ReadonlyMap<number, string> = new Map(),
 ) {
   const hasHistoryLayout =
-    lines.some((line) => Boolean(extractDateHeader(line))) ||
-    lines.some((line) => line.toLowerCase().includes("история"));
+    lines.some(
+      (line) =>
+        Boolean(extractDateHeader(line)) || DATE_HEADER_REGEX.test(line),
+    ) || lines.some((line) => line.toLowerCase().includes("история"));
 
   if (!hasHistoryLayout) {
     return [];
@@ -36,11 +51,32 @@ export function parseBankHistoryRows(
 
   const transactions: ParsedTransaction[] = [];
   let currentDate: Date | null = null;
+  let group: HistoryGroup = { totals: [], uncertainDate: false, rows: [] };
+  const groups = [group];
 
   lines.forEach((line, index) => {
     const headerDate = extractDateHeader(line);
-    if (headerDate) {
+    const alternateLine = lineAlternatives.get(index);
+    if (headerDate || DATE_HEADER_REGEX.test(line)) {
       currentDate = headerDate;
+      const alternateDate = alternateLine
+        ? extractDateHeader(alternateLine)
+        : null;
+      group = {
+        totals: [
+          headerDate ? extractTrailingAmount(line) : null,
+          alternateDate?.getTime() === headerDate?.getTime() && alternateLine
+            ? extractTrailingAmount(alternateLine)
+            : null,
+        ].filter((total): total is LineAmountCandidate => Boolean(total)),
+        uncertainDate:
+          !headerDate ||
+          Boolean(
+            alternateDate && alternateDate.getTime() !== headerDate.getTime(),
+          ),
+        rows: [],
+      };
+      groups.push(group);
       return;
     }
 
@@ -54,7 +90,7 @@ export function parseBankHistoryRows(
       .join(" ");
     if (
       !amountResult ||
-      (!date && !categoryHint) ||
+      (!date && !categoryHint && !group.uncertainDate) ||
       isHistoryChromeLine(line) ||
       isHistoryDetailLine(line)
     ) {
@@ -100,7 +136,7 @@ export function parseBankHistoryRows(
       line,
     });
 
-    transactions.push({
+    const transaction: ParsedTransaction = {
       localId: `${Date.now()}-${index}-${Math.random().toString(16).slice(2)}`,
       amount: Number(signedAmount.toFixed(2)),
       currency: amountResult.currency,
@@ -111,10 +147,66 @@ export function parseBankHistoryRows(
       sourceFile: fileName,
       rawText,
       selected: isHistoryTransactionSelectedByDefault(lines, index),
+    };
+    transactions.push(transaction);
+    group.rows.push({
+      transaction,
+      alternate: alternateLine ? extractTrailingAmount(alternateLine) : null,
+      compared: lineAlternatives.has(index),
     });
   });
 
+  groups.forEach(reconcileHistoryGroup);
   return transactions;
+}
+
+// Проверяем только реально прочитанные варианты, не вычисляем пропавшие цифры.
+function reconcileHistoryGroup(group: HistoryGroup) {
+  const primary = group.rows.map((row) => row.transaction.amount);
+  const alternate = group.rows.map((row) =>
+    row.alternate
+      ? row.alternate.hasExplicitSign
+        ? row.alternate.amount
+        : Math.abs(row.alternate.amount) * Math.sign(row.transaction.amount)
+      : row.compared
+        ? null
+        : row.transaction.amount,
+  );
+  const agreesWithTotal = (amounts: (number | null)[], useAlternate: boolean) =>
+    amounts.length > 0 &&
+    amounts.every((amount) => amount !== null) &&
+    group.totals.some(
+      (total) =>
+        group.rows.every(
+          (row, index) =>
+            (useAlternate
+              ? row.alternate?.currency || row.transaction.currency
+              : row.transaction.currency) === total.currency &&
+            Math.sign(amounts[index]!) === Math.sign(total.amount),
+        ) &&
+        amounts.reduce<number>(
+          (sum, amount) => sum + Math.round(amount! * 100),
+          0,
+        ) === Math.round(total.amount * 100),
+    );
+  const primaryMatches = agreesWithTotal(primary, false);
+  const alternateMatches = agreesWithTotal(alternate, true);
+  const resolved = primaryMatches !== alternateMatches;
+
+  group.rows.forEach((row, index) => {
+    const differs =
+      row.compared &&
+      (primary[index] !== alternate[index] ||
+        row.alternate?.currency !== row.transaction.currency);
+    if (resolved && alternateMatches && row.alternate) {
+      row.transaction.amount = alternate[index]!;
+      row.transaction.currency = row.alternate.currency;
+    }
+    if (group.uncertainDate || (differs && !resolved)) {
+      row.transaction.selected = false;
+      row.transaction.confidence = Math.min(row.transaction.confidence, 54);
+    }
+  });
 }
 
 const DEFAULT_UNSELECTED_HISTORY_PATTERNS = [
@@ -125,10 +217,7 @@ const DEFAULT_UNSELECTED_HISTORY_PATTERNS = [
 ];
 
 // Читает строки текущего блока до следующей операции или даты.
-function isHistoryTransactionSelectedByDefault(
-  lines: string[],
-  index: number,
-) {
+function isHistoryTransactionSelectedByDefault(lines: string[], index: number) {
   const blockLines = [lines[index]];
 
   for (let nextIndex = index + 1; nextIndex < lines.length; nextIndex += 1) {

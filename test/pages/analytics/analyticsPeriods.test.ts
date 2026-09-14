@@ -1,6 +1,7 @@
 import {
   buildAnalyticsAmountBars,
   buildAnalyticsMonthTabs,
+  buildAnalyticsWeekTabs,
   buildAnalyticsWeekCategorySeries,
   buildCategoryExpenseTrend,
   filterTransactionsByMonth,
@@ -8,6 +9,8 @@ import {
   formatAnalyticsWeekPeriodLabel,
   getAnalyticsBarDay,
   getAnalyticsBarTooltipTitle,
+  getAnalyticsSwipeDirection,
+  getAdjacentAnalyticsWeek,
   getLastStartedWeekStartDay,
   getMonthWeekRange,
   getMonthWeekStartDay,
@@ -143,6 +146,46 @@ describe("analytics periods", () => {
     expect(getLastStartedWeekStartDay("2026-07", today)).toBe(8);
     expect(getLastStartedWeekStartDay("2026-06", today)).toBe(29);
     expect(getLastStartedWeekStartDay("2026-08", today)).toBeNull();
+  });
+
+  it("builds weekly tabs and disables weeks that have not started", () => {
+    expect(
+      buildAnalyticsWeekTabs(
+        "2026-07",
+        new Date("2026-07-13T09:00:00.000Z"),
+      ),
+    ).toEqual([
+      { disabled: false, label: "1–7", startDay: 1 },
+      { disabled: false, label: "8–14", startDay: 8 },
+      { disabled: true, label: "15–21", startDay: 15 },
+      { disabled: true, label: "22–28", startDay: 22 },
+      { disabled: true, label: "29–31", startDay: 29 },
+    ]);
+  });
+
+  it("moves weekly navigation across adjacent available months", () => {
+    const monthKeys = ["2026-06", "2026-07", "2026-08"];
+    const today = new Date("2026-07-13T09:00:00.000Z");
+
+    expect(
+      getAdjacentAnalyticsWeek(monthKeys, "2026-07", 1, -1, today),
+    ).toEqual({ monthKey: "2026-06", weekStartDay: 29 });
+    expect(
+      getAdjacentAnalyticsWeek(monthKeys, "2026-06", 29, 1, today),
+    ).toEqual({ monthKey: "2026-07", weekStartDay: 1 });
+    expect(
+      getAdjacentAnalyticsWeek(monthKeys, "2026-07", 8, 1, today),
+    ).toBeNull();
+    expect(
+      getAdjacentAnalyticsWeek(monthKeys, "2026-05", 1, 1, today),
+    ).toBeNull();
+  });
+
+  it("recognizes only deliberate horizontal analytics swipes", () => {
+    expect(getAnalyticsSwipeDirection(120, 20, 110, 24)).toBe("next");
+    expect(getAnalyticsSwipeDirection(20, 120, 24, 110)).toBe("previous");
+    expect(getAnalyticsSwipeDirection(120, 80, 20, 24)).toBeNull();
+    expect(getAnalyticsSwipeDirection(120, 20, 20, 140)).toBeNull();
   });
 
   it("hides bar tooltips on the month chart but keeps them on week drill-down", () => {

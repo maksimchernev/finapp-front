@@ -11,12 +11,28 @@ describe("analytics weekly layout", () => {
     "utf8",
   );
 
-  it("replaces month navigation with a week range and zoom-out action", () => {
+  it("keeps the weekly action and period tabs inside the weekly cloud", () => {
     expect(source).toContain('chartMode === "month" && (');
+    expect(source).toContain("styles.periodControls");
+    expect(source).toContain("styles.modeActionRow");
     expect(source).toContain("styles.weekNavigation");
     expect(source).toContain("formatAnalyticsWeekPeriodLabel(");
     expect(source).toContain("onClick={zoomOutToMonth}");
     expect(source).toContain("<Minimize2");
+    expect(source).toContain("weekTabs.map((week)");
+    expect(source.indexOf("styles.weekCloud")).toBeLessThan(
+      source.indexOf("styles.zoomOutBtn"),
+    );
+  });
+
+  it("supports arrows and touch swipes without moving currency out of the header", () => {
+    expect(source).toContain("<ChevronLeft");
+    expect(source).toContain("<ChevronRight");
+    expect(source).toContain("onTouchStart={handleTouchStart}");
+    expect(source).toContain("onTouchEnd={handleTouchEnd}");
+    expect(source).toContain("onTouchCancel={handleTouchCancel}");
+    expect(source).toContain("onTouchStart={stopTouchPropagation}");
+    expect(source).toContain("<CurrencySwitcher");
   });
 
   it("keeps analytics blocks mounted in one stable weekly cloud", () => {
