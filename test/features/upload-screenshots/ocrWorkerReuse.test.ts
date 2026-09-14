@@ -162,6 +162,50 @@ describe("recognizeTransactions", () => {
     }
   });
 
+  it("uses a normalized wide screenshot as an additional pass", async () => {
+    const sourceBitmap = {
+      close: jest.fn(),
+      height: 2556,
+      width: 1179,
+    };
+    const preparedCanvas = {
+      getContext: jest.fn(() => ({ drawImage: jest.fn() })),
+      height: 0,
+      width: 0,
+    };
+    Object.defineProperty(globalThis, "createImageBitmap", {
+      configurable: true,
+      value: jest.fn(async () => sourceBitmap),
+    });
+    Object.defineProperty(globalThis, "document", {
+      configurable: true,
+      value: {
+        createElement: jest.fn(() => preparedCanvas),
+      },
+    });
+
+    try {
+      await recognizeTransactions(
+        { name: "iphone-history.png" } as File,
+        [],
+        jest.fn(),
+      );
+
+      expect(preparedCanvas).toEqual(
+        expect.objectContaining({ height: 2168, width: 1000 }),
+      );
+      expect(mockWorker.recognize).toHaveBeenNthCalledWith(
+        2,
+        preparedCanvas,
+        {},
+        { text: true, blocks: true },
+      );
+      expect(sourceBitmap.close).toHaveBeenCalledTimes(1);
+    } finally {
+      Reflect.deleteProperty(globalThis, "document");
+    }
+  });
+
   it("keeps full-image OCR rows instead of replacing them with fixed crops", async () => {
     mockWorker.recognize.mockReset();
     mockWorker.recognize

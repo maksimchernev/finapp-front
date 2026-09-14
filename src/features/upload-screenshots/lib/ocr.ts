@@ -18,7 +18,7 @@ type TesseractProgressEvent = {
   status?: string;
   userJobId?: string;
 };
-const MIN_OCR_IMAGE_WIDTH = 1000;
+const NORMALIZED_OCR_IMAGE_WIDTH = 1000;
 const MAX_OCR_IMAGE_SCALE = 2;
 
 let workerPromise: Promise<OcrWorker> | null = null;
@@ -136,11 +136,9 @@ async function prepareOcrImage(file: File) {
 
   try {
     bitmap = await createImageBitmap(file);
-    if (bitmap.width >= MIN_OCR_IMAGE_WIDTH) return null;
-
     const scale = Math.min(
       MAX_OCR_IMAGE_SCALE,
-      MIN_OCR_IMAGE_WIDTH / bitmap.width,
+      NORMALIZED_OCR_IMAGE_WIDTH / bitmap.width,
     );
     const canvas = document.createElement("canvas");
     canvas.width = Math.round(bitmap.width * scale);

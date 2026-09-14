@@ -123,6 +123,44 @@ describe("OCR recognition and parsing together", () => {
     ]);
   });
 
+  it("restores missing cents only when the day total confirms them", async () => {
+    mockWorker.recognize
+      .mockResolvedValueOnce(
+        page([
+          "2 сентября -845,53 Р",
+          "ВкусВилл -208 Р",
+          "Бристоль -306,36 Р",
+          "EDA -66 Р",
+          "SPAR -26517 Р",
+        ]),
+      )
+      .mockResolvedValueOnce(
+        page(
+          [
+            "2 сентября -845,53 Р",
+            "ВкусВилл -208 Р",
+            "Бристоль -506,56 Р",
+            "EDA -66 Р",
+            "SPAR -26517 Р",
+          ],
+          1000 / 600,
+        ),
+      );
+
+    const rows = await recognizeTransactions(
+      { name: "history.png" } as File,
+      categories,
+      jest.fn(),
+    );
+
+    expect(rows.map(({ amount, selected }) => ({ amount, selected }))).toEqual([
+      { amount: -208, selected: true },
+      { amount: -306.36, selected: true },
+      { amount: -66, selected: true },
+      { amount: -265.17, selected: true },
+    ]);
+  });
+
   it("does not auto-select an unresolved amount disagreement on a cropped group", async () => {
     mockWorker.recognize
       .mockResolvedValueOnce(page(["2 сентября", "Магазин -12345 Р"]))

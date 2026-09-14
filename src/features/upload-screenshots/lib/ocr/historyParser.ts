@@ -25,6 +25,7 @@ type HistoryGroup = {
   uncertainDate: boolean;
   rows: {
     transaction: ParsedTransaction;
+    primary: LineAmountCandidate;
     alternate: LineAmountCandidate | null;
     compared: boolean;
   }[];
@@ -151,6 +152,7 @@ export function parseBankHistoryRows(
     transactions.push(transaction);
     group.rows.push({
       transaction,
+      primary: amountResult,
       alternate: alternateLine ? extractTrailingAmount(alternateLine) : null,
       compared: lineAlternatives.has(index),
     });
@@ -160,8 +162,28 @@ export function parseBankHistoryRows(
   return transactions;
 }
 
-// Проверяем только реально прочитанные варианты, не вычисляем пропавшие цифры.
+// Меняем OCR-вариант только при единственном точном совпадении с итогом дня.
 function reconcileHistoryGroup(group: HistoryGroup) {
+  const inferredCents = group.rows.flatMap((row, index) => {
+    if (row.primary.hasDecimal || row.transaction.currency !== "RUB") return [];
+    const amount = row.transaction.amount / 100;
+    const amounts = group.rows.map((candidate, candidateIndex) =>
+      candidateIndex === index ? amount : candidate.transaction.amount,
+    );
+    const matches = group.totals.some(
+      (total) =>
+        total.currency === "RUB" &&
+        amounts.every((value) => Math.sign(value) === Math.sign(total.amount)) &&
+        amounts.reduce((sum, value) => sum + Math.round(value * 100), 0) ===
+          Math.round(total.amount * 100),
+    );
+    return matches ? [{ amount, index }] : [];
+  });
+  if (inferredCents.length === 1) {
+    const inferred = inferredCents[0];
+    group.rows[inferred.index].transaction.amount = inferred.amount;
+  }
+
   const primary = group.rows.map((row) => row.transaction.amount);
   const alternate = group.rows.map((row) =>
     row.alternate
