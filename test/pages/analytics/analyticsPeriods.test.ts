@@ -11,9 +11,8 @@ import {
   getAnalyticsBarTooltipTitle,
   getAnalyticsSwipeDirection,
   getAdjacentAnalyticsWeek,
-  getLastStartedWeekStartDay,
+  getLastStartedWeekStartKey,
   getMonthWeekRange,
-  getMonthWeekStartDay,
   isMonthWeekStarted,
   shouldShowAnalyticsTooltip,
 } from "@/pages/analytics/lib/analyticsPeriods";
@@ -83,27 +82,28 @@ describe("analytics periods", () => {
     ]);
   });
 
-  it("filters transactions by the selected week inside the month", () => {
+  it("filters a calendar week across the month boundary", () => {
     const transactions = [
-      createTransaction(-1000, "2026-07-07T10:00:00.000Z"),
-      createTransaction(-2000, "2026-07-08T10:00:00.000Z"),
-      createTransaction(-3000, "2026-07-14T10:00:00.000Z"),
-      createTransaction(-4000, "2026-07-15T10:00:00.000Z"),
-      createTransaction(-5000, "2026-06-10T10:00:00.000Z"),
+      createTransaction(-1000, "2026-06-28T10:00:00.000Z"),
+      createTransaction(-2000, "2026-06-29T10:00:00.000Z"),
+      createTransaction(-3000, "2026-07-01T10:00:00.000Z"),
+      createTransaction(-4000, "2026-07-05T10:00:00.000Z"),
+      createTransaction(-5000, "2026-07-06T10:00:00.000Z"),
     ];
 
-    expect(filterTransactionsByWeek(transactions, "2026-07", 8)).toEqual([
+    expect(filterTransactionsByWeek(transactions, "2026-06-29")).toEqual([
       transactions[1],
       transactions[2],
+      transactions[3],
     ]);
   });
 
-  it("finds the week start day for a clicked month bar", () => {
-    expect(getAnalyticsBarDay({ key: "2026-07-08", label: "8", total: 0 })).toBe(8);
-    expect(getMonthWeekStartDay(1)).toBe(1);
-    expect(getMonthWeekStartDay(7)).toBe(1);
-    expect(getMonthWeekStartDay(8)).toBe(8);
-    expect(getMonthWeekStartDay(31)).toBe(29);
+  it("finds the calendar week for a clicked month bar", () => {
+    expect(
+      getAnalyticsBarDay({ key: "2026-07-08", label: "8", total: 0 }),
+    ).toBe(8);
+    expect(getMonthWeekRange("2026-07", 5).startKey).toBe("2026-06-29");
+    expect(getMonthWeekRange("2026-07", 6).startKey).toBe("2026-07-06");
   });
 
   it("formats a weekly tooltip title as day and month", () => {
@@ -116,50 +116,58 @@ describe("analytics periods", () => {
     ).toBe("25 июня");
   });
 
-  it("builds the highlighted week range for a month bar", () => {
-    expect(getMonthWeekRange("2026-07", 31)).toEqual({
-      endDay: 31,
-      endKey: "2026-07-31",
+  it("builds a Monday-to-Sunday range across the year boundary", () => {
+    expect(getMonthWeekRange("2025-12", 31)).toEqual({
+      endDay: 4,
+      endKey: "2026-01-04",
       startDay: 29,
-      startKey: "2026-07-29",
+      startKey: "2025-12-29",
+    });
+
+    expect(getMonthWeekRange("2026-07", 31)).toEqual({
+      endDay: 2,
+      endKey: "2026-08-02",
+      startDay: 27,
+      startKey: "2026-07-27",
     });
   });
 
-  it("formats the selected week range for navigation", () => {
+  it("formats the selected week range across two months", () => {
     expect(
       formatAnalyticsWeekPeriodLabel(getMonthWeekRange("2026-07", 1)),
-    ).toBe("с 1 по 7 июля");
+    ).toBe("с 29 июня по 5 июля");
   });
 
   it("detects whether a week has already started", () => {
     const today = new Date("2026-07-13T09:00:00.000Z");
 
-    expect(isMonthWeekStarted("2026-07", 8, today)).toBe(true);
-    expect(isMonthWeekStarted("2026-07", 15, today)).toBe(false);
-    expect(isMonthWeekStarted("2026-06", 29, today)).toBe(true);
-    expect(isMonthWeekStarted("2026-08", 1, today)).toBe(false);
+    expect(isMonthWeekStarted("2026-07-06", today)).toBe(true);
+    expect(isMonthWeekStarted("2026-07-13", today)).toBe(true);
+    expect(isMonthWeekStarted("2026-07-20", today)).toBe(false);
+    expect(isMonthWeekStarted("2026-06-29", today)).toBe(true);
+    expect(isMonthWeekStarted("2026-08-03", today)).toBe(false);
   });
 
   it("finds the last started week for the selected month", () => {
     const today = new Date("2026-07-13T09:00:00.000Z");
 
-    expect(getLastStartedWeekStartDay("2026-07", today)).toBe(8);
-    expect(getLastStartedWeekStartDay("2026-06", today)).toBe(29);
-    expect(getLastStartedWeekStartDay("2026-08", today)).toBeNull();
+    expect(getLastStartedWeekStartKey("2026-07", today)).toBe("2026-07-13");
+    expect(getLastStartedWeekStartKey("2026-06", today)).toBe("2026-06-29");
+    expect(getLastStartedWeekStartKey("2026-08", today)).toBeNull();
   });
 
-  it("builds weekly tabs and disables weeks that have not started", () => {
+  it("builds Monday-based tabs and keeps the current partial week enabled", () => {
     expect(
       buildAnalyticsWeekTabs(
         "2026-07",
-        new Date("2026-07-13T09:00:00.000Z"),
+        new Date(2026, 6, 13, 1, 30),
       ),
     ).toEqual([
-      { disabled: false, label: "1–7", startDay: 1 },
-      { disabled: false, label: "8–14", startDay: 8 },
-      { disabled: true, label: "15–21", startDay: 15 },
-      { disabled: true, label: "22–28", startDay: 22 },
-      { disabled: true, label: "29–31", startDay: 29 },
+      { disabled: false, label: "29 июн–5 июл", startKey: "2026-06-29" },
+      { disabled: false, label: "6–12", startKey: "2026-07-06" },
+      { disabled: false, label: "13–19", startKey: "2026-07-13" },
+      { disabled: true, label: "20–26", startKey: "2026-07-20" },
+      { disabled: true, label: "27 июл–2 авг", startKey: "2026-07-27" },
     ]);
   });
 
@@ -168,17 +176,51 @@ describe("analytics periods", () => {
     const today = new Date("2026-07-13T09:00:00.000Z");
 
     expect(
-      getAdjacentAnalyticsWeek(monthKeys, "2026-07", 1, -1, today),
-    ).toEqual({ monthKey: "2026-06", weekStartDay: 29 });
+      getAdjacentAnalyticsWeek(
+        monthKeys,
+        "2026-07",
+        "2026-06-29",
+        -1,
+        today,
+      ),
+    ).toEqual({ monthKey: "2026-06", weekStartKey: "2026-06-22" });
     expect(
-      getAdjacentAnalyticsWeek(monthKeys, "2026-06", 29, 1, today),
-    ).toEqual({ monthKey: "2026-07", weekStartDay: 1 });
+      getAdjacentAnalyticsWeek(
+        monthKeys,
+        "2026-06",
+        "2026-06-29",
+        1,
+        today,
+      ),
+    ).toEqual({ monthKey: "2026-07", weekStartKey: "2026-07-06" });
     expect(
-      getAdjacentAnalyticsWeek(monthKeys, "2026-07", 8, 1, today),
+      getAdjacentAnalyticsWeek(
+        monthKeys,
+        "2026-07",
+        "2026-07-13",
+        1,
+        today,
+      ),
     ).toBeNull();
     expect(
-      getAdjacentAnalyticsWeek(monthKeys, "2026-05", 1, 1, today),
+      getAdjacentAnalyticsWeek(
+        monthKeys,
+        "2026-05",
+        "2026-05-25",
+        1,
+        today,
+      ),
     ).toBeNull();
+
+    expect(
+      getAdjacentAnalyticsWeek(
+        ["2026-06", "2026-08"],
+        "2026-06",
+        "2026-06-29",
+        1,
+        new Date("2026-08-10T09:00:00.000Z"),
+      ),
+    ).toEqual({ monthKey: "2026-08", weekStartKey: "2026-07-27" });
   });
 
   it("recognizes only deliberate horizontal analytics swipes", () => {
@@ -193,31 +235,33 @@ describe("analytics periods", () => {
     expect(shouldShowAnalyticsTooltip("week")).toBe(true);
   });
 
-  it("builds daily buckets for the selected week inside the month", () => {
+  it("builds seven daily buckets across the month boundary", () => {
     const bars = buildAnalyticsAmountBars(
       [
-        createTransaction(-1000, "2026-07-02T10:00:00.000Z"),
-        createTransaction(-2000, "2026-07-08T10:00:00.000Z"),
-        createTransaction(5000, "2026-07-09T10:00:00.000Z"),
-        createTransaction(-3000, "2026-06-30T10:00:00.000Z"),
+        createTransaction(-4000, "2026-06-28T10:00:00.000Z"),
+        createTransaction(-3000, "2026-06-29T10:00:00.000Z"),
+        createTransaction(-1000, "2026-07-01T10:00:00.000Z"),
+        createTransaction(5000, "2026-07-01T12:00:00.000Z"),
+        createTransaction(-2000, "2026-07-05T10:00:00.000Z"),
+        createTransaction(-500, "2026-07-06T10:00:00.000Z"),
       ],
       {
         currency: "RUB",
         kind: "expense",
         mode: "week",
         monthKey: "2026-07",
-        weekStartDay: 8,
+        weekStartKey: "2026-06-29",
       },
     );
 
     expect(bars.map((bar) => [bar.label, bar.total])).toEqual([
-      ["8", 2000],
-      ["9", 0],
-      ["10", 0],
-      ["11", 0],
-      ["12", 0],
-      ["13", 0],
-      ["14", 0],
+      ["29", 3000],
+      ["30", 0],
+      ["1", 1000],
+      ["2", 0],
+      ["3", 0],
+      ["4", 0],
+      ["5", 2000],
     ]);
   });
 
@@ -239,8 +283,7 @@ describe("analytics periods", () => {
       {
         currency: "RUB",
         kind: "expense",
-        monthKey: "2026-07",
-        weekStartDay: 8,
+        weekStartKey: "2026-07-06",
       },
     );
 
@@ -249,19 +292,19 @@ describe("analytics periods", () => {
         color: "#ef8354",
         key: "groceries",
         label: "Продукты",
-        values: [1000, 3000, 0, 0, 0, 0, 0],
+        values: [0, 0, 1000, 3000, 0, 0, 0],
       },
       {
         color: "#4f8f64",
         key: "transport",
         label: "Транспорт",
-        values: [2500, 0, 0, 0, 0, 0, 0],
+        values: [0, 0, 2500, 0, 0, 0, 0],
       },
       {
         color: "#9aa19c",
         key: "uncategorized",
         label: "Без категории",
-        values: [0, 0, 0, 0, 6000, 0, 0],
+        values: [0, 0, 0, 0, 0, 0, 6000],
       },
     ]);
   });

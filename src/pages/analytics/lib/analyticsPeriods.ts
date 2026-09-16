@@ -57,7 +57,7 @@ export interface AnalyticsWeekRange {
 }
 
 export interface AnalyticsWeekTab {
-  startDay: number;
+  startKey: string;
   label: string;
   disabled: boolean;
 }
@@ -91,16 +91,13 @@ export function filterTransactionsByMonth(
 
 export function filterTransactionsByWeek(
   transactions: readonly Transaction[],
-  monthKey: string,
-  weekStartDay: number,
+  weekStartKey: string,
 ) {
-  const range = getMonthWeekRange(monthKey, weekStartDay);
+  const range = getCalendarWeekRange(weekStartKey);
 
   return transactions.filter((transaction) => {
-    if (getTransactionMonthKey(transaction) !== monthKey) return false;
-
-    const day = getTransactionDay(transaction);
-    return day >= range.startDay && day <= range.endDay;
+    const dayKey = getLocalDateKey(new Date(transaction.date));
+    return dayKey >= range.startKey && dayKey <= range.endKey;
   });
 }
 
@@ -111,27 +108,34 @@ export function buildAnalyticsAmountBars(
     kind,
     mode,
     monthKey,
-    weekStartDay,
+    weekStartKey,
   }: {
     currency?: string;
     kind: AnalyticsChartKind;
     mode: AnalyticsChartMode;
     monthKey: string;
-    weekStartDay?: number;
+    weekStartKey?: string;
   },
 ): AnalyticsBar[] {
   const buckets =
     mode === "week"
-      ? buildWeekDayBuckets(monthKey, weekStartDay ?? 1)
+      ? buildWeekDayBuckets(
+          weekStartKey ?? getMonthWeekRange(monthKey, 1).startKey,
+        )
       : buildDayBuckets(monthKey);
 
   for (const transaction of transactions) {
     if (!matchesKind(transaction, kind)) continue;
     if (currency && transaction.currency !== currency) continue;
-    if (getTransactionMonthKey(transaction) !== monthKey) continue;
+    if (mode === "month" && getTransactionMonthKey(transaction) !== monthKey) {
+      continue;
+    }
 
-    const day = getTransactionDay(transaction);
-    const bucket = buckets.find((item) => day >= item.start && day <= item.end);
+    const transactionKey =
+      mode === "week"
+        ? getLocalDateKey(new Date(transaction.date))
+        : getDayKey(monthKey, getTransactionDay(transaction));
+    const bucket = buckets.find((item) => item.key === transactionKey);
     if (bucket) bucket.total += Math.abs(transaction.amountMinor);
   }
 
@@ -143,25 +147,23 @@ export function buildAnalyticsWeekCategorySeries(
   {
     currency,
     kind,
-    monthKey,
-    weekStartDay,
+    weekStartKey,
   }: {
     currency?: string;
     kind: AnalyticsChartKind;
-    monthKey: string;
-    weekStartDay: number;
+    weekStartKey: string;
   },
 ): AnalyticsCategorySeries[] {
-  const buckets = buildWeekDayBuckets(monthKey, weekStartDay);
+  const buckets = buildWeekDayBuckets(weekStartKey);
   const series = new Map<string, AnalyticsCategorySeries>();
 
   for (const transaction of transactions) {
     if (!matchesKind(transaction, kind)) continue;
     if (currency && transaction.currency !== currency) continue;
-    if (getTransactionMonthKey(transaction) !== monthKey) continue;
 
+    const transactionKey = getLocalDateKey(new Date(transaction.date));
     const dayIndex = buckets.findIndex(
-      (bucket) => getTransactionDay(transaction) === bucket.start,
+      (bucket) => bucket.key === transactionKey,
     );
     if (dayIndex < 0) continue;
 
@@ -183,63 +185,67 @@ export function buildAnalyticsWeekCategorySeries(
   return Array.from(series.values());
 }
 
-export function getMonthWeekStartDay(day: number) {
-  return Math.floor((day - 1) / 7) * 7 + 1;
-}
-
 export function getMonthWeekRange(
   monthKey: string,
   day: number,
 ): AnalyticsWeekRange {
   const daysInMonth = getDaysInMonth(monthKey);
-  const startDay = Math.min(getMonthWeekStartDay(day), daysInMonth);
-  const endDay = Math.min(startDay + 6, daysInMonth);
+  const boundedDay = Math.min(Math.max(day, 1), daysInMonth);
+  const dayKey = getDayKey(monthKey, boundedDay);
+  const date = parseDayKey(dayKey);
+  const daysSinceMonday = (date.getDay() + 6) % 7;
+
+  return getCalendarWeekRange(addDays(dayKey, -daysSinceMonday));
+}
+
+export function getCalendarWeekRange(weekStartKey: string): AnalyticsWeekRange {
+  const endKey = addDays(weekStartKey, 6);
 
   return {
-    startDay,
-    endDay,
-    startKey: getDayKey(monthKey, startDay),
-    endKey: getDayKey(monthKey, endDay),
+    startDay: Number(weekStartKey.slice(8, 10)),
+    endDay: Number(endKey.slice(8, 10)),
+    startKey: weekStartKey,
+    endKey,
   };
 }
 
 export function formatAnalyticsWeekPeriodLabel(range: AnalyticsWeekRange) {
-  const [year, month, day] = range.endKey.split("-").map(Number);
+  const startDate = parseDayKey(range.startKey);
+  const endDate = parseDayKey(range.endKey);
   const endLabel = new Intl.DateTimeFormat("ru-RU", {
     day: "numeric",
     month: "long",
-    timeZone: "UTC",
-  }).format(new Date(Date.UTC(year, month - 1, day)));
+  }).format(endDate);
+  const isSameMonth = range.startKey.slice(0, 7) === range.endKey.slice(0, 7);
+  const startLabel = isSameMonth
+    ? String(range.startDay)
+    : new Intl.DateTimeFormat("ru-RU", {
+        day: "numeric",
+        month: "long",
+      }).format(startDate);
 
-  return `с ${range.startDay} по ${endLabel}`;
+  return `с ${startLabel} по ${endLabel}`;
 }
 
-export function isMonthWeekStarted(
-  monthKey: string,
-  weekStartDay: number,
-  today = new Date(),
-) {
-  const todayMonthKey = getMonthKey(today);
-  if (monthKey < todayMonthKey) return true;
-  if (monthKey > todayMonthKey) return false;
-
-  return weekStartDay <= getDateDay(today);
+export function isMonthWeekStarted(weekStartKey: string, today = new Date()) {
+  return weekStartKey <= getLocalDateKey(today);
 }
 
-export function getLastStartedWeekStartDay(
+export function getLastStartedWeekStartKey(
   monthKey: string,
   today = new Date(),
 ) {
-  if (monthKey > getMonthKey(today)) return null;
+  const todayKey = getLocalDateKey(today);
+  const todayMonthKey = todayKey.slice(0, 7);
+  if (monthKey > todayMonthKey) return null;
 
   const daysInMonth = getDaysInMonth(monthKey);
   const maxDay =
-    monthKey === getMonthKey(today)
-      ? Math.min(getDateDay(today), daysInMonth)
+    monthKey === todayMonthKey
+      ? Math.min(Number(todayKey.slice(8, 10)), daysInMonth)
       : daysInMonth;
 
-  if (maxDay < 1) return null;
-  return getMonthWeekStartDay(maxDay);
+  return getMonthWeekRange(monthKey, maxDay).startKey;
 }
 
 export function buildAnalyticsWeekTabs(
@@ -247,54 +253,60 @@ export function buildAnalyticsWeekTabs(
   today = new Date(),
 ): AnalyticsWeekTab[] {
   const daysInMonth = getDaysInMonth(monthKey);
+  const firstWeekStartKey = getMonthWeekRange(monthKey, 1).startKey;
+  const lastDayKey = getDayKey(monthKey, daysInMonth);
+  const weeks: AnalyticsWeekTab[] = [];
 
-  return Array.from({ length: Math.ceil(daysInMonth / 7) }, (_, index) => {
-    const range = getMonthWeekRange(monthKey, index * 7 + 1);
+  for (
+    let startKey = firstWeekStartKey;
+    startKey <= lastDayKey;
+    startKey = addDays(startKey, 7)
+  ) {
+    const range = getCalendarWeekRange(startKey);
 
-    return {
-      startDay: range.startDay,
-      label: `${range.startDay}–${range.endDay}`,
-      disabled: !isMonthWeekStarted(monthKey, range.startDay, today),
-    };
-  });
+    weeks.push({
+      startKey,
+      label: formatAnalyticsWeekTabLabel(range),
+      disabled: !isMonthWeekStarted(startKey, today),
+    });
+  }
+
+  return weeks;
 }
 
 export function getAdjacentAnalyticsWeek(
   monthKeys: readonly string[],
   monthKey: string,
-  weekStartDay: number,
+  weekStartKey: string,
   direction: -1 | 1,
   today = new Date(),
 ) {
-  const weeks = buildAnalyticsWeekTabs(monthKey, today);
-  const weekIndex = weeks.findIndex(
-    (week) => week.startDay === weekStartDay,
-  );
   const monthIndex = monthKeys.indexOf(monthKey);
-  if (weekIndex < 0 || monthIndex < 0) return null;
+  if (monthIndex < 0) return null;
 
-  const adjacentWeek = weeks[weekIndex + direction];
+  const targetWeekStartKey = addDays(weekStartKey, direction * 7);
+  const targetMonthKey = targetWeekStartKey.slice(0, 7);
 
-  if (adjacentWeek) {
-    return adjacentWeek.disabled
-      ? null
-      : { monthKey, weekStartDay: adjacentWeek.startDay };
+  if (
+    monthKeys.includes(targetMonthKey) &&
+    isMonthWeekStarted(targetWeekStartKey, today)
+  ) {
+    return { monthKey: targetMonthKey, weekStartKey: targetWeekStartKey };
   }
 
   const adjacentMonthKey = monthKeys[monthIndex + direction];
   if (!adjacentMonthKey) return null;
 
-  const adjacentMonthWeeks = buildAnalyticsWeekTabs(
-    adjacentMonthKey,
-    today,
-  ).filter((week) => !week.disabled);
+  const adjacentWeeks = buildAnalyticsWeekTabs(adjacentMonthKey, today).filter(
+    (week) => !week.disabled,
+  );
   const targetWeek =
     direction === -1
-      ? adjacentMonthWeeks[adjacentMonthWeeks.length - 1]
-      : adjacentMonthWeeks[0];
+      ? adjacentWeeks[adjacentWeeks.length - 1]
+      : adjacentWeeks[0];
 
   return targetWeek
-    ? { monthKey: adjacentMonthKey, weekStartDay: targetWeek.startDay }
+    ? { monthKey: adjacentMonthKey, weekStartKey: targetWeek.startKey }
     : null;
 }
 
@@ -450,18 +462,12 @@ export function buildCategoryExpenseTrend(
   };
 }
 
-function buildWeekDayBuckets(monthKey: string, weekStartDay: number) {
-  const daysInMonth = getDaysInMonth(monthKey);
-  const start = Math.min(Math.max(weekStartDay, 1), daysInMonth);
-  const end = Math.min(start + 6, daysInMonth);
-
-  return Array.from({ length: end - start + 1 }, (_, index) => {
-    const day = start + index;
+function buildWeekDayBuckets(weekStartKey: string) {
+  return Array.from({ length: 7 }, (_, index) => {
+    const key = addDays(weekStartKey, index);
     return {
-      key: `${monthKey}-${String(day).padStart(2, "0")}`,
-      label: String(day),
-      start: day,
-      end: day,
+      key,
+      label: String(Number(key.slice(8, 10))),
       total: 0,
     };
   });
@@ -483,6 +489,42 @@ function buildDayBuckets(monthKey: string) {
 
 function getDayKey(monthKey: string, day: number) {
   return `${monthKey}-${String(day).padStart(2, "0")}`;
+}
+
+function parseDayKey(dayKey: string) {
+  const [year, month, day] = dayKey.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function getLocalDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function addDays(dayKey: string, amount: number) {
+  const date = parseDayKey(dayKey);
+  date.setDate(date.getDate() + amount);
+  return getLocalDateKey(date);
+}
+
+function formatAnalyticsWeekTabLabel(range: AnalyticsWeekRange) {
+  if (range.startKey.slice(0, 7) === range.endKey.slice(0, 7)) {
+    return `${range.startDay}–${range.endDay}`;
+  }
+
+  const formatter = new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "short",
+  });
+  const startLabel = formatter
+    .format(parseDayKey(range.startKey))
+    .replace(".", "");
+  const endLabel = formatter
+    .format(parseDayKey(range.endKey))
+    .replace(".", "");
+  return `${startLabel}–${endLabel}`;
 }
 
 function matchesKind(transaction: Transaction, kind: AnalyticsChartKind) {
@@ -516,10 +558,6 @@ function buildContinuousMonthKeys(startKey: string, endKey: string) {
   }
 
   return keys;
-}
-
-function getDateDay(date: Date) {
-  return Number(date.toISOString().slice(8, 10));
 }
 
 function getDaysInMonth(monthKey: string) {

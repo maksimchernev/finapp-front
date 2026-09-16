@@ -23,8 +23,8 @@ import {
   getAdjacentAnalyticsWeek,
   getAnalyticsBarDay,
   getAnalyticsSwipeDirection,
+  getCalendarWeekRange,
   getMonthWeekRange,
-  getMonthWeekStartDay,
   isMonthWeekStarted,
   shouldShowAnalyticsTooltip,
   type AnalyticsChartMode,
@@ -59,7 +59,9 @@ export function AnalyticsPage({
         opacity: [0.72, 1],
         scale: chartMode === "week" ? [0.97, 1] : [1.03, 1],
       };
-  const [selectedWeekStartDay, setSelectedWeekStartDay] = useState(1);
+  const [selectedWeekStartKey, setSelectedWeekStartKey] = useState<
+    string | null
+  >(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [hoveredWeekRange, setHoveredWeekRange] =
     useState<AnalyticsWeekRange | null>(null);
@@ -82,16 +84,21 @@ export function AnalyticsPage({
   const previousMonth = chronologicalMonthTabs[activeMonthIndex - 1];
   const nextMonth = chronologicalMonthTabs[activeMonthIndex + 1];
   const weekTabs = buildAnalyticsWeekTabs(activeMonthKey);
+  const activeWeekStartKey =
+    selectedWeekStartKey &&
+    weekTabs.some((week) => week.startKey === selectedWeekStartKey)
+      ? selectedWeekStartKey
+      : weekTabs[0].startKey;
   const previousWeek = getAdjacentAnalyticsWeek(
     chronologicalMonthKeys,
     activeMonthKey,
-    selectedWeekStartDay,
+    activeWeekStartKey,
     -1,
   );
   const nextWeek = getAdjacentAnalyticsWeek(
     chronologicalMonthKeys,
     activeMonthKey,
-    selectedWeekStartDay,
+    activeWeekStartKey,
     1,
   );
   const monthTransactions = useMemo(
@@ -101,13 +108,9 @@ export function AnalyticsPage({
   const periodTransactions = useMemo(
     () =>
       chartMode === "week"
-        ? filterTransactionsByWeek(
-            monthTransactions,
-            activeMonthKey,
-            selectedWeekStartDay,
-          )
+        ? filterTransactionsByWeek(transactions, activeWeekStartKey)
         : monthTransactions,
-    [activeMonthKey, chartMode, monthTransactions, selectedWeekStartDay],
+    [activeWeekStartKey, chartMode, monthTransactions, transactions],
   );
   const categoryStats = useMemo(
     () => buildMonthCategoryStats(periodTransactions),
@@ -127,7 +130,7 @@ export function AnalyticsPage({
   const availableCurrencies = Array.from(
     new Set([
       ...displayedTotals.map((item) => item.currency),
-      ...monthTransactions.map((transaction) => transaction.currency),
+      ...periodTransactions.map((transaction) => transaction.currency),
     ]),
   );
   const [chartCurrency, setChartCurrency] = useState(
@@ -163,45 +166,44 @@ export function AnalyticsPage({
   );
   const chartBars = useMemo(
     () =>
-      buildAnalyticsAmountBars(monthTransactions, {
-        currency: selectedChartCurrency,
-        kind: chartKind,
-        mode: chartMode,
-        monthKey: activeMonthKey,
-        weekStartDay: selectedWeekStartDay,
-      }),
+      buildAnalyticsAmountBars(
+        chartMode === "week" ? transactions : monthTransactions,
+        {
+          currency: selectedChartCurrency,
+          kind: chartKind,
+          mode: chartMode,
+          monthKey: activeMonthKey,
+          weekStartKey: activeWeekStartKey,
+        },
+      ),
     [
       activeMonthKey,
+      activeWeekStartKey,
       chartKind,
       chartMode,
       monthTransactions,
       selectedChartCurrency,
-      selectedWeekStartDay,
+      transactions,
     ],
   );
   const chartCategorySeries = useMemo(
     () =>
       chartMode === "week"
-        ? buildAnalyticsWeekCategorySeries(monthTransactions, {
+        ? buildAnalyticsWeekCategorySeries(transactions, {
             currency: selectedChartCurrency,
             kind: chartKind,
-            monthKey: activeMonthKey,
-            weekStartDay: selectedWeekStartDay,
+            weekStartKey: activeWeekStartKey,
           })
         : undefined,
     [
-      activeMonthKey,
+      activeWeekStartKey,
       chartKind,
       chartMode,
-      monthTransactions,
       selectedChartCurrency,
-      selectedWeekStartDay,
+      transactions,
     ],
   );
-  const selectedWeekRange = getMonthWeekRange(
-    activeMonthKey,
-    selectedWeekStartDay,
-  );
+  const selectedWeekRange = getCalendarWeekRange(activeWeekStartKey);
   const weekPeriodLabel = formatAnalyticsWeekPeriodLabel(selectedWeekRange);
   const chartPeriodLabel =
     chartMode === "week" ? weekPeriodLabel : activeMonthLabel;
@@ -213,13 +215,13 @@ export function AnalyticsPage({
   function selectMonth(monthKey: string) {
     setSelectedMonthKey(monthKey);
     setChartMode("month");
-    setSelectedWeekStartDay(1);
+    setSelectedWeekStartKey(null);
     setHoveredWeekRange(null);
   }
 
-  function selectWeek(monthKey: string, weekStartDay: number) {
+  function selectWeek(monthKey: string, weekStartKey: string) {
     setSelectedMonthKey(monthKey);
-    setSelectedWeekStartDay(weekStartDay);
+    setSelectedWeekStartKey(weekStartKey);
     setChartMode("week");
     setHoveredWeekRange(null);
   }
@@ -232,7 +234,7 @@ export function AnalyticsPage({
     }
 
     const week = direction === "previous" ? previousWeek : nextWeek;
-    if (week) selectWeek(week.monthKey, week.weekStartDay);
+    if (week) selectWeek(week.monthKey, week.weekStartKey);
   }
 
   function drillDownToWeek(bar: AnalyticsBar) {
@@ -241,10 +243,10 @@ export function AnalyticsPage({
     const day = getAnalyticsBarDay(bar);
     if (!Number.isFinite(day)) return;
 
-    const weekStartDay = getMonthWeekStartDay(day);
-    if (!isMonthWeekStarted(activeMonthKey, weekStartDay)) return;
+    const weekStartKey = getMonthWeekRange(activeMonthKey, day).startKey;
+    if (!isMonthWeekStarted(weekStartKey)) return;
 
-    selectWeek(activeMonthKey, weekStartDay);
+    selectWeek(activeMonthKey, weekStartKey);
   }
 
   function previewWeek(bar: AnalyticsBar | null) {
@@ -260,7 +262,7 @@ export function AnalyticsPage({
     }
 
     const range = getMonthWeekRange(activeMonthKey, day);
-    if (!isMonthWeekStarted(activeMonthKey, range.startDay)) {
+    if (!isMonthWeekStarted(range.startKey)) {
       setHoveredWeekRange(null);
       return;
     }
@@ -274,7 +276,7 @@ export function AnalyticsPage({
 
   function zoomOutToMonth() {
     setChartMode("month");
-    setSelectedWeekStartDay(1);
+    setSelectedWeekStartKey(null);
     setHoveredWeekRange(null);
   }
 
@@ -427,16 +429,16 @@ export function AnalyticsPage({
                 <div className={styles.monthTabs} aria-label="Неделя аналитики">
                   {weekTabs.map((week) => (
                     <button
-                      aria-pressed={week.startDay === selectedWeekStartDay}
+                      aria-pressed={week.startKey === activeWeekStartKey}
                       className={
-                        week.startDay === selectedWeekStartDay
+                        week.startKey === activeWeekStartKey
                           ? styles.selectedMonth
                           : undefined
                       }
                       disabled={week.disabled}
-                      key={week.startDay}
+                      key={week.startKey}
                       type="button"
-                      onClick={() => selectWeek(activeMonthKey, week.startDay)}
+                      onClick={() => selectWeek(activeMonthKey, week.startKey)}
                     >
                       {week.label}
                     </button>

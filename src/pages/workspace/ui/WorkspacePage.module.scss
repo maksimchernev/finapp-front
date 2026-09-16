@@ -7,6 +7,10 @@
   }
 }
 
+.reviewShell {
+  padding-bottom: max(18px, env(safe-area-inset-bottom));
+}
+
 .centered {
   display: grid;
   place-items: center;

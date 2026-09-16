@@ -10,11 +10,11 @@
   gap: 11px;
   min-width: 0;
   max-width: 100%;
-  max-height: max(100px, calc(100vh - 335px));
+  max-height: max(100px, calc(100vh - 255px));
   overflow-y: auto;
 
   @media (max-width: 440px) {
-    max-height: max(100px, calc(100dvh - 315px));
+    max-height: max(100px, calc(100dvh - 235px));
   }
 }
 
@@ -116,7 +116,7 @@
 
 .stickyActions {
   position: sticky;
-  bottom: 98px;
+  bottom: max(18px, env(safe-area-inset-bottom));
 }
 
 .primaryAction,

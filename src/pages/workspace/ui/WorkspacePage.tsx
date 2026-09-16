@@ -55,6 +55,7 @@ export function WorkspacePage({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const isReviewPage = location.pathname === appRoutes.review;
   const [activeReviewJobId, setActiveReviewJobId] = useState<string | null>(
     null,
   );
@@ -181,7 +182,9 @@ export function WorkspacePage({
   }
 
   return (
-    <AppLayout contentClassName={styles.appShell}>
+    <AppLayout
+      contentClassName={clsx(styles.appShell, isReviewPage && styles.reviewShell)}
+    >
       {visibleError && (
         <div className={styles.toast} role="alert">
           {visibleError}
@@ -346,7 +349,7 @@ export function WorkspacePage({
         </motion.div>
       </AnimatePresence>
 
-      <BottomNav />
+      {!isReviewPage && <BottomNav />}
     </AppLayout>
   );
 }

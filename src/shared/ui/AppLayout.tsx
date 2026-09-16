@@ -24,11 +24,7 @@ export function AppLayout({
   return (
     <main className={styles.layout}>
       <section
-        className={clsx(
-          styles.cloud,
-          widthClassName[width],
-          contentClassName,
-        )}
+        className={clsx(styles.cloud, widthClassName[width], contentClassName)}
       >
         {children}
       </section>
