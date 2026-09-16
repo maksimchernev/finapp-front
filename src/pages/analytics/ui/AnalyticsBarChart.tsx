@@ -17,7 +17,10 @@ import type {
   AnalyticsChartKind,
   AnalyticsWeekRange,
 } from "@/pages/analytics/lib/analyticsPeriods";
-import { getAnalyticsBarTooltipTitle } from "@/pages/analytics/lib/analyticsPeriods";
+import {
+  getAnalyticsBarTooltipTitle,
+  getVisibleAnalyticsWeekRangeIndices,
+} from "@/pages/analytics/lib/analyticsPeriods";
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
 
@@ -166,13 +169,12 @@ export function AnalyticsBarChart({
         const range = highlightedRangeRef.current;
         if (!range) return;
 
-        const startIndex = bars.findIndex((bar) => bar.key === range.startKey);
-        const endIndex = bars.findIndex((bar) => bar.key === range.endKey);
-        if (startIndex < 0 || endIndex < 0) return;
+        const indices = getVisibleAnalyticsWeekRangeIndices(bars, range);
+        if (!indices) return;
 
         const meta = chart.getDatasetMeta(0);
-        const startElement = meta.data[startIndex];
-        const endElement = meta.data[endIndex];
+        const startElement = meta.data[indices.startIndex];
+        const endElement = meta.data[indices.endIndex];
         if (!startElement || !endElement) return;
 
         const startProps = startElement.getProps(["x", "width"], true) as {

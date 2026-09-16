@@ -13,6 +13,7 @@ import {
   getAdjacentAnalyticsWeek,
   getLastStartedWeekStartKey,
   getMonthWeekRange,
+  getVisibleAnalyticsWeekRangeIndices,
   isMonthWeekStarted,
   shouldShowAnalyticsTooltip,
 } from "@/pages/analytics/lib/analyticsPeriods";
@@ -130,6 +131,27 @@ describe("analytics periods", () => {
       startDay: 27,
       startKey: "2026-07-27",
     });
+  });
+
+  it("clips hovered calendar weeks to visible month bars", () => {
+    const bars = [
+      { key: "2026-07-01", label: "1", total: 0 },
+      { key: "2026-07-02", label: "2", total: 0 },
+      { key: "2026-07-05", label: "5", total: 0 },
+      { key: "2026-07-06", label: "6", total: 0 },
+      { key: "2026-07-27", label: "27", total: 0 },
+      { key: "2026-07-31", label: "31", total: 0 },
+    ];
+
+    expect(
+      getVisibleAnalyticsWeekRangeIndices(bars, getMonthWeekRange("2026-07", 1)),
+    ).toEqual({ startIndex: 0, endIndex: 2 });
+    expect(
+      getVisibleAnalyticsWeekRangeIndices(bars, getMonthWeekRange("2026-07", 31)),
+    ).toEqual({ startIndex: 4, endIndex: 5 });
+    expect(
+      getVisibleAnalyticsWeekRangeIndices(bars, getMonthWeekRange("2026-06", 15)),
+    ).toBeNull();
   });
 
   it("formats the selected week range across two months", () => {

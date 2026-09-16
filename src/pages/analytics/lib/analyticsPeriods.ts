@@ -209,6 +209,18 @@ export function getCalendarWeekRange(weekStartKey: string): AnalyticsWeekRange {
   };
 }
 
+export function getVisibleAnalyticsWeekRangeIndices(
+  bars: readonly AnalyticsBar[],
+  range: AnalyticsWeekRange,
+) {
+  const startIndex = bars.findIndex((bar) => bar.key >= range.startKey);
+  const endIndex = bars.findLastIndex((bar) => bar.key <= range.endKey);
+
+  return startIndex >= 0 && endIndex >= startIndex
+    ? { startIndex, endIndex }
+    : null;
+}
+
 export function formatAnalyticsWeekPeriodLabel(range: AnalyticsWeekRange) {
   const startDate = parseDayKey(range.startKey);
   const endDate = parseDayKey(range.endKey);
