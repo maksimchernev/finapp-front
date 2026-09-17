@@ -171,7 +171,7 @@ export function CreditCardEditor({
               <span>{formatDate(card.gracePeriodEndDate)}</span>
               <label className={styles.statusToggle}>
                 <input type="checkbox" checked={card.gracePaid} disabled={saving} onChange={(event) => void toggleGracePaid(event.target.checked)} />
-                Долг погашен
+                Долг для беспроцентного периода погашен
               </label>
             </li>
           </ul> : <p>Дата пока не указана.</p>}

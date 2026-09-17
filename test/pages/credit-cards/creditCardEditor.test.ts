@@ -38,6 +38,6 @@ test("an existing card opens a four-tab editor with only the active tab content"
   expect(html).toContain("Остатки");
   expect(html).toContain("Редактировать карту");
   expect(html).toContain("Дата окончания беспроцентного периода");
-  expect(html).toMatch(/История периода[\s\S]*20\.10\.2026[\s\S]*type="checkbox"[\s\S]*Долг погашен/);
+  expect(html).toMatch(/История периода[\s\S]*20\.10\.2026[\s\S]*type="checkbox"[\s\S]*Долг для беспроцентного периода погашен/);
   expect(html).not.toContain("Сумма минимального платежа");
 });
