@@ -9,7 +9,7 @@ import {
   enableCreditCardPush,
   getCreditCardPushStatus,
 } from "@/features/credit-card-push/lib/pushSubscription";
-import { getCreditCardTimelines } from "@/pages/credit-cards/lib/creditCardTimelines";
+import { getNextCreditCardEvent } from "@/pages/credit-cards/lib/nextCreditCardEvent";
 import { CreditCardEditor } from "@/pages/credit-cards/ui/CreditCardEditor";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { PageHeader } from "@/shared/ui/PageHeader";
@@ -28,6 +28,9 @@ export function CreditCardsPage({ onBack }: { onBack: () => void }) {
   const [pushStatus, setPushStatus] = useState<PushStatus | null>(null);
   const [pushBusy, setPushBusy] = useState(false);
   const editingCard = cards.find((card) => card.id === editingId) ?? null;
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Moscow", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date());
 
   useEffect(() => {
     let active = true;
@@ -56,7 +59,9 @@ export function CreditCardsPage({ onBack }: { onBack: () => void }) {
   }, [cards, linkedCardId, loading, setSearchParams]);
 
   async function reloadCards() {
-    setCards(await creditCardApi.list());
+    const result = await creditCardApi.list();
+    setCards(result);
+    return result;
   }
 
   function openCreate() {
@@ -70,10 +75,12 @@ export function CreditCardsPage({ onBack }: { onBack: () => void }) {
   }
 
   async function saveCard(value: CreditCardInput) {
-    if (editingId) await creditCardApi.update(editingId, value);
-    else await creditCardApi.create(value);
-    await reloadCards();
-    setEditorOpen(false);
+    const saved = editingId
+      ? await creditCardApi.update(editingId, value)
+      : await creditCardApi.create(value);
+    const latest = await reloadCards();
+    if (!editingId) setEditorOpen(false);
+    return latest.find((card) => card.id === saved.id) ?? saved;
   }
 
   async function deleteCard(id: string) {
@@ -129,24 +136,15 @@ export function CreditCardsPage({ onBack }: { onBack: () => void }) {
     {error && <p className={styles.error} role="alert">{error}</p>}
     {loading ? <p className={styles.muted}>Загружаю карты…</p> : cards.length === 0 ? <EmptyState text="Пока нет кредитных карт. Добавьте первую карту." /> : <div className={styles.cardList}>
       {cards.map((card) => {
-        const [grace, minimum] = getCreditCardTimelines(card);
+        const nextEvent = getNextCreditCardEvent(card, today);
         return <button className={styles.card} type="button" key={card.id} onClick={() => openEdit(card.id)}>
           <span className={styles.cardIcon}><CreditCardIcon size={22} /></span>
           <span className={styles.cardContent}>
             <strong>{card.name} · {card.currency}</strong>
-            <span className={styles.timelines}>
-              <span className={styles.timeline}>
-                <span>Беспроцентный период</span>
-                <b>{grace.date ? formatDate(grace.date) : "Дата не указана"}{grace.paid ? " · погашен" : ""}</b>
-              </span>
-              <span className={styles.timeline}>
-                <span>{minimum.kind === "minimum" ? "Минимальный платёж" : "Назначение минимального платежа"}</span>
-                <b>{minimum.date ? formatDate(minimum.date) : "Дата не указана"}
-                  {minimum.kind === "minimum" ? ` · ${formatMoney(minimum.amountMinor, card.currency)}${minimum.paid ? " · внесён" : ""}` : ""}
-                </b>
-              </span>
-            </span>
-            {card.balances[0] && <span className={styles.balance}>Остаток на {formatDate(card.balances[0].date)}: {formatMoney(card.balances[0].amountMinor, card.currency)}</span>}
+            {nextEvent ? <span className={styles.nextEvent}>
+              <span>{nextEvent.kind === "grace" ? "Конец беспроцентного периода" : nextEvent.kind === "minimum" ? "Минимальный платёж" : "Назначение минимального платежа"}</span>
+              <b>{formatDate(nextEvent.date)}{nextEvent.kind === "minimum" ? ` · ${formatMoney(nextEvent.amountMinor, card.currency)}` : ""}</b>
+            </span> : <span className={styles.prompt}>Укажите ближайший срок по карте</span>}
           </span>
         </button>})}
     </div>}

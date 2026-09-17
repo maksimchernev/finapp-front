@@ -5,6 +5,7 @@ export type CreditCardForm = {
   currency: Currency;
   gracePeriodEndDate: string;
   gracePaid: boolean;
+  minimumDateType: "assignment" | "due";
   minPaymentAssignmentDate: string;
   minPaymentDueDate: string;
   minPaymentAmount: string;
@@ -17,6 +18,7 @@ export function createCreditCardForm(card?: CreditCard | null): CreditCardForm {
     currency: card?.currency ?? "RUB",
     gracePeriodEndDate: card?.gracePeriodEndDate ?? "",
     gracePaid: card?.gracePaid ?? false,
+    minimumDateType: card?.minPaymentDueDate && card.minPaymentAmountMinor !== null ? "due" : "assignment",
     minPaymentAssignmentDate: card?.minPaymentAssignmentDate ?? "",
     minPaymentDueDate: card?.minPaymentDueDate ?? "",
     minPaymentAmount: card?.minPaymentAmountMinor === null || card?.minPaymentAmountMinor === undefined
@@ -36,8 +38,8 @@ export function parseReferenceAmount(value: string) {
 export function toCreditCardInput(form: CreditCardForm): CreditCardInput {
   const name = form.name.trim().replace(/\s+/g, " ");
   if (!name) throw new Error("Введите название карты.");
-  const hasDueDate = Boolean(form.minPaymentDueDate);
-  const hasAmount = Boolean(form.minPaymentAmount.trim());
+  const hasDueDate = form.minimumDateType === "due" && Boolean(form.minPaymentDueDate);
+  const hasAmount = form.minimumDateType === "due" && Boolean(form.minPaymentAmount.trim());
   if (hasDueDate !== hasAmount) throw new Error("Укажите дату и сумму минимального платежа вместе.");
 
   return {
@@ -46,7 +48,7 @@ export function toCreditCardInput(form: CreditCardForm): CreditCardInput {
     gracePeriodEndDate: form.gracePeriodEndDate || null,
     gracePaid: Boolean(form.gracePeriodEndDate && form.gracePaid),
     minPaymentAssignmentDate: form.minPaymentAssignmentDate || null,
-    minPaymentDueDate: form.minPaymentDueDate || null,
+    minPaymentDueDate: hasDueDate ? form.minPaymentDueDate : null,
     minPaymentAmountMinor: hasAmount ? parseReferenceAmount(form.minPaymentAmount) : null,
     minPaymentPaid: hasDueDate && form.minPaymentPaid,
   };

@@ -7,6 +7,14 @@ import { Dialog } from "@/shared/ui/Dialog";
 import styles from "@/pages/credit-cards/ui/CreditCardEditor/CreditCardEditor.module.scss";
 
 type BalanceInput = Pick<CreditCardBalance, "date" | "amountMinor">;
+type CardTab = "grace" | "minimum" | "balances" | "edit";
+
+const cardTabs: Array<{ value: CardTab; label: string }> = [
+  { value: "grace", label: "Период без процентов" },
+  { value: "minimum", label: "Минимальный платёж" },
+  { value: "balances", label: "Остатки" },
+  { value: "edit", label: "Редактировать карту" },
+];
 
 export function CreditCardEditor({
   card,
@@ -19,23 +27,26 @@ export function CreditCardEditor({
 }: {
   card: CreditCard | null;
   onClose: () => void;
-  onSave: (value: CreditCardInput) => Promise<void>;
+  onSave: (value: CreditCardInput) => Promise<CreditCard>;
   onDelete: (id: string) => Promise<void>;
   onAddBalance: (value: BalanceInput) => Promise<void>;
   onUpdateBalance: (id: string, value: BalanceInput) => Promise<void>;
   onDeleteBalance: (id: string) => Promise<void>;
 }) {
   const [form, setForm] = useState(() => createCreditCardForm(card));
+  const [activeTab, setActiveTab] = useState<CardTab>(card ? "grace" : "edit");
   const [balanceDate, setBalanceDate] = useState("");
   const [balanceAmount, setBalanceAmount] = useState("");
   const [editingBalanceId, setEditingBalanceId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   function patchForm(patch: Partial<typeof form>) {
     setForm((current) => ({ ...current, ...patch }));
     setError(null);
+    setSuccess(false);
   }
 
   async function saveCard(event: FormEvent<HTMLFormElement>) {
@@ -43,7 +54,9 @@ export function CreditCardEditor({
     setSaving(true);
     setError(null);
     try {
-      await onSave(toCreditCardInput(form));
+      const updated = await onSave(toCreditCardInput(form));
+      setForm(createCreditCardForm(updated));
+      setSuccess(Boolean(card));
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Не удалось сохранить карту.");
     } finally {
@@ -100,79 +113,108 @@ export function CreditCardEditor({
     }
   }
 
+  async function toggleGracePaid(paid: boolean) {
+    if (!card) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const updated = await onSave({ ...toCreditCardInput(createCreditCardForm(card)), gracePaid: paid });
+      setForm(createCreditCardForm(updated));
+    } catch (toggleError) {
+      setError(toggleError instanceof Error ? toggleError.message : "Не удалось изменить отметку.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function selectTab(tab: CardTab) {
+    setActiveTab(tab);
+    setError(null);
+    setSuccess(false);
+    setConfirmDelete(false);
+  }
+
   return (
     <Dialog ariaLabelledBy="credit-card-editor-title" backdropClassName={styles.backdrop} className={styles.dialog} onClose={saving ? () => undefined : onClose}>
       <header className={styles.header}>
         <div>
           <span>кредитная карта</span>
-          <h2 id="credit-card-editor-title">{card ? "Редактировать карту" : "Добавить карту"}</h2>
+          <h2 id="credit-card-editor-title">{card?.name ?? "Добавить карту"}</h2>
         </div>
         <button type="button" aria-label="Закрыть" onClick={onClose} disabled={saving}><X size={20} /></button>
       </header>
 
-      <form className={styles.cardForm} onSubmit={saveCard}>
-        <label>Название карты
-          <input required maxLength={80} value={form.name} onChange={(event) => patchForm({ name: event.target.value })} placeholder="Например, Платинум" />
-        </label>
-        <label>Валюта
-          <select value={form.currency} onChange={(event) => patchForm({ currency: event.target.value as typeof form.currency })}>
-            <option value="RUB">RUB</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="HUF">HUF</option>
-          </select>
-        </label>
-        <p className={styles.hint}>При смене валюты записанные суммы остаются прежними числами.</p>
+      {card && <nav className={styles.tabs} aria-label="Разделы кредитной карты">
+        {cardTabs.map(({ value, label }) => <button
+          key={value}
+          type="button"
+          className={activeTab === value ? styles.activeTab : undefined}
+          aria-current={activeTab === value ? "page" : undefined}
+          disabled={saving}
+          onClick={() => selectTab(value)}
+        >{label}</button>)}
+      </nav>}
 
-        <section className={styles.timelineFields}>
-          <h3>Беспроцентный период</h3>
-          <label>Дата окончания
+      {card && activeTab === "grace" && <section className={styles.tabPanel}>
+        <form className={styles.cardForm} onSubmit={saveCard}>
+          <label>Дата окончания беспроцентного периода
             <input type="date" value={form.gracePeriodEndDate} onChange={(event) => patchForm({ gracePeriodEndDate: event.target.value, gracePaid: false })} />
           </label>
-          {form.gracePeriodEndDate && <label className={styles.checkRow}>
-            <input type="checkbox" checked={form.gracePaid} onChange={(event) => patchForm({ gracePaid: event.target.checked })} />
-            Долг для льготного периода погашен
-          </label>}
-        </section>
-
-        <section className={styles.timelineFields}>
-          <h3>Минимальный платёж</h3>
-          <p className={styles.hint}>Пока дата и сумма платежа неизвестны, на карте показывается дата его назначения.</p>
-          <label>Дата назначения минимального платежа
-            <input type="date" value={form.minPaymentAssignmentDate} onChange={(event) => patchForm({ minPaymentAssignmentDate: event.target.value })} />
-          </label>
-          <label>Дата минимального платежа
-            <input type="date" value={form.minPaymentDueDate} onChange={(event) => patchForm({ minPaymentDueDate: event.target.value, minPaymentPaid: false })} />
-          </label>
-          <label>Сумма минимального платежа
-            <input inputMode="decimal" value={form.minPaymentAmount} onChange={(event) => patchForm({ minPaymentAmount: event.target.value, minPaymentPaid: false })} placeholder="0,00" />
-          </label>
-          {form.minPaymentDueDate && form.minPaymentAmount && <label className={styles.checkRow}>
-            <input type="checkbox" checked={form.minPaymentPaid} onChange={(event) => patchForm({ minPaymentPaid: event.target.checked })} />
-            Минимальный платёж внесён
-          </label>}
-        </section>
-
-        {error && <p className={styles.error} role="alert">{error}</p>}
-        <button className={styles.primaryButton} type="submit" disabled={saving}>{saving ? "Сохраняю…" : "Сохранить карту"}</button>
-      </form>
-
-      {card && <>
+          {error && <p className={styles.error} role="alert">{error}</p>}
+          {success && <p className={styles.success} role="status">Изменения сохранены.</p>}
+          <button type="submit" disabled={saving}>{saving ? "Сохраняю…" : "Сохранить"}</button>
+        </form>
         <section className={styles.history}>
-          <h3>Остатки по датам</h3>
-          <form className={styles.balanceForm} onSubmit={saveBalance}>
-            <label>Дата<input type="date" value={balanceDate} onChange={(event) => setBalanceDate(event.target.value)} required /></label>
-            <label>Остаток<input inputMode="decimal" value={balanceAmount} onChange={(event) => setBalanceAmount(event.target.value)} placeholder="0,00" required /></label>
-            <button type="submit" disabled={saving}>{editingBalanceId ? "Обновить" : "Добавить остаток"}</button>
-          </form>
-          {card.balances.length === 0 ? <p>Остатков пока нет.</p> : <ul>
-            {card.balances.map((balance) => <li key={balance.id}>
-              <span>{formatDate(balance.date)} · {formatMoney(balance.amountMinor, card.currency)}</span>
-              <span className={styles.rowActions}>
-                <button type="button" onClick={() => { setEditingBalanceId(balance.id); setBalanceDate(balance.date); setBalanceAmount((balance.amountMinor / 100).toString().replace(".", ",")); }}>Изменить</button>
-                <button type="button" aria-label={`Удалить остаток за ${formatDate(balance.date)}`} disabled={saving} onClick={() => void deleteBalance(balance.id)}><Trash2 size={16} /></button>
-              </span>
-            </li>)}
-          </ul>}
+          <h3>История периода</h3>
+          {card.gracePeriodEndDate ? <ul>
+            <li>
+              <span>{formatDate(card.gracePeriodEndDate)}</span>
+              <label className={styles.statusToggle}>
+                <input type="checkbox" checked={card.gracePaid} disabled={saving} onChange={(event) => void toggleGracePaid(event.target.checked)} />
+                Долг погашен
+              </label>
+            </li>
+          </ul> : <p>Дата пока не указана.</p>}
         </section>
+      </section>}
 
+      {card && activeTab === "minimum" && <section className={styles.tabPanel}>
+        <form className={styles.cardForm} onSubmit={saveCard}>
+          <div className={styles.minimumDateField}>
+            <label htmlFor="credit-minimum-date">Дата</label>
+            <div className={styles.minimumDateRow}>
+              <input
+                id="credit-minimum-date"
+                type="date"
+                value={form.minimumDateType === "due" ? form.minPaymentDueDate : form.minPaymentAssignmentDate}
+                onChange={(event) => patchForm(form.minimumDateType === "due"
+                  ? { minPaymentDueDate: event.target.value, minPaymentPaid: false }
+                  : { minPaymentAssignmentDate: event.target.value })}
+                required={form.minimumDateType === "due"}
+              />
+              <select
+                aria-label="Тип даты минимального платежа"
+                value={form.minimumDateType}
+                onChange={(event) => patchForm({ minimumDateType: event.target.value as typeof form.minimumDateType })}
+              >
+                <option value="assignment">Дата назначения минимального платежа</option>
+                <option value="due">Дата минимального платежа</option>
+              </select>
+            </div>
+          </div>
+          {form.minimumDateType === "due" && <>
+            <label>Сумма минимального платежа
+              <input required inputMode="decimal" value={form.minPaymentAmount} onChange={(event) => patchForm({ minPaymentAmount: event.target.value, minPaymentPaid: false })} placeholder="0,00" />
+            </label>
+            {form.minPaymentDueDate && form.minPaymentAmount && <label className={styles.checkRow}>
+              <input type="checkbox" checked={form.minPaymentPaid} onChange={(event) => patchForm({ minPaymentPaid: event.target.checked })} />
+              Минимальный платёж внесён
+            </label>}
+          </>}
+          {error && <p className={styles.error} role="alert">{error}</p>}
+          {success && <p className={styles.success} role="status">Изменения сохранены.</p>}
+          <button type="submit" disabled={saving}>{saving ? "Сохраняю…" : "Сохранить"}</button>
+        </form>
         <section className={styles.history}>
           <h3>История минимальных платежей</h3>
           {card.paymentHistory.length === 0 ? <p>Истории пока нет.</p> : <ul>
@@ -182,11 +224,48 @@ export function CreditCardEditor({
             </li>)}
           </ul>}
         </section>
+      </section>}
 
-        <button className={styles.deleteButton} type="button" disabled={saving} onClick={() => void deleteCard()}>
+      {card && activeTab === "balances" && <section className={styles.tabPanel}>
+          <form className={styles.balanceForm} onSubmit={saveBalance}>
+            <label>Дата<input type="date" value={balanceDate} onChange={(event) => setBalanceDate(event.target.value)} required /></label>
+            <label>Остаток<input inputMode="decimal" value={balanceAmount} onChange={(event) => setBalanceAmount(event.target.value)} placeholder="0,00" required /></label>
+            <button type="submit" disabled={saving}>{editingBalanceId ? "Обновить" : "Добавить остаток"}</button>
+          </form>
+          {error && <p className={styles.error} role="alert">{error}</p>}
+          <section className={styles.history}>
+            <h3>История остатков</h3>
+          {card.balances.length === 0 ? <p>Остатков пока нет.</p> : <ul>
+            {card.balances.map((balance) => <li key={balance.id}>
+              <span>{formatDate(balance.date)} · {formatMoney(balance.amountMinor, card.currency)}</span>
+              <span className={styles.rowActions}>
+                <button type="button" onClick={() => { setEditingBalanceId(balance.id); setBalanceDate(balance.date); setBalanceAmount((balance.amountMinor / 100).toString().replace(".", ",")); }}>Изменить</button>
+                <button type="button" aria-label={`Удалить остаток за ${formatDate(balance.date)}`} disabled={saving} onClick={() => void deleteBalance(balance.id)}><Trash2 size={16} /></button>
+              </span>
+            </li>)}
+          </ul>}
+          </section>
+      </section>}
+
+      {activeTab === "edit" && <section className={styles.tabPanel}>
+        <form className={styles.cardForm} onSubmit={saveCard}>
+          <label>Название карты
+            <input required maxLength={80} value={form.name} onChange={(event) => patchForm({ name: event.target.value })} placeholder="Например, Платинум" />
+          </label>
+          <label>Валюта
+            <select value={form.currency} onChange={(event) => patchForm({ currency: event.target.value as typeof form.currency })}>
+              <option value="RUB">RUB</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="HUF">HUF</option>
+            </select>
+          </label>
+          <p className={styles.hint}>При смене валюты записанные суммы остаются прежними числами.</p>
+          {error && <p className={styles.error} role="alert">{error}</p>}
+          {success && <p className={styles.success} role="status">Изменения сохранены.</p>}
+          <button type="submit" disabled={saving}>{saving ? "Сохраняю…" : card ? "Сохранить" : "Добавить карту"}</button>
+        </form>
+        {card && <button className={styles.deleteButton} type="button" disabled={saving} onClick={() => void deleteCard()}>
           <Trash2 size={18} /> {confirmDelete ? "Подтвердить удаление карты и истории" : "Удалить карту"}
-        </button>
-      </>}
+        </button>}
+      </section>}
     </Dialog>
   );
 }

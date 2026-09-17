@@ -15,10 +15,26 @@ describe("credit card form", () => {
   });
 
   it("requires a minimum payment date and amount together", () => {
-    expect(() => toCreditCardInput({ ...createCreditCardForm(), name: "Карта", minPaymentDueDate: "2026-10-01" })).toThrow("Укажите дату и сумму минимального платежа вместе.");
+    expect(() => toCreditCardInput({ ...createCreditCardForm(), name: "Карта", minimumDateType: "due", minPaymentDueDate: "2026-10-01" })).toThrow("Укажите дату и сумму минимального платежа вместе.");
   });
 
   it("keeps amounts as reference values in minor units", () => {
-    expect(toCreditCardInput({ ...createCreditCardForm(), name: "Карта", minPaymentDueDate: "2026-10-01", minPaymentAmount: "1234,50" }).minPaymentAmountMinor).toBe(123450);
+    expect(toCreditCardInput({ ...createCreditCardForm(), name: "Карта", minimumDateType: "due", minPaymentDueDate: "2026-10-01", minPaymentAmount: "1234,50" }).minPaymentAmountMinor).toBe(123450);
+  });
+
+  it("treats assignment as the active minimum payment date without an amount", () => {
+    expect(toCreditCardInput({
+      ...createCreditCardForm(),
+      name: "Карта",
+      minimumDateType: "assignment",
+      minPaymentAssignmentDate: "2026-10-01",
+      minPaymentDueDate: "2026-10-10",
+      minPaymentAmount: "200",
+    })).toMatchObject({
+      minPaymentAssignmentDate: "2026-10-01",
+      minPaymentDueDate: null,
+      minPaymentAmountMinor: null,
+      minPaymentPaid: false,
+    });
   });
 });
