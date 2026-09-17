@@ -10,13 +10,15 @@ export function getNextCreditCardEvent(card: CreditCard, today: string): NextCre
   const [grace, minimum] = getCreditCardTimelines(card);
   const events: NextCreditCardEvent[] = [];
 
-  if (grace.date && grace.date >= today && !grace.paid) {
+  if (grace.date && !grace.paid) {
     events.push({ kind: "grace", date: grace.date });
   }
-  if (minimum.date && minimum.date >= today) {
+  if (minimum.date) {
     if (minimum.kind === "assignment") events.push({ kind: "assignment", date: minimum.date });
     else if (!minimum.paid) events.push({ kind: "minimum", date: minimum.date, amountMinor: minimum.amountMinor });
   }
 
-  return events.sort((a, b) => a.date.localeCompare(b.date))[0] ?? null;
+  const upcoming = events.filter((event) => event.date >= today).sort((a, b) => a.date.localeCompare(b.date));
+  if (upcoming[0]) return upcoming[0];
+  return events.sort((a, b) => b.date.localeCompare(a.date))[0] ?? null;
 }
