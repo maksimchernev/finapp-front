@@ -13,6 +13,7 @@ import {
   getAdjacentAnalyticsWeek,
   getLastStartedWeekStartKey,
   getMonthWeekRange,
+  getAnalyticsPeriodDates,
   getVisibleAnalyticsWeekRangeIndices,
   isMonthWeekStarted,
   shouldShowAnalyticsTooltip,
@@ -83,6 +84,14 @@ describe("analytics periods", () => {
     ]);
   });
 
+  it("uses local calendar dates at a month boundary", () => {
+    const transaction = createTransaction(-1000, new Date(2026, 6, 1, 0, 30).toISOString());
+    expect(filterTransactionsByMonth([transaction], "2026-07")).toEqual([transaction]);
+    expect(buildAnalyticsAmountBars([transaction], {
+      currency: "RUB", kind: "expense", mode: "month", monthKey: "2026-07",
+    }).find((bar) => bar.key === "2026-07-01")?.total).toBe(1000);
+  });
+
   it("filters a calendar week across the month boundary", () => {
     const transactions = [
       createTransaction(-1000, "2026-06-28T10:00:00.000Z"),
@@ -97,6 +106,13 @@ describe("analytics periods", () => {
       transactions[2],
       transactions[3],
     ]);
+  });
+
+  it("links monthly and weekly category totals to their exact calendar dates", () => {
+    expect(getAnalyticsPeriodDates("month", "2026-02", "2026-02-23"))
+      .toEqual({ startDate: "2026-02-01", endDate: "2026-02-28" });
+    expect(getAnalyticsPeriodDates("week", "2026-07", "2026-06-29"))
+      .toEqual({ startDate: "2026-06-29", endDate: "2026-07-05" });
   });
 
   it("finds the calendar week for a clicked month bar", () => {

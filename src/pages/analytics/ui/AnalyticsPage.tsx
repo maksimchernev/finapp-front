@@ -2,6 +2,7 @@ import { useMemo, useRef, useState, type TouchEvent } from "react";
 import clsx from "clsx";
 import { BarChart3, ChevronLeft, ChevronRight, Minimize2 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
+import { Link } from "react-router-dom";
 import { formatCurrencyTotal } from "@/entities/transaction/lib/currencyTotals";
 import { formatMoney } from "@/entities/transaction/lib/format";
 import type {
@@ -21,6 +22,7 @@ import {
   filterTransactionsByWeek,
   formatAnalyticsWeekPeriodLabel,
   getAdjacentAnalyticsWeek,
+  getAnalyticsPeriodDates,
   getAnalyticsBarDay,
   getAnalyticsSwipeDirection,
   getCalendarWeekRange,
@@ -36,6 +38,8 @@ import {
 import { CurrencySwitcher } from "@/shared/ui/CurrencySwitcher";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { appRoutes } from "@/shared/router/routes";
+import { serializeTransactionFilters } from "@/pages/transactions/lib/transactionFilters";
 import { AnalyticsBarChart } from "@/pages/analytics/ui/AnalyticsBarChart";
 import styles from "@/pages/analytics/ui/AnalyticsPage.module.scss";
 
@@ -211,6 +215,11 @@ export function AnalyticsPage({
     chartMode === "week"
       ? weekPeriodLabel
       : `за ${activeMonthLabel.toLowerCase()}`;
+  const periodDates = getAnalyticsPeriodDates(
+    chartMode,
+    activeMonthKey,
+    activeWeekStartKey,
+  );
 
   function selectMonth(monthKey: string) {
     setSelectedMonthKey(monthKey);
@@ -526,7 +535,18 @@ export function AnalyticsPage({
             <div className={styles.categoryProgress}>
               {selectedCategoryStats.map(
                 ({ category, currency, totalMinor }) => (
-                  <div key={`${category.id}:${currency}`}>
+                  <Link
+                    className={styles.categoryLink}
+                    key={`${category.id}:${currency}`}
+                    to={`${appRoutes.transactions}?${serializeTransactionFilters(
+                      {
+                        ...periodDates,
+                        bankId: "",
+                        categoryId: category.id,
+                        currency,
+                      },
+                    )}`}
+                  >
                     <div className={styles.progressLabel}>
                       <span>
                         <i style={{ background: category.color }} />
@@ -545,7 +565,7 @@ export function AnalyticsPage({
                         }}
                       />
                     </div>
-                  </div>
+                  </Link>
                 ),
               )}
             </div>

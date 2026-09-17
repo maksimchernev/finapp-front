@@ -72,7 +72,7 @@ export function buildAnalyticsMonthTabs(
     .filter(Boolean)
     .sort((a, b) => b.localeCompare(a));
 
-  const keys = monthKeys.length ? monthKeys : [getMonthKey(today)];
+  const keys = monthKeys.length ? monthKeys : [getLocalDateKey(today).slice(0, 7)];
 
   return keys.map((key) => ({
     key,
@@ -206,6 +206,22 @@ export function getCalendarWeekRange(weekStartKey: string): AnalyticsWeekRange {
     endDay: Number(endKey.slice(8, 10)),
     startKey: weekStartKey,
     endKey,
+  };
+}
+
+export function getAnalyticsPeriodDates(
+  mode: AnalyticsChartMode,
+  monthKey: string,
+  weekStartKey: string,
+) {
+  if (mode === "week") {
+    const { startKey, endKey } = getCalendarWeekRange(weekStartKey);
+    return { startDate: startKey, endDate: endKey };
+  }
+
+  return {
+    startDate: `${monthKey}-01`,
+    endDate: getDayKey(monthKey, getDaysInMonth(monthKey)),
   };
 }
 
@@ -546,11 +562,11 @@ function matchesKind(transaction: Transaction, kind: AnalyticsChartKind) {
 }
 
 function getTransactionMonthKey(transaction: Transaction) {
-  return transaction.date.slice(0, 7);
+  return getLocalDateKey(new Date(transaction.date)).slice(0, 7);
 }
 
 function getTransactionDay(transaction: Transaction) {
-  return Number(transaction.date.slice(8, 10));
+  return new Date(transaction.date).getDate();
 }
 
 function getMonthKey(date: Date) {

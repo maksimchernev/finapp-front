@@ -10,10 +10,11 @@ describe("transaction list URL", () => {
       endDate: "2026-07-08T21:00:00.000Z",
       bankId: "bank a",
       categoryId: "category-a",
+      currency: "HUF",
       limit: 20,
       offset: 40,
     })).toBe(
-      "/api/transactions?startDate=2026-07-01T21%3A00%3A00.000Z&endDate=2026-07-08T21%3A00%3A00.000Z&bankId=bank+a&categoryId=category-a&limit=20&offset=40",
+      "/api/transactions?startDate=2026-07-01T21%3A00%3A00.000Z&endDate=2026-07-08T21%3A00%3A00.000Z&bankId=bank+a&categoryId=category-a&currency=HUF&limit=20&offset=40",
     );
   });
 

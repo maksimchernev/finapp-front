@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Check, Trash2, X } from "lucide-react";
 import clsx from "clsx";
 import { AnimatePresence } from "motion/react";
+import { useSearchParams } from "react-router-dom";
 import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
 import { CategoryIcon } from "@/entities/category/ui/CategoryIcon";
@@ -26,6 +27,8 @@ import {
 import {
   countActiveTransactionFilters,
   emptyTransactionFilters,
+  readTransactionFilters,
+  serializeTransactionFilters,
   setTransactionStartDate,
   type TransactionFilters,
 } from "@/pages/transactions/lib/transactionFilters";
@@ -51,9 +54,8 @@ export function TransactionsPage({
     transaction: UpdateTransactionRequest,
   ) => Promise<Transaction>;
 }) {
-  const [filters, setFilters] = useState<TransactionFilters>(
-    emptyTransactionFilters,
-  );
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filters = useMemo(() => readTransactionFilters(searchParams), [searchParams]);
   const [draftFilters, setDraftFilters] = useState<TransactionFilters>(
     emptyTransactionFilters,
   );
@@ -122,7 +124,7 @@ export function TransactionsPage({
 
   function applyFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setFilters(draftFilters);
+    setSearchParams(serializeTransactionFilters(draftFilters));
     setIsFilterDialogOpen(false);
     setSelectedIds(new Set());
     setIsSelectionMode(false);
@@ -312,7 +314,7 @@ export function TransactionsPage({
       )}
 
       <section className={styles.transactionListShell}>
-        {!isSelectionMode && groups.length > 0 && (
+        {!isSelectionMode && (groups.length > 0 || activeFilterCount > 0) && (
           <div className={styles.filterSticky}>
             <button
               className={styles.filterTrigger}
@@ -346,7 +348,7 @@ export function TransactionsPage({
                     className={styles.filterTextButton}
                     type="button"
                     onClick={() => {
-                      setFilters(emptyTransactionFilters);
+                      setSearchParams(new URLSearchParams());
                       setDraftFilters(emptyTransactionFilters);
                     }}
                   >
@@ -490,6 +492,19 @@ export function TransactionsPage({
                         {category.nameRu}
                       </option>
                     ))}
+                  </select>
+                </label>
+                <label>
+                  Валюта
+                  <select
+                    value={draftFilters.currency}
+                    onChange={(event) => updateFilter("currency", event.target.value)}
+                  >
+                    <option value="">Все валюты</option>
+                    <option value="RUB">RUB</option>
+                    <option value="EUR">EUR</option>
+                    <option value="USD">USD</option>
+                    <option value="HUF">HUF</option>
                   </select>
                 </label>
               </div>

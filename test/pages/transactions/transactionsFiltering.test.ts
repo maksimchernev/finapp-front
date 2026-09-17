@@ -31,7 +31,7 @@ describe("TransactionsPage server filtering", () => {
     expect(source).toContain("Применить");
     expect(source).toContain("styles.filterApplyButton");
     expect(styles).toMatch(/\.filterApplyButton\s*\{[^}]*min-height:\s*48px;[^}]*padding:\s*14px 18px;[^}]*border-radius:\s*8px;/s);
-    expect(source).toContain("setFilters(draftFilters)");
+    expect(source).toContain("setSearchParams(serializeTransactionFilters(draftFilters))");
     expect(source).toContain("usePaginatedTransactions(filters)");
   });
 

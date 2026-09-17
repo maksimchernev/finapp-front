@@ -30,6 +30,7 @@ export type TransactionListQuery = {
   endDate?: string;
   bankId?: string;
   categoryId?: string;
+  currency?: string;
   limit?: number;
   offset?: number;
 };
@@ -46,7 +47,7 @@ export type StatisticsQuery = Pick<
 
 export function buildTransactionListUrl(query: TransactionListQuery = {}) {
   const params = new URLSearchParams();
-  for (const key of ["startDate", "endDate", "bankId", "categoryId"] as const) {
+  for (const key of ["startDate", "endDate", "bankId", "categoryId", "currency"] as const) {
     const value = query[key];
     if (value) params.set(key, value);
   }

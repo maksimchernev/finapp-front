@@ -77,7 +77,7 @@ export function usePaginatedTransactions(filters: TransactionFilters) {
         setIsInitialLoading(false);
       }
     }
-  }, [commitPage, filters.bankId, filters.categoryId, filters.endDate, filters.startDate]);
+  }, [commitPage, filters.bankId, filters.categoryId, filters.currency, filters.endDate, filters.startDate]);
 
   useEffect(() => {
     void reload();

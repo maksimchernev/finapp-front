@@ -299,28 +299,48 @@
 .categoryProgress {
   display: grid;
   gap: 11px;
-}
 
-.progressLabel {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 7px;
-  font-size: 13px;
+  .categoryLink {
+    color: inherit;
+    text-decoration: none;
+    margin: -8px;
+    padding: 8px;
+    border-radius: 8px;
+    background-color: transparent;
+    transition: background-color 0.2s;
+    &:hover,
+    &:active,
+    &:focus {
+      background-color: var(--surface-muted);
+    }
 
-  span {
-    display: inline-flex;
-    align-items: center;
-    min-width: 0;
-    gap: 8px;
+    &:focus-visible {
+      outline: 2px solid var(--accent-a);
+      outline-offset: 3px;
+    }
   }
 
-  i {
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    flex: 0 0 auto;
+  .progressLabel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 7px;
+    font-size: 13px;
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      min-width: 0;
+      gap: 8px;
+    }
+
+    i {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      flex: 0 0 auto;
+    }
   }
 }
 
