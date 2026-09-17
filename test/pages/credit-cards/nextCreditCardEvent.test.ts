@@ -12,6 +12,7 @@ const card: CreditCard = {
   minPaymentAmountMinor: 12000,
   minPaymentPaid: false,
   balances: [],
+  graceHistory: [],
   paymentHistory: [],
 };
 

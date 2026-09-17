@@ -42,6 +42,8 @@ export function CreditCardEditor({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [graceFormMode, setGraceFormMode] = useState<"add" | "edit" | null>(null);
+  const [minimumFormMode, setMinimumFormMode] = useState<"add" | "edit" | null>(null);
 
   function patchForm(patch: Partial<typeof form>) {
     setForm((current) => ({ ...current, ...patch }));
@@ -51,11 +53,23 @@ export function CreditCardEditor({
 
   async function saveCard(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (graceFormMode === "add" && form.gracePeriodEndDate === card?.gracePeriodEndDate) {
+      setError("Укажите новую дату окончания периода.");
+      return;
+    }
+    if (minimumFormMode === "add" && (form.minimumDateType === "due"
+      ? form.minPaymentDueDate === card?.minPaymentDueDate
+      : form.minPaymentAssignmentDate === card?.minPaymentAssignmentDate)) {
+      setError("Укажите новую дату минимального платежа.");
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
       const updated = await onSave(toCreditCardInput(form));
       setForm(createCreditCardForm(updated));
+      setGraceFormMode(null);
+      setMinimumFormMode(null);
       setSuccess(Boolean(card));
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Не удалось сохранить карту.");
@@ -127,6 +141,40 @@ export function CreditCardEditor({
     }
   }
 
+  async function toggleMinimumPaid(paid: boolean) {
+    if (!card || !card.minPaymentDueDate || card.minPaymentAmountMinor === null) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const updated = await onSave({ ...toCreditCardInput(createCreditCardForm(card)), minPaymentPaid: paid });
+      setForm(createCreditCardForm(updated));
+    } catch (toggleError) {
+      setError(toggleError instanceof Error ? toggleError.message : "Не удалось изменить отметку.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function openGraceForm(mode: "add" | "edit") {
+    setGraceFormMode(mode);
+    setForm({ ...createCreditCardForm(card), ...(mode === "add" ? { gracePeriodEndDate: "", gracePaid: false } : {}) });
+    setError(null);
+    setSuccess(false);
+  }
+
+  function openMinimumForm(mode: "add" | "edit") {
+    setMinimumFormMode(mode);
+    setForm({ ...createCreditCardForm(card), ...(mode === "add" ? {
+      minimumDateType: "assignment",
+      minPaymentAssignmentDate: "",
+      minPaymentDueDate: "",
+      minPaymentAmount: "",
+      minPaymentPaid: false,
+    } as const : {}) });
+    setError(null);
+    setSuccess(false);
+  }
+
   function selectTab(tab: CardTab) {
     setActiveTab(tab);
     setError(null);
@@ -156,30 +204,36 @@ export function CreditCardEditor({
       </nav>}
 
       {card && activeTab === "grace" && <section className={styles.tabPanel}>
-        <form className={styles.cardForm} onSubmit={saveCard}>
+        {(!card.gracePeriodEndDate || graceFormMode) && <form className={styles.cardForm} onSubmit={saveCard}>
           <label>Дата окончания беспроцентного периода
-            <input type="date" value={form.gracePeriodEndDate} onChange={(event) => patchForm({ gracePeriodEndDate: event.target.value, gracePaid: false })} />
+            <input type="date" required value={form.gracePeriodEndDate} onChange={(event) => patchForm({ gracePeriodEndDate: event.target.value, gracePaid: false })} />
           </label>
           {error && <p className={styles.error} role="alert">{error}</p>}
           {success && <p className={styles.success} role="status">Изменения сохранены.</p>}
           <button type="submit" disabled={saving}>{saving ? "Сохраняю…" : "Сохранить"}</button>
-        </form>
+        </form>}
+        {card.gracePeriodEndDate && !graceFormMode && <button className={styles.addDateButton} type="button" disabled={saving} onClick={() => openGraceForm(card.gracePaid ? "add" : "edit")}>{card.gracePaid ? "Добавить дату окончания периода" : "Изменить дату"}</button>}
+        {error && !graceFormMode && <p className={styles.error} role="alert">{error}</p>}
         <section className={styles.history}>
           <h3>История периода</h3>
-          {card.gracePeriodEndDate ? <ul>
-            <li>
+          {card.gracePeriodEndDate || card.graceHistory.length > 0 ? <ul>
+            {card.gracePeriodEndDate && <li>
               <span>{formatDate(card.gracePeriodEndDate)}</span>
               <label className={styles.statusToggle}>
                 <input type="checkbox" checked={card.gracePaid} disabled={saving} onChange={(event) => void toggleGracePaid(event.target.checked)} />
                 Долг для беспроцентного периода погашен
               </label>
-            </li>
+            </li>}
+            {card.graceHistory.map((period) => <li key={period.id}>
+              <span>{formatDate(period.endDate)}</span>
+              <span>{period.paid ? "Долг погашен" : "Не отмечен"}</span>
+            </li>)}
           </ul> : <p>Дата пока не указана.</p>}
         </section>
       </section>}
 
       {card && activeTab === "minimum" && <section className={styles.tabPanel}>
-        <form className={styles.cardForm} onSubmit={saveCard}>
+        {(!card.minPaymentDueDate || minimumFormMode) && <form className={styles.cardForm} onSubmit={saveCard}>
           <div className={styles.minimumDateField}>
             <label htmlFor="credit-minimum-date">Дата</label>
             <div className={styles.minimumDateRow}>
@@ -190,7 +244,7 @@ export function CreditCardEditor({
                 onChange={(event) => patchForm(form.minimumDateType === "due"
                   ? { minPaymentDueDate: event.target.value, minPaymentPaid: false }
                   : { minPaymentAssignmentDate: event.target.value })}
-                required={form.minimumDateType === "due"}
+                required
               />
               <select
                 aria-label="Тип даты минимального платежа"
@@ -206,18 +260,23 @@ export function CreditCardEditor({
             <label>Сумма минимального платежа
               <input required inputMode="decimal" value={form.minPaymentAmount} onChange={(event) => patchForm({ minPaymentAmount: event.target.value, minPaymentPaid: false })} placeholder="0,00" />
             </label>
-            {form.minPaymentDueDate && form.minPaymentAmount && <label className={styles.checkRow}>
-              <input type="checkbox" checked={form.minPaymentPaid} onChange={(event) => patchForm({ minPaymentPaid: event.target.checked })} />
-              Минимальный платёж внесён
-            </label>}
           </>}
           {error && <p className={styles.error} role="alert">{error}</p>}
           {success && <p className={styles.success} role="status">Изменения сохранены.</p>}
           <button type="submit" disabled={saving}>{saving ? "Сохраняю…" : "Сохранить"}</button>
-        </form>
+        </form>}
+        {card.minPaymentDueDate && !minimumFormMode && <button className={styles.addDateButton} type="button" disabled={saving} onClick={() => openMinimumForm(card.minPaymentPaid ? "add" : "edit")}>{card.minPaymentPaid ? "Добавить дату минимального платежа" : "Изменить платёж"}</button>}
+        {error && !minimumFormMode && <p className={styles.error} role="alert">{error}</p>}
         <section className={styles.history}>
           <h3>История минимальных платежей</h3>
-          {card.paymentHistory.length === 0 ? <p>Истории пока нет.</p> : <ul>
+          {!card.minPaymentDueDate && card.paymentHistory.length === 0 ? <p>Истории пока нет.</p> : <ul>
+            {card.minPaymentDueDate && card.minPaymentAmountMinor !== null && <li>
+              <span>{formatDate(card.minPaymentDueDate)} · {formatMoney(card.minPaymentAmountMinor, card.currency)}</span>
+              <label className={styles.statusToggle}>
+                <input type="checkbox" checked={card.minPaymentPaid} disabled={saving} onChange={(event) => void toggleMinimumPaid(event.target.checked)} />
+                Минимальный платёж внесён
+              </label>
+            </li>}
             {card.paymentHistory.map((payment) => <li key={payment.id}>
               <span>{formatDate(payment.dueDate)} · {formatMoney(payment.amountMinor, card.currency)}</span>
               <span>{payment.paid ? "Внесён" : "Не отмечен"}</span>

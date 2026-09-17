@@ -81,7 +81,7 @@
       display: grid;
       gap: 13px;
 
-      label:not(.checkRow) {
+      label {
         display: grid;
         gap: 6px;
         font-size: 13px;
@@ -98,13 +98,6 @@
           color: inherit;
           font: inherit;
         }
-      }
-
-      .checkRow {
-        display: flex;
-        align-items: center;
-        gap: 9px;
-        font-size: 13px;
       }
 
       .hint {
@@ -164,6 +157,17 @@
 
     .error { color: var(--red); }
     .success { color: var(--accent-a); }
+
+    .addDateButton {
+      min-height: 42px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--accent-a);
+      font: inherit;
+      font-weight: 700;
+    }
 
     .history {
       display: grid;

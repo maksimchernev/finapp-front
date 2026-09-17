@@ -14,6 +14,13 @@ export type CreditCardMinimumPayment = {
   archivedAt: string;
 };
 
+export type CreditCardGracePeriod = {
+  id: string;
+  endDate: string;
+  paid: boolean;
+  archivedAt: string;
+};
+
 export type CreditCard = {
   id: string;
   name: string;
@@ -25,7 +32,8 @@ export type CreditCard = {
   minPaymentAmountMinor: number | null;
   minPaymentPaid: boolean;
   balances: CreditCardBalance[];
+  graceHistory: CreditCardGracePeriod[];
   paymentHistory: CreditCardMinimumPayment[];
 };
 
-export type CreditCardInput = Omit<CreditCard, "id" | "balances" | "paymentHistory">;
+export type CreditCardInput = Omit<CreditCard, "id" | "balances" | "graceHistory" | "paymentHistory">;
