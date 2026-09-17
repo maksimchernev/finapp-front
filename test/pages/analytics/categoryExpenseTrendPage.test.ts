@@ -6,10 +6,6 @@ describe("analytics category expense trend", () => {
     join(process.cwd(), "src/pages/analytics/ui/AnalyticsPage.tsx"),
     "utf8",
   );
-  const monthsSource = readFileSync(
-    join(process.cwd(), "src/pages/analytics-months/ui/AnalyticsMonthsPage.tsx"),
-    "utf8",
-  );
   const workspaceSource = readFileSync(
     join(process.cwd(), "src/pages/workspace/ui/WorkspacePage.tsx"),
     "utf8",
@@ -23,38 +19,33 @@ describe("analytics category expense trend", () => {
     "utf8",
   );
 
-  it("keeps the monthly summary separate from the all-months trend", () => {
-    expect(analyticsSource).not.toContain("<CategoryExpenseTrendChart");
-    expect(analyticsSource).toContain("onOpenMonths");
-    expect(analyticsSource).toContain("По месяцам");
-    expect(monthsSource).toContain("<CategoryExpenseTrendChart");
-    expect(monthsSource).toContain(
-      "buildCategoryExpenseTrend(transactions, selectedCurrency)",
+  it("renders the all-months trend under the shared analytics header", () => {
+    expect(analyticsSource).toContain("<CategoryExpenseTrendChart");
+    expect(analyticsSource).toContain("<AnalyticsViewSwitcher");
+    expect(analyticsSource).toContain(
+      "buildCategoryExpenseTrend(transactions, selectedChartCurrency)",
+    );
+    expect(analyticsSource.match(/<PageHeader/g)).toHaveLength(1);
+  });
+
+  it("keeps month navigation below the analytics view switcher", () => {
+    expect(analyticsSource).toContain("styles.periodNavigation");
+    expect(analyticsSource).toContain("styles.monthTabsViewport");
+    expect(analyticsSource.indexOf("<AnalyticsViewSwitcher")).toBeLessThan(
+      analyticsSource.indexOf("styles.periodNavigation"),
     );
   });
 
-  it("keeps the all-months action fixed beside the scrollable month tabs", () => {
-    expect(analyticsSource).toContain("styles.periodNavigation");
-    expect(analyticsSource).toContain("styles.monthTabsViewport");
-    expect(analyticsSource).toContain("<BarChart3");
-    expect(analyticsSource).toContain('aria-label="Сводка по месяцам"');
-  });
-
-  it("shows the all-months action only when several months are available", () => {
-    expect(analyticsSource).toContain("monthTabs.length > 1 ? (");
-  });
-
-  it("renders the monthly trends screen with back navigation and empty state", () => {
-    expect(monthsSource).toContain('title="Сводка по месяцам"');
-    expect(monthsSource).toContain("onBack={onBack}");
-    expect(monthsSource).toContain("Расходы по категориям");
-    expect(monthsSource).toContain(
+  it("renders the monthly trend and empty state within analytics", () => {
+    expect(analyticsSource).toContain("Расходы по категориям");
+    expect(analyticsSource).toContain(
       'EmptyState text="Расходы по категориям появятся после сохранения операций."',
     );
   });
 
-  it("registers the nested private analytics route", () => {
+  it("redirects the old all-months address to the analytics tab", () => {
     expect(workspaceSource).toContain('path="analytics/months"');
+    expect(workspaceSource).toContain('to={`${appRoutes.analytics}?view=months`}');
     expect(routesSource).toContain('analyticsMonths: "/analytics/months"');
   });
 

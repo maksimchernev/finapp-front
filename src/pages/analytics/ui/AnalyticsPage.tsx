@@ -1,8 +1,14 @@
-import { useLayoutEffect, useMemo, useRef, useState, type TouchEvent } from "react";
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type TouchEvent,
+} from "react";
 import clsx from "clsx";
-import { BarChart3, ChevronLeft, ChevronRight, Minimize2 } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { formatCurrencyTotal } from "@/entities/transaction/lib/currencyTotals";
 import { formatMoney } from "@/entities/transaction/lib/format";
 import type {
@@ -16,6 +22,7 @@ import {
   buildAnalyticsMonthTabs,
   buildAnalyticsWeekTabs,
   buildAnalyticsWeekCategorySeries,
+  buildCategoryExpenseTrend,
   buildMonthCategoryStats,
   buildMonthCurrencyTotals,
   filterTransactionsByMonth,
@@ -27,6 +34,7 @@ import {
   getAnalyticsSwipeDirection,
   getCalendarWeekRange,
   getMonthWeekRange,
+  getLastStartedWeekStartKey,
   isMonthWeekStarted,
   shouldShowAnalyticsTooltip,
   type AnalyticsChartMode,
@@ -41,6 +49,11 @@ import { PageHeader } from "@/shared/ui/PageHeader";
 import { appRoutes } from "@/shared/router/routes";
 import { serializeTransactionFilters } from "@/pages/transactions/lib/transactionFilters";
 import { AnalyticsBarChart } from "@/pages/analytics/ui/AnalyticsBarChart";
+import { CategoryExpenseTrendChart } from "@/pages/analytics/ui/CategoryExpenseTrendChart";
+import {
+  AnalyticsViewSwitcher,
+  type AnalyticsView,
+} from "@/pages/analytics/ui/AnalyticsViewSwitcher";
 import styles from "@/pages/analytics/ui/AnalyticsPage.module.scss";
 
 type ChartKind = "expense" | "income";
@@ -48,14 +61,16 @@ type ChartKind = "expense" | "income";
 export function AnalyticsPage({
   statistics: _statistics,
   transactions,
-  onOpenMonths,
 }: {
   statistics: Statistics | null;
   transactions: Transaction[];
-  onOpenMonths: () => void;
 }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const viewParam = searchParams.get("view");
+  const view: AnalyticsView =
+    viewParam === "months" || viewParam === "week" ? viewParam : "month";
+  const chartMode: AnalyticsChartMode = view === "week" ? "week" : "month";
   const [chartKind, setChartKind] = useState<ChartKind>("expense");
-  const [chartMode, setChartMode] = useState<AnalyticsChartMode>("month");
   const shouldReduceMotion = useReducedMotion();
   const periodZoomMotion = shouldReduceMotion
     ? { opacity: 1, scale: 1 }
@@ -94,7 +109,7 @@ export function AnalyticsPage({
     selectedWeekStartKey &&
     weekTabs.some((week) => week.startKey === selectedWeekStartKey)
       ? selectedWeekStartKey
-      : weekTabs[0].startKey;
+      : (getLastStartedWeekStartKey(activeMonthKey) ?? weekTabs[0].startKey);
   const previousWeek = getAdjacentAnalyticsWeek(
     chronologicalMonthKeys,
     activeMonthKey,
@@ -133,18 +148,31 @@ export function AnalyticsPage({
           balanceMinor: 0,
         },
       ];
-  const availableCurrencies = Array.from(
+  const periodCurrencies = Array.from(
     new Set([
       ...displayedTotals.map((item) => item.currency),
       ...periodTransactions.map((transaction) => transaction.currency),
     ]),
   );
+  const allMonthCurrencies = Array.from(
+    new Set(transactions.map((transaction) => transaction.currency)),
+  );
+  const availableCurrencies =
+    view === "months"
+      ? allMonthCurrencies.length
+        ? allMonthCurrencies
+        : ["RUB"]
+      : periodCurrencies;
   const [chartCurrency, setChartCurrency] = useState(
     availableCurrencies[0] || "RUB",
   );
   const selectedChartCurrency = getSelectedCurrency(
     availableCurrencies,
     chartCurrency,
+  );
+  const trendData = useMemo(
+    () => buildCategoryExpenseTrend(transactions, selectedChartCurrency),
+    [selectedChartCurrency, transactions],
   );
   const showCurrencySwitcher =
     getCurrencySwitcherMode(availableCurrencies) !== "hidden";
@@ -251,17 +279,15 @@ export function AnalyticsPage({
   function selectMonth(monthKey: string) {
     periodSlideDirectionRef.current = null;
     setSelectedMonthKey(monthKey);
-    setChartMode("month");
-    setSelectedWeekStartKey(null);
-    setHoveredWeekRange(null);
+    if (monthKey !== activeMonthKey) setSelectedWeekStartKey(null);
+    selectView("month");
   }
 
   function selectWeek(monthKey: string, weekStartKey: string) {
     periodSlideDirectionRef.current = null;
     setSelectedMonthKey(monthKey);
     setSelectedWeekStartKey(weekStartKey);
-    setChartMode("week");
-    setHoveredWeekRange(null);
+    selectView("week");
   }
 
   function navigatePeriod(direction: "previous" | "next") {
@@ -318,9 +344,8 @@ export function AnalyticsPage({
     );
   }
 
-  function zoomOutToMonth() {
-    setChartMode("month");
-    setSelectedWeekStartKey(null);
+  function selectView(view: AnalyticsView) {
+    setSearchParams(view === "month" ? {} : { view });
     setHoveredWeekRange(null);
   }
 
@@ -358,8 +383,14 @@ export function AnalyticsPage({
     <section className={styles.screen}>
       <PageHeader
         eyebrow="summa"
-        title={`Сводка за ${activeMonthLabel.toLowerCase()}`}
-        subtitle="Доходы и расходы по месяцам"
+        title={
+          view === "months"
+            ? "Сводка по месяцам"
+            : view === "week"
+              ? `Сводка ${weekPeriodLabel}`
+              : `Сводка за ${activeMonthLabel.toLowerCase()}`
+        }
+        subtitle={view === "months" ? "Топ-5 категорий расходов" : "Доходы и расходы"}
         action={
           showCurrencySwitcher ? (
             <CurrencySwitcher
@@ -371,22 +402,22 @@ export function AnalyticsPage({
           ) : undefined
         }
       />
-      {chartMode === "month" && (
+      <AnalyticsViewSwitcher value={view} onChange={selectView} />
+      {view === "months" && (
+        <section className={styles.chartCard}>
+          <h3>Расходы по категориям</h3>
+          {trendData.series.length ? (
+            <CategoryExpenseTrendChart
+              data={trendData}
+              currency={selectedChartCurrency}
+            />
+          ) : (
+            <EmptyState text="Расходы по категориям появятся после сохранения операций." />
+          )}
+        </section>
+      )}
+      {view === "month" && (
         <div className={styles.periodControls}>
-          {monthTabs.length > 1 ? (
-            <div className={styles.modeActionRow}>
-              <button
-                className={styles.monthsLink}
-                type="button"
-                aria-label="Сводка по месяцам"
-                title="Сводка по месяцам"
-                onClick={onOpenMonths}
-              >
-                <BarChart3 size={16} aria-hidden="true" />
-                <span>По месяцам</span>
-              </button>
-            </div>
-          ) : null}
           <div className={styles.periodNavigation}>
             <button
               aria-label="Предыдущий месяц"
@@ -431,6 +462,7 @@ export function AnalyticsPage({
           </div>
         </div>
       )}
+      {view !== "months" && (
       <motion.div
         animate={periodZoomMotion}
         ref={periodContentRef}
@@ -446,17 +478,6 @@ export function AnalyticsPage({
       >
         {chartMode === "week" && (
           <div className={styles.periodControls}>
-            <div className={styles.modeActionRow}>
-              <button
-                className={styles.zoomOutBtn}
-                type="button"
-                aria-label="Отдалиться до месяца"
-                title="Отдалиться до месяца"
-                onClick={zoomOutToMonth}
-              >
-                <Minimize2 size={16} aria-hidden="true" />
-              </button>
-            </div>
             <div className={styles.weekNavigation}>
               <button
                 aria-label="Предыдущая неделя"
@@ -610,6 +631,7 @@ export function AnalyticsPage({
           )}
         </section>
       </motion.div>
+      )}
     </section>
   );
 }

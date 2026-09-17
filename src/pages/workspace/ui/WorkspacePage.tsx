@@ -25,7 +25,6 @@ import { appRoutes } from "@/shared/router/routes";
 import { AppLayout } from "@/shared/ui/AppLayout";
 import { BottomNav } from "@/widgets/bottom-nav/ui/BottomNav";
 import { AnalyticsPage } from "@/pages/analytics/ui/AnalyticsPage";
-import { AnalyticsMonthsPage } from "@/pages/analytics-months/ui/AnalyticsMonthsPage";
 import { BanksPage } from "@/pages/banks/ui/BanksPage";
 import { CategoriesPage } from "@/pages/categories/ui/CategoriesPage";
 import { DashboardPage } from "@/pages/dashboard/ui/DashboardPage";
@@ -274,18 +273,12 @@ export function WorkspacePage({
             <AnalyticsPage
               statistics={finance.statistics}
               transactions={finance.transactions}
-              onOpenMonths={() => navigate(appRoutes.analyticsMonths)}
             />
           }
         />
         <Route
           path="analytics/months"
-          element={
-            <AnalyticsMonthsPage
-              transactions={finance.transactions}
-              onBack={() => navigate(appRoutes.analytics)}
-            />
-          }
+          element={<Navigate to={`${appRoutes.analytics}?view=months`} replace />}
         />
         <Route
           path="transactions"

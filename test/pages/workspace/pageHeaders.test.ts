@@ -3,7 +3,6 @@ import { join } from "node:path";
 
 const pagePaths = [
   "src/pages/analytics/ui/AnalyticsPage.tsx",
-  "src/pages/analytics-months/ui/AnalyticsMonthsPage.tsx",
   "src/pages/upload/ui/UploadPage.tsx",
   "src/pages/review/ui/ReviewPage.tsx",
   "src/pages/transactions/ui/TransactionsPage.tsx",
@@ -24,7 +23,6 @@ describe("page headers", () => {
   });
 
   it.each([
-    "src/pages/analytics-months/ui/AnalyticsMonthsPage.tsx",
     "src/pages/review/ui/ReviewPage.tsx",
     "src/pages/banks/ui/BanksPage.tsx",
     "src/pages/categories/ui/CategoriesPage.tsx",

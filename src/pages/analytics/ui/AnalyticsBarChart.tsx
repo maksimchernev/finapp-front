@@ -24,6 +24,10 @@ import {
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
 
+const thousandRublesFormatter = new Intl.NumberFormat("ru-RU", {
+  maximumFractionDigits: 3,
+});
+
 export function AnalyticsBarChart({
   bars,
   categorySeries,
@@ -121,7 +125,10 @@ export function AnalyticsBarChart({
             color: "rgba(36, 76, 56, 0.08)",
           },
           ticks: {
-            callback: (value) => formatMoney(Number(value), currency),
+            callback: (value) =>
+              currency === "RUB"
+                ? `${thousandRublesFormatter.format(Number(value) / 100_000)} т.р.`
+                : formatMoney(Number(value), currency),
             color: "#6d756f",
             font: {
               size: 11,

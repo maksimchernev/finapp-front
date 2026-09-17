@@ -6,12 +6,6 @@
 .periodControls {
   display: grid;
   gap: 8px;
-
-  .modeActionRow {
-    min-height: 36px;
-    display: flex;
-    justify-content: flex-end;
-  }
 }
 
 .periodNavigation,
@@ -54,22 +48,6 @@
     cursor: not-allowed;
     opacity: 0.35;
   }
-}
-
-.monthsLink {
-  min-height: 36px;
-  padding: 7px 12px;
-  margin-bottom: 2px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid rgba(36, 76, 56, 0.24);
-  border-radius: 999px;
-  color: var(--accent-a);
-  background: rgba(36, 76, 56, 0.1);
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
 }
 
 .metricsGrid {
@@ -177,18 +155,6 @@
 .switchStack {
   display: flex;
   min-width: 153px;
-}
-
-.zoomOutBtn {
-  width: 34px;
-  height: 34px;
-  display: inline-grid;
-  place-items: center;
-  border: 1px solid rgba(36, 76, 56, 0.14);
-  border-radius: 999px;
-
-  color: var(--accent-a);
-  background: rgba(36, 76, 56, 0.08);
 }
 
 .segmentedControl {
@@ -360,21 +326,6 @@
 }
 
 @media (max-width: 380px) {
-  .monthsLink {
-    width: 35px;
-    padding-inline: 0;
-    justify-content: center;
-
-    span {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip: rect(0 0 0 0);
-      white-space: nowrap;
-    }
-  }
-
   .metricsGrid {
     grid-template-columns: 1fr;
   }

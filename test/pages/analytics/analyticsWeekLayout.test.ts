@@ -11,18 +11,13 @@ describe("analytics weekly layout", () => {
     "utf8",
   );
 
-  it("keeps the weekly action and period tabs inside the weekly cloud", () => {
-    expect(source).toContain('chartMode === "month" && (');
+  it("keeps period tabs inside the weekly cloud", () => {
+    expect(source).toContain('view === "month" && (');
     expect(source).toContain("styles.periodControls");
-    expect(source).toContain("styles.modeActionRow");
     expect(source).toContain("styles.weekNavigation");
     expect(source).toContain("formatAnalyticsWeekPeriodLabel(");
-    expect(source).toContain("onClick={zoomOutToMonth}");
-    expect(source).toContain("<Minimize2");
+    expect(source).toContain("<AnalyticsViewSwitcher");
     expect(source).toContain("weekTabs.map((week)");
-    expect(source.indexOf("styles.weekCloud")).toBeLessThan(
-      source.indexOf("styles.zoomOutBtn"),
-    );
   });
 
   it("supports arrows and touch swipes without moving currency out of the header", () => {
@@ -36,10 +31,14 @@ describe("analytics weekly layout", () => {
   });
 
   it("keeps analytics blocks mounted in one stable weekly cloud", () => {
+    const periodContent = source.slice(
+      source.indexOf("<motion.div"),
+      source.lastIndexOf("</motion.div>"),
+    );
     expect(source).toContain("styles.analyticsContent");
     expect(source).toContain('chartMode === "week" && styles.weekCloud');
-    expect(source).toContain("styles.metricsGrid");
-    expect(source.match(/styles\.chartCard/g)).toHaveLength(2);
+    expect(periodContent).toContain("styles.metricsGrid");
+    expect(periodContent.match(/styles\.chartCard/g)).toHaveLength(2);
   });
 
   it("zooms into weeks and out to months without an initial animation", () => {
