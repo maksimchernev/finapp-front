@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type TouchEvent } from "react";
+import { useLayoutEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import clsx from "clsx";
 import { BarChart3, ChevronLeft, ChevronRight, Minimize2 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
@@ -67,6 +67,8 @@ export function AnalyticsPage({
     string | null
   >(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const periodContentRef = useRef<HTMLDivElement | null>(null);
+  const periodSlideDirectionRef = useRef<"previous" | "next" | null>(null);
   const [hoveredWeekRange, setHoveredWeekRange] =
     useState<AnalyticsWeekRange | null>(null);
   const monthTabs = useMemo(
@@ -221,7 +223,33 @@ export function AnalyticsPage({
     activeWeekStartKey,
   );
 
+  useLayoutEffect(() => {
+    const direction = periodSlideDirectionRef.current;
+    periodSlideDirectionRef.current = null;
+    if (!direction || shouldReduceMotion) return;
+
+    const animations = Array.from(
+      periodContentRef.current?.querySelectorAll<HTMLElement>(
+        "[data-period-content]",
+      ) ?? [],
+    ).map((element) =>
+      element.animate(
+        [
+          {
+            opacity: 0.7,
+            transform: `translateX(${direction === "next" ? 12 : -12}px)`,
+          },
+          { opacity: 1, transform: "translateX(0)" },
+        ],
+        { duration: 180, easing: "ease-out" },
+      ),
+    );
+
+    return () => animations.forEach((animation) => animation.cancel());
+  }, [activeMonthKey, activeWeekStartKey, chartMode, shouldReduceMotion]);
+
   function selectMonth(monthKey: string) {
+    periodSlideDirectionRef.current = null;
     setSelectedMonthKey(monthKey);
     setChartMode("month");
     setSelectedWeekStartKey(null);
@@ -229,6 +257,7 @@ export function AnalyticsPage({
   }
 
   function selectWeek(monthKey: string, weekStartKey: string) {
+    periodSlideDirectionRef.current = null;
     setSelectedMonthKey(monthKey);
     setSelectedWeekStartKey(weekStartKey);
     setChartMode("week");
@@ -238,12 +267,18 @@ export function AnalyticsPage({
   function navigatePeriod(direction: "previous" | "next") {
     if (chartMode === "month") {
       const month = direction === "previous" ? previousMonth : nextMonth;
-      if (month) selectMonth(month.key);
+      if (month) {
+        selectMonth(month.key);
+        periodSlideDirectionRef.current = direction;
+      }
       return;
     }
 
     const week = direction === "previous" ? previousWeek : nextWeek;
-    if (week) selectWeek(week.monthKey, week.weekStartKey);
+    if (week) {
+      selectWeek(week.monthKey, week.weekStartKey);
+      periodSlideDirectionRef.current = direction;
+    }
   }
 
   function drillDownToWeek(bar: AnalyticsBar) {
@@ -398,6 +433,7 @@ export function AnalyticsPage({
       )}
       <motion.div
         animate={periodZoomMotion}
+        ref={periodContentRef}
         className={clsx(
           styles.analyticsContent,
           chartMode === "week" && styles.weekCloud,
@@ -466,7 +502,7 @@ export function AnalyticsPage({
             </div>
           </div>
         )}
-        <div className={styles.metricsGrid}>
+        <div className={styles.metricsGrid} data-period-content>
           <div className={clsx(styles.metric, styles.blue)}>
             <span>Всего потрачено</span>
             <div className={styles.moneyStack}>
@@ -489,7 +525,7 @@ export function AnalyticsPage({
           </div>
         </div>
 
-        <section className={styles.chartCard}>
+        <section className={styles.chartCard} data-period-content>
           <div className={styles.chartHead}>
             <div>
               <h3>Динамика</h3>
@@ -529,7 +565,7 @@ export function AnalyticsPage({
           </div>
         </section>
 
-        <section className={styles.chartCard}>
+        <section className={styles.chartCard} data-period-content>
           <h3 style={{ marginBottom: 4 }}>Подробнее {detailsPeriodLabel}</h3>
           {selectedCategoryStats.length ? (
             <div className={styles.categoryProgress}>
