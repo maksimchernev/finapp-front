@@ -9,6 +9,7 @@ export const appRoutes = {
   transactions: "/transactions",
   categories: "/categories",
   banks: "/banks",
+  creditCards: "/credit-cards",
   settings: "/settings",
 } as const;
 
@@ -28,6 +29,7 @@ const privateRoutes = new Set<string>([
   appRoutes.transactions,
   appRoutes.categories,
   appRoutes.banks,
+  appRoutes.creditCards,
   appRoutes.settings,
 ]);
 
@@ -59,7 +61,8 @@ export function getBottomNavActiveItem(pathname: string): BottomNavItem {
   if (
     normalizedPath === appRoutes.settings ||
     normalizedPath === appRoutes.categories ||
-    normalizedPath === appRoutes.banks
+    normalizedPath === appRoutes.banks ||
+    normalizedPath === appRoutes.creditCards
   ) {
     return "settings";
   }

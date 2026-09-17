@@ -1,0 +1,119 @@
+.screen {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+
+  .addButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--accent-a);
+    color: white;
+    font: inherit;
+    font-weight: 700;
+  }
+
+  .notificationCard {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+
+    > svg {
+      flex: 0 0 auto;
+      color: var(--accent-a);
+    }
+
+    > div {
+      min-width: 0;
+      flex: 1;
+
+      h2 {
+        margin: 0;
+        font-size: 16px;
+      }
+
+      p {
+        margin: 4px 0 0;
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+    }
+
+    > button {
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-muted);
+      color: var(--accent-a);
+      font: inherit;
+      font-weight: 700;
+    }
+  }
+
+  .error {
+    margin: 0;
+    color: var(--red);
+  }
+
+  .muted {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  .cardList {
+    display: grid;
+    gap: 10px;
+
+    .card {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      width: 100%;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: inherit;
+      font: inherit;
+      text-align: left;
+
+      .cardIcon {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 8px;
+        flex: 0 0 auto;
+        background: var(--blue-soft);
+        color: var(--accent-a);
+      }
+
+      .cardContent {
+        display: grid;
+        gap: 5px;
+        min-width: 0;
+
+        strong { font-size: 16px; }
+        span { color: var(--text-muted); font-size: 13px; }
+      }
+    }
+  }
+}
+
+@media (max-width: 560px) {
+  .screen {
+    .notificationCard {
+      flex-wrap: wrap;
+
+      > button { margin-left: 33px; }
+    }
+  }
+}

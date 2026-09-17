@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import {
   Building2,
+  CreditCard,
   Camera,
   ChevronRight,
   KeyRound,
@@ -21,12 +22,14 @@ export function SettingsPage({
   onLogout,
   onOpenBanks,
   onOpenCategories,
+  onOpenCreditCards,
   onUpdateUserName,
 }: {
   user: User | null;
   onLogout: () => void;
   onOpenBanks: () => void;
   onOpenCategories: () => void;
+  onOpenCreditCards: () => void;
   onUpdateUserName: (name: string) => Promise<User>;
 }) {
   const [name, setName] = useState(user?.name ?? "");
@@ -131,6 +134,18 @@ export function SettingsPage({
             <span className={styles.referenceMain}>
               <b>Банки</b>
               <span>Банки для импорта и операций</span>
+            </span>
+            <ChevronRight size={18} />
+          </button>
+          <button
+            className={styles.referenceRow}
+            type="button"
+            onClick={onOpenCreditCards}
+          >
+            <span className={styles.softIcon}><CreditCard size={20} /></span>
+            <span className={styles.referenceMain}>
+              <b>Кредитные карты</b>
+              <span>Сроки, остатки и напоминания</span>
             </span>
             <ChevronRight size={18} />
           </button>

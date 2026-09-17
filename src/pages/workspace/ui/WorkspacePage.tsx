@@ -27,6 +27,7 @@ import { BottomNav } from "@/widgets/bottom-nav/ui/BottomNav";
 import { AnalyticsPage } from "@/pages/analytics/ui/AnalyticsPage";
 import { BanksPage } from "@/pages/banks/ui/BanksPage";
 import { CategoriesPage } from "@/pages/categories/ui/CategoriesPage";
+import { CreditCardsPage } from "@/pages/credit-cards/ui/CreditCardsPage";
 import { DashboardPage } from "@/pages/dashboard/ui/DashboardPage";
 import { ReviewPage } from "@/pages/review/ui/ReviewPage";
 import {
@@ -39,6 +40,7 @@ import { UploadPage } from "@/pages/upload/ui/UploadPage";
 import { resetUploadSession } from "@/pages/workspace/lib/uploadSession";
 import { getReferenceReturnTo } from "@/pages/workspace/lib/referenceNavigation";
 import { getPageMotion } from "@/pages/workspace/lib/pageTransition";
+import { unsubscribeLocalPush } from "@/features/credit-card-push/lib/pushSubscription";
 import styles from "@/pages/workspace/ui/WorkspacePage.module.scss";
 
 const pageMotion = getPageMotion();
@@ -58,7 +60,13 @@ export function WorkspacePage({
   const [activeReviewJobId, setActiveReviewJobId] = useState<string | null>(
     null,
   );
-  const finance = useFinanceData({ token, onUnauthorized });
+  const finance = useFinanceData({
+    token,
+    onUnauthorized: (message) => {
+      void unsubscribeLocalPush().catch(() => undefined);
+      onUnauthorized(message);
+    },
+  });
   const review = useTransactionReview({
     onSaved: async () => {
       upload.resetJobs();
@@ -119,7 +127,7 @@ export function WorkspacePage({
 
   function handleLogout() {
     handleResetUploadSession();
-    onLogout();
+    void unsubscribeLocalPush().catch(() => undefined).finally(onLogout);
   }
 
   async function handleCreateManualTransaction(
@@ -315,6 +323,10 @@ export function WorkspacePage({
           }
         />
         <Route
+          path="credit-cards"
+          element={<CreditCardsPage onBack={() => navigate(appRoutes.settings)} />}
+        />
+        <Route
           path="settings"
           element={
             <SettingsPage
@@ -330,6 +342,7 @@ export function WorkspacePage({
                   state: { returnTo: appRoutes.settings },
                 })
               }
+              onOpenCreditCards={() => navigate(appRoutes.creditCards)}
               onUpdateUserName={finance.updateUserName}
             />
           }
