@@ -390,7 +390,9 @@ export function AnalyticsPage({
               ? `Сводка ${weekPeriodLabel}`
               : `Сводка за ${activeMonthLabel.toLowerCase()}`
         }
-        subtitle={view === "months" ? "Топ-5 категорий расходов" : "Доходы и расходы"}
+        subtitle={
+          view === "months" ? "Топ-5 категорий расходов" : "Доходы и расходы"
+        }
         action={
           showCurrencySwitcher ? (
             <CurrencySwitcher
@@ -463,174 +465,184 @@ export function AnalyticsPage({
         </div>
       )}
       {view !== "months" && (
-      <motion.div
-        animate={periodZoomMotion}
-        ref={periodContentRef}
-        className={clsx(
-          styles.analyticsContent,
-          chartMode === "week" && styles.weekCloud,
-        )}
-        initial={false}
-        transition={{ duration: 0.18, ease: "easeOut" }}
-        onTouchCancel={handleTouchCancel}
-        onTouchEnd={handleTouchEnd}
-        onTouchStart={handleTouchStart}
-      >
-        {chartMode === "week" && (
-          <div className={styles.periodControls}>
-            <div className={styles.weekNavigation}>
-              <button
-                aria-label="Предыдущая неделя"
-                className={styles.periodArrow}
-                disabled={!previousWeek}
-                type="button"
-                onClick={() => navigatePeriod("previous")}
-              >
-                <ChevronLeft size={18} aria-hidden="true" />
-              </button>
-              <div
-                className={styles.monthTabsViewport}
-                onTouchStart={stopTouchPropagation}
-              >
-                <div className={styles.monthTabs} aria-label="Неделя аналитики">
-                  {weekTabs.map((week) => (
-                    <button
-                      aria-pressed={week.startKey === activeWeekStartKey}
-                      className={
-                        week.startKey === activeWeekStartKey
-                          ? styles.selectedMonth
-                          : undefined
-                      }
-                      disabled={week.disabled}
-                      key={week.startKey}
-                      type="button"
-                      onClick={() => selectWeek(activeMonthKey, week.startKey)}
-                    >
-                      {week.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <button
-                aria-label="Следующая неделя"
-                className={styles.periodArrow}
-                disabled={!nextWeek}
-                type="button"
-                onClick={() => navigatePeriod("next")}
-              >
-                <ChevronRight size={18} aria-hidden="true" />
-              </button>
-            </div>
-          </div>
-        )}
-        <div className={styles.metricsGrid} data-period-content>
-          <div className={clsx(styles.metric, styles.blue)}>
-            <span>Всего потрачено</span>
-            <div className={styles.moneyStack}>
-              {visibleTotals.map((item) => (
-                <b key={item.currency}>
-                  {formatCurrencyTotal(-item.totalExpenseMinor, item.currency)}
-                </b>
-              ))}
-            </div>
-          </div>
-          <div className={clsx(styles.metric, styles.green)}>
-            <span>Всего получено</span>
-            <div className={styles.moneyStack}>
-              {visibleTotals.map((item) => (
-                <b key={item.currency}>
-                  {formatCurrencyTotal(item.totalIncomeMinor, item.currency)}
-                </b>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <section className={styles.chartCard} data-period-content>
-          <div className={styles.chartHead}>
-            <div>
-              <h3>Динамика</h3>
-              <small>
-                {chartKind === "expense" ? "Расходы" : "Доходы"} ·{" "}
-                {chartPeriodLabel} · {selectedChartCurrency}
-              </small>
-            </div>
-            <div className={styles.switchStack}>
-              <div className={styles.segmentedControl} aria-label="Тип графика">
-                {(["expense", "income"] as const).map((kind) => (
-                  <button
-                    key={kind}
-                    className={
-                      kind === chartKind ? styles.selectedSegment : undefined
-                    }
-                    type="button"
-                    onClick={() => setChartKind(kind)}
+        <motion.div
+          animate={periodZoomMotion}
+          ref={periodContentRef}
+          className={styles.analyticsContent}
+          initial={false}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+          onTouchCancel={handleTouchCancel}
+          onTouchEnd={handleTouchEnd}
+          onTouchStart={handleTouchStart}
+        >
+          {chartMode === "week" && (
+            <div className={styles.periodControls}>
+              <div className={styles.weekNavigation}>
+                <button
+                  aria-label="Предыдущая неделя"
+                  className={styles.periodArrow}
+                  disabled={!previousWeek}
+                  type="button"
+                  onClick={() => navigatePeriod("previous")}
+                >
+                  <ChevronLeft size={18} aria-hidden="true" />
+                </button>
+                <div
+                  className={styles.monthTabsViewport}
+                  onTouchStart={stopTouchPropagation}
+                >
+                  <div
+                    className={styles.monthTabs}
+                    aria-label="Неделя аналитики"
                   >
-                    {kind === "expense" ? "Расходы" : "Доходы"}
-                  </button>
+                    {weekTabs.map((week) => (
+                      <button
+                        aria-pressed={week.startKey === activeWeekStartKey}
+                        className={
+                          week.startKey === activeWeekStartKey
+                            ? styles.selectedMonth
+                            : undefined
+                        }
+                        disabled={week.disabled}
+                        key={week.startKey}
+                        type="button"
+                        onClick={() =>
+                          selectWeek(activeMonthKey, week.startKey)
+                        }
+                      >
+                        {week.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  aria-label="Следующая неделя"
+                  className={styles.periodArrow}
+                  disabled={!nextWeek}
+                  type="button"
+                  onClick={() => navigatePeriod("next")}
+                >
+                  <ChevronRight size={18} aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          )}
+          <div className={styles.metricsGrid} data-period-content>
+            <div className={clsx(styles.metric, styles.blue)}>
+              <span>Всего потрачено</span>
+              <div className={styles.moneyStack}>
+                {visibleTotals.map((item) => (
+                  <b key={item.currency}>
+                    {formatCurrencyTotal(
+                      -item.totalExpenseMinor,
+                      item.currency,
+                    )}
+                  </b>
+                ))}
+              </div>
+            </div>
+            <div className={clsx(styles.metric, styles.green)}>
+              <span>Всего получено</span>
+              <div className={styles.moneyStack}>
+                {visibleTotals.map((item) => (
+                  <b key={item.currency}>
+                    {formatCurrencyTotal(item.totalIncomeMinor, item.currency)}
+                  </b>
                 ))}
               </div>
             </div>
           </div>
-          <div className={styles.chartCanvas}>
-            <AnalyticsBarChart
-              bars={chartBars}
-              categorySeries={chartCategorySeries}
-              currency={selectedChartCurrency}
-              highlightedRange={chartMode === "month" ? hoveredWeekRange : null}
-              kind={chartKind}
-              onBarHover={previewWeek}
-              onBarSelect={drillDownToWeek}
-              showTooltip={shouldShowAnalyticsTooltip(chartMode)}
-            />
-          </div>
-        </section>
 
-        <section className={styles.chartCard} data-period-content>
-          <h3 style={{ marginBottom: 4 }}>Подробнее {detailsPeriodLabel}</h3>
-          {selectedCategoryStats.length ? (
-            <div className={styles.categoryProgress}>
-              {selectedCategoryStats.map(
-                ({ category, currency, totalMinor }) => (
-                  <Link
-                    className={styles.categoryLink}
-                    key={`${category.id}:${currency}`}
-                    to={`${appRoutes.transactions}?${serializeTransactionFilters(
-                      {
-                        ...periodDates,
-                        bankId: "",
-                        categoryId: category.id,
-                        currency,
-                      },
-                    )}`}
-                  >
-                    <div className={styles.progressLabel}>
-                      <span>
-                        <i style={{ background: category.color }} />
-                        {category.nameRu}
-                      </span>
-                      <b>{formatMoney(totalMinor, currency)}</b>
-                    </div>
-                    <div
-                      className={styles.progressTrack}
-                      style={{ background: category.bgColor }}
+          <section className={styles.chartCard} data-period-content>
+            <div className={styles.chartHead}>
+              <div>
+                <h3>Динамика</h3>
+                <small>
+                  {chartKind === "expense" ? "Расходы" : "Доходы"} ·{" "}
+                  {chartPeriodLabel} · {selectedChartCurrency}
+                </small>
+              </div>
+              <div className={styles.switchStack}>
+                <div
+                  className={styles.segmentedControl}
+                  aria-label="Тип графика"
+                >
+                  {(["expense", "income"] as const).map((kind) => (
+                    <button
+                      key={kind}
+                      className={
+                        kind === chartKind ? styles.selectedSegment : undefined
+                      }
+                      type="button"
+                      onClick={() => setChartKind(kind)}
                     >
-                      <span
-                        style={{
-                          width: `${Math.max(6, (Math.abs(totalMinor) / maxCategory) * 100)}%`,
-                          background: category.color,
-                        }}
-                      />
-                    </div>
-                  </Link>
-                ),
-              )}
+                      {kind === "expense" ? "Расходы" : "Доходы"}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-          ) : (
-            <EmptyState text="Категории появятся после сохранения операций." />
-          )}
-        </section>
-      </motion.div>
+            <div className={styles.chartCanvas}>
+              <AnalyticsBarChart
+                bars={chartBars}
+                categorySeries={chartCategorySeries}
+                currency={selectedChartCurrency}
+                highlightedRange={
+                  chartMode === "month" ? hoveredWeekRange : null
+                }
+                kind={chartKind}
+                onBarHover={previewWeek}
+                onBarSelect={drillDownToWeek}
+                showTooltip={shouldShowAnalyticsTooltip(chartMode)}
+              />
+            </div>
+          </section>
+
+          <section className={styles.chartCard} data-period-content>
+            <h3 style={{ marginBottom: 4 }}>Подробнее {detailsPeriodLabel}</h3>
+            {selectedCategoryStats.length ? (
+              <div className={styles.categoryProgress}>
+                {selectedCategoryStats.map(
+                  ({ category, currency, totalMinor }) => (
+                    <Link
+                      className={styles.categoryLink}
+                      key={`${category.id}:${currency}`}
+                      to={`${appRoutes.transactions}?${serializeTransactionFilters(
+                        {
+                          ...periodDates,
+                          bankId: "",
+                          categoryId: category.id,
+                          currency,
+                        },
+                      )}`}
+                    >
+                      <div className={styles.progressLabel}>
+                        <span>
+                          <i style={{ background: category.color }} />
+                          {category.nameRu}
+                        </span>
+                        <b>{formatMoney(totalMinor, currency)}</b>
+                      </div>
+                      <div
+                        className={styles.progressTrack}
+                        style={{ background: category.bgColor }}
+                      >
+                        <span
+                          style={{
+                            width: `${Math.max(6, (Math.abs(totalMinor) / maxCategory) * 100)}%`,
+                            background: category.color,
+                          }}
+                        />
+                      </div>
+                    </Link>
+                  ),
+                )}
+              </div>
+            ) : (
+              <EmptyState text="Категории появятся после сохранения операций." />
+            )}
+          </section>
+        </motion.div>
       )}
     </section>
   );
