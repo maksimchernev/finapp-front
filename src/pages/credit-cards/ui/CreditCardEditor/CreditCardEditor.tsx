@@ -121,29 +121,34 @@ export function CreditCardEditor({
         </label>
         <p className={styles.hint}>При смене валюты записанные суммы остаются прежними числами.</p>
 
-        <label>Конец льготного периода
-          <input type="date" value={form.gracePeriodEndDate} onChange={(event) => patchForm({ gracePeriodEndDate: event.target.value, gracePaid: false })} />
-        </label>
-        {form.gracePeriodEndDate && <label className={styles.checkRow}>
-          <input type="checkbox" checked={form.gracePaid} onChange={(event) => patchForm({ gracePaid: event.target.checked })} />
-          Долг для льготного периода погашен
-        </label>}
+        <section className={styles.timelineFields}>
+          <h3>Беспроцентный период</h3>
+          <label>Дата окончания
+            <input type="date" value={form.gracePeriodEndDate} onChange={(event) => patchForm({ gracePeriodEndDate: event.target.value, gracePaid: false })} />
+          </label>
+          {form.gracePeriodEndDate && <label className={styles.checkRow}>
+            <input type="checkbox" checked={form.gracePaid} onChange={(event) => patchForm({ gracePaid: event.target.checked })} />
+            Долг для льготного периода погашен
+          </label>}
+        </section>
 
-        <label>Дата назначения минимального платежа
-          <input type="date" value={form.minPaymentAssignmentDate} onChange={(event) => patchForm({ minPaymentAssignmentDate: event.target.value })} />
-        </label>
-        <p className={styles.hint}>В эту дату прежний минимальный платёж перейдёт в историю. Затем заполните новые дату и сумму.</p>
-
-        <label>Дата минимального платежа
-          <input type="date" value={form.minPaymentDueDate} onChange={(event) => patchForm({ minPaymentDueDate: event.target.value, minPaymentPaid: false })} />
-        </label>
-        <label>Сумма минимального платежа
-          <input inputMode="decimal" value={form.minPaymentAmount} onChange={(event) => patchForm({ minPaymentAmount: event.target.value, minPaymentPaid: false })} placeholder="0,00" />
-        </label>
-        {form.minPaymentDueDate && form.minPaymentAmount && <label className={styles.checkRow}>
-          <input type="checkbox" checked={form.minPaymentPaid} onChange={(event) => patchForm({ minPaymentPaid: event.target.checked })} />
-          Минимальный платёж внесён
-        </label>}
+        <section className={styles.timelineFields}>
+          <h3>Минимальный платёж</h3>
+          <p className={styles.hint}>Пока дата и сумма платежа неизвестны, на карте показывается дата его назначения.</p>
+          <label>Дата назначения минимального платежа
+            <input type="date" value={form.minPaymentAssignmentDate} onChange={(event) => patchForm({ minPaymentAssignmentDate: event.target.value })} />
+          </label>
+          <label>Дата минимального платежа
+            <input type="date" value={form.minPaymentDueDate} onChange={(event) => patchForm({ minPaymentDueDate: event.target.value, minPaymentPaid: false })} />
+          </label>
+          <label>Сумма минимального платежа
+            <input inputMode="decimal" value={form.minPaymentAmount} onChange={(event) => patchForm({ minPaymentAmount: event.target.value, minPaymentPaid: false })} placeholder="0,00" />
+          </label>
+          {form.minPaymentDueDate && form.minPaymentAmount && <label className={styles.checkRow}>
+            <input type="checkbox" checked={form.minPaymentPaid} onChange={(event) => patchForm({ minPaymentPaid: event.target.checked })} />
+            Минимальный платёж внесён
+          </label>}
+        </section>
 
         {error && <p className={styles.error} role="alert">{error}</p>}
         <button className={styles.primaryButton} type="submit" disabled={saving}>{saving ? "Сохраняю…" : "Сохранить карту"}</button>

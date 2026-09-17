@@ -98,11 +98,25 @@
 
       .cardContent {
         display: grid;
-        gap: 5px;
+        gap: 9px;
         min-width: 0;
 
-        strong { font-size: 16px; }
-        span { color: var(--text-muted); font-size: 13px; }
+        > strong { font-size: 16px; }
+
+        .timelines {
+          display: grid;
+          gap: 8px;
+
+          .timeline {
+            display: grid;
+            gap: 2px;
+
+            > span { color: var(--text-muted); font-size: 12px; }
+            b { font-size: 13px; font-weight: 600; }
+          }
+        }
+
+        .balance { color: var(--text-muted); font-size: 12px; }
       }
     }
   }

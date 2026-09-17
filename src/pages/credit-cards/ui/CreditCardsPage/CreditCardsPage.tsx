@@ -9,6 +9,7 @@ import {
   enableCreditCardPush,
   getCreditCardPushStatus,
 } from "@/features/credit-card-push/lib/pushSubscription";
+import { getCreditCardTimelines } from "@/pages/credit-cards/lib/creditCardTimelines";
 import { CreditCardEditor } from "@/pages/credit-cards/ui/CreditCardEditor";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { PageHeader } from "@/shared/ui/PageHeader";
@@ -127,18 +128,27 @@ export function CreditCardsPage({ onBack }: { onBack: () => void }) {
 
     {error && <p className={styles.error} role="alert">{error}</p>}
     {loading ? <p className={styles.muted}>Загружаю карты…</p> : cards.length === 0 ? <EmptyState text="Пока нет кредитных карт. Добавьте первую карту." /> : <div className={styles.cardList}>
-      {cards.map((card) => <button className={styles.card} type="button" key={card.id} onClick={() => openEdit(card.id)}>
-        <span className={styles.cardIcon}><CreditCardIcon size={22} /></span>
-        <span className={styles.cardContent}>
-          <strong>{card.name} · {card.currency}</strong>
-          <span>Льготный период: {card.gracePeriodEndDate ? formatDate(card.gracePeriodEndDate) : "дата не указана"}{card.gracePaid ? " · погашен" : ""}</span>
-          <span>Назначение платежа: {card.minPaymentAssignmentDate ? formatDate(card.minPaymentAssignmentDate) : "дата не указана"}</span>
-          <span>Минимальный платёж: {card.minPaymentDueDate && card.minPaymentAmountMinor !== null
-            ? `${formatDate(card.minPaymentDueDate)} · ${formatMoney(card.minPaymentAmountMinor, card.currency)}${card.minPaymentPaid ? " · внесён" : ""}`
-            : "не указан"}</span>
-          {card.balances[0] && <span>Остаток на {formatDate(card.balances[0].date)}: {formatMoney(card.balances[0].amountMinor, card.currency)}</span>}
-        </span>
-      </button>)}
+      {cards.map((card) => {
+        const [grace, minimum] = getCreditCardTimelines(card);
+        return <button className={styles.card} type="button" key={card.id} onClick={() => openEdit(card.id)}>
+          <span className={styles.cardIcon}><CreditCardIcon size={22} /></span>
+          <span className={styles.cardContent}>
+            <strong>{card.name} · {card.currency}</strong>
+            <span className={styles.timelines}>
+              <span className={styles.timeline}>
+                <span>Беспроцентный период</span>
+                <b>{grace.date ? formatDate(grace.date) : "Дата не указана"}{grace.paid ? " · погашен" : ""}</b>
+              </span>
+              <span className={styles.timeline}>
+                <span>{minimum.kind === "minimum" ? "Минимальный платёж" : "Назначение минимального платежа"}</span>
+                <b>{minimum.date ? formatDate(minimum.date) : "Дата не указана"}
+                  {minimum.kind === "minimum" ? ` · ${formatMoney(minimum.amountMinor, card.currency)}${minimum.paid ? " · внесён" : ""}` : ""}
+                </b>
+              </span>
+            </span>
+            {card.balances[0] && <span className={styles.balance}>Остаток на {formatDate(card.balances[0].date)}: {formatMoney(card.balances[0].amountMinor, card.currency)}</span>}
+          </span>
+        </button>})}
     </div>}
 
     {editorOpen && <CreditCardEditor
