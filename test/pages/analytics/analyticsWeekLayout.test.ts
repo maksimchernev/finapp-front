@@ -11,7 +11,7 @@ describe("analytics weekly layout", () => {
     "utf8",
   );
 
-  it("keeps period tabs inside the weekly cloud", () => {
+  it("keeps period tabs available in analytics", () => {
     expect(source).toContain('view === "month" && (');
     expect(source).toContain("styles.periodControls");
     expect(source).toContain("styles.weekNavigation");
@@ -30,13 +30,12 @@ describe("analytics weekly layout", () => {
     expect(source).toContain("<CurrencySwitcher");
   });
 
-  it("keeps analytics blocks mounted in one stable weekly cloud", () => {
+  it("keeps analytics cards and charts in the animated period content", () => {
     const periodContent = source.slice(
       source.indexOf("<motion.div"),
       source.lastIndexOf("</motion.div>"),
     );
     expect(source).toContain("styles.analyticsContent");
-    expect(source).toContain('chartMode === "week" && styles.weekCloud');
     expect(periodContent).toContain("styles.metricsGrid");
     expect(periodContent.match(/styles\.chartCard/g)).toHaveLength(2);
   });

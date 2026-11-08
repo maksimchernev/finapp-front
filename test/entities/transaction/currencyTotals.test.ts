@@ -61,6 +61,7 @@ describe("currency totals", () => {
 
   it("formats visible and hidden totals with their own currency", () => {
     expect(formatCurrencyTotal(650000, "HUF", true)).toBe("6 500 HUF");
+    expect(formatCurrencyTotal(650055, "HUF", true)).toBe("6 500,55 HUF");
     expect(formatCurrencyTotal(650000, "HUF", false)).toBe("•••• HUF");
   });
 });

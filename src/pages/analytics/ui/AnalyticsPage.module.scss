@@ -52,6 +52,7 @@
 }
 
 .monthTabs {
+  position: relative; // Measure tab offsets within the scrolling strip.
   display: flex;
   gap: 8px;
   overflow-x: auto;

@@ -11,6 +11,7 @@ function getCurrencyFormatter(currency: string) {
   const formatter = new Intl.NumberFormat("ru-RU", {
     style: "currency",
     currency,
+    minimumFractionDigits: currency.toUpperCase() === "HUF" ? 0 : undefined,
     maximumFractionDigits: 2,
   });
   currencyFormatters.set(currency, formatter);
