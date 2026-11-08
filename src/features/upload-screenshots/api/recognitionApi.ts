@@ -1,7 +1,10 @@
 import { request } from "@/shared/api/client";
 import type { ReviewTransactionDraft } from "@/features/upload-screenshots/model/types";
 
-type RecognizedTransaction = Pick<ReviewTransactionDraft, "amount" | "currency" | "date" | "merchant" | "bankId" | "categoryId">;
+type RecognizedTransaction = Pick<
+  ReviewTransactionDraft,
+  "amount" | "currency" | "date" | "merchant" | "bankId" | "categoryId"
+> & { selected?: boolean };
 
 export const recognitionApi = {
   async recognize(file: File): Promise<ReviewTransactionDraft[]> {
@@ -15,7 +18,7 @@ export const recognitionApi = {
       localId: crypto.randomUUID(),
       sourceFile: file.name,
       rawText: "",
-      selected: true,
+      selected: transaction.selected ?? true,
     }));
   },
 };

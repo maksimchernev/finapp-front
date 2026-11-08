@@ -72,7 +72,7 @@ export function RecognitionMethodSwitch({
         </div>
         <p id="recognition-privacy">
           Tesseract работает на устройстве. AI отправляет скриншот в OpenAI
-          (GPT‑5.6 Luna). В Summa сохраняются только подтверждённые операции.
+          (GPT‑6 Luna). В Summa сохраняются только подтверждённые операции.
         </p>
         {!user?.aiTestAccess && <p>AI доступен только участникам тестирования.</p>}
       </fieldset>

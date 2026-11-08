@@ -11,3 +11,25 @@ it("sends the original image with its MIME type and maps AI output without OCR c
   expect(drafts[0]).toEqual({ localId: expect.any(String), amount: -10, currency: "RUB", date: "2026-10-08", merchant: "Кофе", sourceFile: "one.png", selected: true, rawText: "" });
   expect(drafts[0]).not.toHaveProperty("confidence");
 });
+
+it("keeps transfers and declined operations visible without selecting them", async () => {
+  const file = Object.assign(new Blob(["image"], { type: "image/png" }), {
+    name: "one.png",
+  }) as File;
+  const transaction = { amount: -10, currency: "RUB", date: "2026-10-08" };
+  jest.mocked(request).mockResolvedValue({
+    transactions: [
+      { ...transaction, merchant: "Кофе", selected: true },
+      { ...transaction, merchant: "Перевод", selected: false },
+      { ...transaction, merchant: "Отклонённая покупка", selected: false },
+    ],
+  });
+
+  const drafts = await recognitionApi.recognize(file);
+
+  expect(drafts.map(({ merchant, selected }) => ({ merchant, selected }))).toEqual([
+    { merchant: "Кофе", selected: true },
+    { merchant: "Перевод", selected: false },
+    { merchant: "Отклонённая покупка", selected: false },
+  ]);
+});

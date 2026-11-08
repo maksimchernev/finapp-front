@@ -53,7 +53,7 @@ export function RecognitionConsentDialog({
       <div className={styles.content} ref={contentRef} onKeyDown={handleKeyDown}>
         <h3 id="recognition-consent-title">Включить AI-распознавание?</h3>
         <p>
-          Скриншоты будут отправляться в OpenAI (GPT‑5.6 Luna) вместе с названиями
+          Скриншоты будут отправляться в OpenAI (GPT‑6 Luna) вместе с названиями
           и ключевыми словами ваших банков и категорий. В Summa сохраняются только
           подтверждённые вами операции, не изображения и не сырой ответ AI.
         </p>
