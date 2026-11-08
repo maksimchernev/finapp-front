@@ -5,9 +5,9 @@ import styles from "@/pages/analytics/ui/AnalyticsViewSwitcher/AnalyticsViewSwit
 export type AnalyticsView = "months" | "month" | "week";
 
 const views = [
-  { value: "months", label: "По месяцам", icon: ChartNoAxesCombined },
-  { value: "month", label: "За месяц", icon: CalendarDays },
-  { value: "week", label: "За неделю", icon: CalendarRange },
+  { value: "months", label: "Год", icon: ChartNoAxesCombined },
+  { value: "month", label: "Месяц", icon: CalendarDays },
+  { value: "week", label: "Неделя", icon: CalendarRange },
 ] as const;
 
 export function AnalyticsViewSwitcher({
