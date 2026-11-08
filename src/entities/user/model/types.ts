@@ -1,4 +1,10 @@
 export type Provider = "google" | "yandex" | "manual";
+export type RecognitionMethod = "tesseract" | "ai";
+export type UserPreferences = {
+  defaultCurrency: string;
+  recognitionMethod?: RecognitionMethod;
+  aiRecognitionConsent?: boolean | null;
+};
 
 export interface User {
   id: string;
@@ -7,7 +13,6 @@ export interface User {
   avatar: string | null;
   phone?: string | null;
   provider: Provider;
-  preferences?: {
-    defaultCurrency: string;
-  } | null;
+  aiTestAccess?: boolean;
+  preferences?: UserPreferences | null;
 }

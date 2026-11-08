@@ -12,7 +12,8 @@ import {
   X,
 } from "lucide-react";
 import { AnimatePresence } from "motion/react";
-import type { User } from "@/entities/user/model/types";
+import type { RecognitionMethod, User } from "@/entities/user/model/types";
+import { RecognitionMethodSwitch } from "@/pages/settings/ui/RecognitionMethodSwitch";
 import { Dialog } from "@/shared/ui/Dialog";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import styles from "@/pages/settings/ui/SettingsPage.module.scss";
@@ -24,6 +25,7 @@ export function SettingsPage({
   onOpenCategories,
   onOpenCreditCards,
   onUpdateUserName,
+  onUpdateRecognitionMethod,
 }: {
   user: User | null;
   onLogout: () => void;
@@ -31,6 +33,7 @@ export function SettingsPage({
   onOpenCategories: () => void;
   onOpenCreditCards: () => void;
   onUpdateUserName: (name: string) => Promise<User>;
+  onUpdateRecognitionMethod: (method: RecognitionMethod, consent?: boolean) => Promise<void>;
 }) {
   const [name, setName] = useState(user?.name ?? "");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -105,6 +108,8 @@ export function SettingsPage({
           <p>{user?.email || "Аккаунт подключен"}</p>
         </div>
       </button>
+
+      <RecognitionMethodSwitch key={user?.id} user={user} onChange={onUpdateRecognitionMethod} />
 
       <section className={styles.sectionBlock}>
         <h3>Справочники</h3>

@@ -7,6 +7,10 @@ jest.mock("@/features/upload-screenshots/lib/ocr", () => ({
   recognizeTransactions: jest.fn().mockResolvedValue([]),
 }));
 
+jest.mock("@/features/upload-screenshots/api/recognitionApi", () => ({
+  recognitionApi: { recognize: jest.fn() },
+}));
+
 describe("screenshot preview URL", () => {
   it("keeps an object URL for review and revokes it with the upload session", async () => {
     const file = Object.assign(new Blob(["image"], { type: "image/png" }), {

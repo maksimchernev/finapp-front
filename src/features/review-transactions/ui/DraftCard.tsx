@@ -46,9 +46,9 @@ export function DraftCard({
     isExpense ? category.type === "expense" : category.type === "income",
   );
   const confidenceTone =
-    draft.confidence >= 80
+    (draft.confidence ?? 0) >= 80
       ? styles.confidenceHigh
-      : draft.confidence >= 55
+      : (draft.confidence ?? 0) >= 55
         ? styles.confidenceMedium
         : styles.confidenceLow;
 
@@ -184,10 +184,12 @@ export function DraftCard({
 
       {!isManual ? (
         <div className={styles.confidenceLine}>
-          <span className={confidenceTone}>
-            <Check size={13} />
-            Уверенность распознавания {draft.confidence}%
-          </span>
+          {draft.confidence !== undefined && (
+            <span className={confidenceTone}>
+              <Check size={13} />
+              Уверенность распознавания {draft.confidence}%
+            </span>
+          )}
           <small>{draft.sourceFile}</small>
         </div>
       ) : null}

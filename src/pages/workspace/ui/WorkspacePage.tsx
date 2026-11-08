@@ -76,6 +76,7 @@ export function WorkspacePage({
     },
   });
   const upload = useScreenshotImport({
+    recognitionMethod: finance.user?.preferences?.recognitionMethod,
     banks: finance.banks,
     categories: finance.categories,
     onUploadStarted: () => {
@@ -227,6 +228,7 @@ export function WorkspacePage({
           path="upload"
           element={
             <UploadPage
+              recognitionMethod={finance.user?.preferences?.recognitionMethod}
               banks={finance.banks}
               categories={finance.categories}
               jobs={upload.jobs}
@@ -330,6 +332,7 @@ export function WorkspacePage({
           path="settings"
           element={
             <SettingsPage
+              onUpdateRecognitionMethod={finance.updateRecognitionMethod}
               user={finance.user}
               onLogout={handleLogout}
               onOpenBanks={() =>

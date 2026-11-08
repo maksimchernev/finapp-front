@@ -1,0 +1,49 @@
+.setting {
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+
+  fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+
+    legend { margin-bottom: 12px; font-weight: 700; }
+
+    .switcher {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 12px;
+      background: rgba(36, 76, 56, 0.08);
+
+      label {
+        position: relative;
+        flex: 1;
+
+        input {
+          position: absolute;
+          opacity: 0;
+
+          &:checked + span { background: var(--surface); color: var(--accent-a); }
+          &:focus-visible + span { outline: 2px solid var(--accent-a); outline-offset: 2px; }
+          &:disabled + span { opacity: 0.5; cursor: not-allowed; }
+        }
+
+        span {
+          display: grid;
+          place-items: center;
+          min-height: 44px;
+          border-radius: 9px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+      }
+    }
+
+  }
+
+  p { margin: 12px 0 0; color: var(--text-muted); font-size: 13px; line-height: 1.45; }
+  .error { color: var(--red); }
+}

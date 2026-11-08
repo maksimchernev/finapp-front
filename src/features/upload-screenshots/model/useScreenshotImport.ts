@@ -3,8 +3,9 @@ import { detectBankFromOcr } from "@/entities/bank/lib/bankDetection";
 import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
 import { recognizeTransactions } from "@/features/upload-screenshots/lib/ocr";
+import { recognitionApi } from "@/features/upload-screenshots/api/recognitionApi";
+import type { RecognitionMethod } from "@/entities/user/model/types";
 import type {
-  ParsedTransaction,
   ReviewTransactionDraft,
   UploadJob,
 } from "@/features/upload-screenshots/model/types";
@@ -21,10 +22,12 @@ export function useScreenshotImport({
   banks,
   categories,
   onUploadStarted,
+  recognitionMethod = "tesseract",
 }: {
   banks: Bank[];
   categories: Category[];
   onUploadStarted: () => void;
+  recognitionMethod?: RecognitionMethod;
 }) {
   const [jobs, setJobs] = useState<UploadJob[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -98,21 +101,18 @@ export function useScreenshotImport({
         progress: 3,
       });
       try {
-        const transactionsFromFile = await recognizeTransactions(
-          file,
-          categories,
-          (progress, message) => {
-            updateJob(jobId, {
-              progress: Math.max(5, Math.min(98, progress)),
-              message,
-            });
-          },
-        );
-        const bankId = resolveBankIdForFile(
-          banks,
-          file.name,
-          transactionsFromFile,
-        );
+        const transactionsFromFile =
+          recognitionMethod === "ai"
+            ? await recognitionApi.recognize(file)
+            : await recognizeTransactions(file, categories, (progress, message) => {
+                updateJob(jobId, {
+                  progress: Math.max(5, Math.min(98, progress)),
+                  message,
+                });
+              });
+        const bankId = recognitionMethod === "ai"
+          ? undefined
+          : resolveBankIdForFile(banks, file.name, transactionsFromFile);
         const transactionsWithBank = bankId
           ? transactionsFromFile.map((transaction) => ({
               ...transaction,
@@ -132,7 +132,7 @@ export function useScreenshotImport({
         updateJob(jobId, {
           status: "error",
           progress: 100,
-          message: ocrError instanceof Error ? ocrError.message : "Ошибка OCR",
+          message: ocrError instanceof Error ? ocrError.message : "Ошибка распознавания",
         });
       }
     }
@@ -218,7 +218,7 @@ function normalizeFileName(fileName: string) {
 function resolveBankIdForFile(
   banks: Bank[],
   fileName: string,
-  transactions: ParsedTransaction[],
+  transactions: ReviewTransactionDraft[],
 ) {
   const rawText = transactions[0]?.rawText || "";
   return detectBankFromOcr(banks, rawText, fileName)?.id;

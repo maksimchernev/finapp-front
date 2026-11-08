@@ -13,8 +13,9 @@ export interface ParsedTransaction {
   selected: boolean;
 }
 
-export type ReviewTransactionDraft = Omit<ParsedTransaction, "amount"> & {
+export type ReviewTransactionDraft = Omit<ParsedTransaction, "amount" | "confidence"> & {
   amount: number | string;
+  confidence?: number;
 };
 
 export interface UploadJob {

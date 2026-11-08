@@ -38,8 +38,8 @@ export function AuthPage({ error }: { error: string | null }) {
       <h1>Все доходы и расходы. За несколько минут.</h1>
       <p>
         Summa не просит доступ к банковскому кабинету и не хранит ваши
-        скриншоты. Распознавание происходит на устройстве, а в базу попадают
-        только подтвержденные вами операции.
+        скриншоты. Tesseract распознаёт их на устройстве; AI отправляет в
+        OpenAI только с вашего согласия. В базу попадают только подтвержденные вами операции.
       </p>
       <TrustPills />
       {error && <div className={styles.inlineError}>{error}</div>}
@@ -59,7 +59,7 @@ function TrustPills() {
   return (
     <div className={styles.trustPills}>
       <span>Без доступа к банковскому кабинету</span>
-      <span>Скриншоты обрабатываются на устройстве</span>
+      <span>Tesseract локально, AI с вашего согласия</span>
       <span>Сырой OCR не хранится</span>
       <span>Вы решаете, что сохранить</span>
     </div>

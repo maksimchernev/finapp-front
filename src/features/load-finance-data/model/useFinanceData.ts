@@ -16,7 +16,7 @@ import type {
 } from "@/entities/transaction/model/types";
 import { getCurrentMonthStatisticsQuery } from "@/features/load-finance-data/lib/currentMonthStatistics";
 import { userApi } from "@/entities/user/api/userApi";
-import type { User } from "@/entities/user/model/types";
+import type { RecognitionMethod, User } from "@/entities/user/model/types";
 
 function loadCurrentMonthStatistics() {
   return transactionApi.statistics(getCurrentMonthStatisticsQuery());
@@ -166,8 +166,13 @@ export function useFinanceData({
 
   async function updateUserName(name: string) {
     const updatedUser = await userApi.updateProfile({ name });
-    setUser(updatedUser);
+    setUser((current) => ({ ...current, ...updatedUser, preferences: updatedUser.preferences ?? current?.preferences }));
     return updatedUser;
+  }
+
+  async function updateRecognitionMethod(method: RecognitionMethod, consent?: boolean) {
+    const preferences = await userApi.updateRecognitionMethod(method, consent);
+    setUser((current) => current ? { ...current, preferences } : current);
   }
 
   function clearError() {
@@ -192,6 +197,7 @@ export function useFinanceData({
     updateCategory,
     updateTransaction,
     updateUserName,
+    updateRecognitionMethod,
   };
 }
 

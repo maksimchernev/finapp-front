@@ -30,6 +30,15 @@ const draft: ParsedTransaction = {
 };
 
 describe("DraftCard bank selection", () => {
+  it("does not invent confidence for an AI draft", () => {
+    const html = renderToStaticMarkup(DraftCard({
+      draft: { ...draft, confidence: undefined },
+      categories: [],
+      onUpdate: () => undefined,
+    }));
+    expect(html).not.toContain("Уверенность распознавания");
+    expect(html).toContain("one.png");
+  });
   it("does not render a per-transaction bank selector", () => {
     const html = renderToStaticMarkup(
       DraftCard({

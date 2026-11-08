@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { formatBankLastImportedAt } from "@/entities/bank/lib/lastImportedAt";
 import type { Bank } from "@/entities/bank/model/types";
 import type { Category } from "@/entities/category/model/types";
+import type { RecognitionMethod } from "@/entities/user/model/types";
 import type { CreateTransactionRequest } from "@/entities/transaction/api/transactionApi";
 import type { UploadJob } from "@/features/upload-screenshots/model/types";
 import { UploadJobRow } from "@/features/upload-screenshots/ui/UploadJobRow";
@@ -18,6 +19,7 @@ export function UploadPage({
   onCreateManualTransaction,
   onFiles,
   onReview,
+  recognitionMethod = "tesseract",
 }: {
   banks: Bank[];
   categories: Category[];
@@ -27,6 +29,7 @@ export function UploadPage({
   ) => Promise<void>;
   onFiles: (files: FileList | File[]) => void;
   onReview: (jobId: string) => void;
+  recognitionMethod?: RecognitionMethod;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isManualDialogOpen, setIsManualDialogOpen] = useState(false);
@@ -84,8 +87,8 @@ export function UploadPage({
         <CloudUpload size={34} />
         <h3>Загрузите историю операций</h3>
         <p>
-          Изображения распознаются на этом устройстве, храним только
-          распознанные данные.
+          {recognitionMethod === "ai" ? "Распознавание через AI: изображения отправляются в OpenAI." : "Tesseract: изображения распознаются на этом устройстве."}
+          {" "}Храним только подтверждённые операции.
         </p>
         <button
           className={clsx(styles.primaryAction, styles.compact)}
@@ -110,7 +113,7 @@ export function UploadPage({
           <div>
             <b>Без доступа к банковскому кабинету</b>
             <span>
-              Мы распознаем сумму, дату и имя транзакции локально. <br />
+              {recognitionMethod === "ai" ? "AI распознаёт сумму, дату и имя транзакции в облаке OpenAI." : "Мы распознаем сумму, дату и имя транзакции локально."} <br />
               Храним только подтвержденные вами операции.
             </span>
           </div>

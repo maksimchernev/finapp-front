@@ -1,6 +1,5 @@
 import { isTransactionDateInRange } from "@/entities/transaction/lib/format";
 import type {
-  ParsedTransaction,
   ReviewTransactionDraft,
   UploadJob,
 } from "@/features/upload-screenshots/model/types";
@@ -8,7 +7,7 @@ import type {
 export function attachDraftsToUploadJob(
   jobs: UploadJob[],
   jobId: string,
-  drafts: ParsedTransaction[],
+  drafts: ReviewTransactionDraft[],
 ) {
   return jobs.map((job) => (job.id === jobId ? { ...job, drafts } : job));
 }
