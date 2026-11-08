@@ -81,6 +81,7 @@ export function AnalyticsPage({
   const [selectedWeekStartKey, setSelectedWeekStartKey] = useState<
     string | null
   >(null);
+  const periodTabsRef = useRef<HTMLDivElement | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const periodContentRef = useRef<HTMLDivElement | null>(null);
   const periodSlideDirectionRef = useRef<"previous" | "next" | null>(null);
@@ -250,6 +251,19 @@ export function AnalyticsPage({
     activeMonthKey,
     activeWeekStartKey,
   );
+
+  useLayoutEffect(() => {
+    const tabs = periodTabsRef.current;
+    const activeTab = tabs?.querySelector<HTMLButtonElement>(
+      'button[aria-pressed="true"]',
+    );
+    if (!tabs || !activeTab) return;
+
+    tabs.scrollTo({
+      left: activeTab.offsetLeft + (activeTab.offsetWidth - tabs.clientWidth) / 2,
+      behavior: shouldReduceMotion ? "auto" : "smooth",
+    });
+  }, [activeMonthKey, activeWeekStartKey, view, shouldReduceMotion]);
 
   useLayoutEffect(() => {
     const direction = periodSlideDirectionRef.current;
@@ -434,7 +448,11 @@ export function AnalyticsPage({
               className={styles.monthTabsViewport}
               onTouchStart={stopTouchPropagation}
             >
-              <div className={styles.monthTabs} aria-label="Месяц аналитики">
+              <div
+                ref={periodTabsRef}
+                className={styles.monthTabs}
+                aria-label="Месяц аналитики"
+              >
                 {chronologicalMonthTabs.map((month) => (
                   <button
                     aria-pressed={month.key === activeMonthKey}
@@ -492,6 +510,7 @@ export function AnalyticsPage({
                   onTouchStart={stopTouchPropagation}
                 >
                   <div
+                    ref={periodTabsRef}
                     className={styles.monthTabs}
                     aria-label="Неделя аналитики"
                   >
